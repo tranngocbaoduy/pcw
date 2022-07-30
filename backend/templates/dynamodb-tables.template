@@ -1,0 +1,76 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  ProductTableName:
+    Type: String
+  CategoryTableName:
+    Type: String
+
+Resources:
+  ProductTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: !Ref ProductTableName
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: RELATIONSHIP_ID
+          AttributeType: S
+      GlobalSecondaryIndexes:
+        - IndexName: RELATIONSHIP-INDEX
+          KeySchema:
+            - AttributeName: PK
+              KeyType: HASH
+            - AttributeName: RELATIONSHIP_ID
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+  CategoryTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: !Ref CategoryTableName
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
+Outputs:
+  ProductTableName:
+    Value: !Ref ProductTable
+    Export:
+      Name: !Sub "${AWS::StackName}-ProductTableName"
+  ProductTableArn:
+    Value: !GetAtt ProductTable.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-ProductTableArn"
+  CategoryTableName:
+    Value: !Ref CategoryTable
+    Export:
+      Name: !Sub "${AWS::StackName}-CategoryTableName"
+  CategoryTableArn:
+    Value: !GetAtt CategoryTable.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-CategoryTableArn"

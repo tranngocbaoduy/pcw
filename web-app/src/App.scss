@@ -1,0 +1,32 @@
+.custom-link {
+  text-decoration: none !important;
+}
+.hover-custom-link:hover {
+  cursor: pointer;
+  color: #1859db !important;
+  font-weight: 600 !important;
+}
+
+.v-divider-customer {
+  box-sizing: border-box;
+  border-bottom: 2px solid #6e6e6e !important;
+  box-shadow: 0px 8px 0px #000000 !important;
+}
+
+#app {
+  // background-color: #white!important;
+  letter-spacing: normal !important;
+  font-family: 'roboto' !important;
+  margin: 0px !important;
+  padding: 0px !important;
+  word-break: break-word !important;
+  line-height: 25px !important;
+}
+div {
+  letter-spacing: normal !important;
+  word-break: break-word !important;
+  line-height: 25px !important;
+}
+a {
+  text-decoration: none !important;
+}

@@ -1,0 +1,244 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  EnvName:
+    Type: String
+    AllowedPattern: "^[a-z]+$"
+  EnvType:
+    Type: String
+    AllowedPattern: "^[a-z]+$"
+  WebappBucketName:
+    Type: String
+  WebACLArn:
+    Type: String
+  DomainName:
+    Type: String
+    Default: ''
+  HostedZoneId:
+    Type: String
+    Default: ''
+  AcmCertificateArn:
+    Type: String
+    Default: ''
+
+Conditions:
+  IsProd: !Equals [!Ref EnvName, duy]
+  IsNotDev: !Not [!Equals [!Ref EnvType, dev]]
+
+Mappings:
+  EnvTypeMap:
+    prod:
+      DomainName: "x-pcw.com"
+      HostedZoneId: "Z051864831RELXO1IWRT7"
+      AcmCertificateArn: "arn:aws:acm:us-east-1:194560059530:certificate/372dc1aa-2490-4ff5-919c-29d392d3255d"
+    duy:
+      DomainName: "x-pcw.com"
+      HostedZoneId: "Z051864831RELXO1IWRT7"
+      AcmCertificateArn: "arn:aws:acm:us-east-1:194560059530:certificate/372dc1aa-2490-4ff5-919c-29d392d3255d"
+    dev:
+      DomainName: 'localhost:8080'
+      HostedZoneId: ''
+      AcmCertificateArn: ''
+    
+Resources:
+  WebappBucket:
+    Type: AWS::S3::Bucket
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: !Ref WebappBucketName
+  WebappBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref WebappBucket
+      PolicyDocument:
+        Statement:
+          - Sid: PublicReadForGetBucketObjects
+            Action: ["s3:GetObject"]
+            Effect: "Allow"
+            Resource: !Sub "arn:aws:s3:::${WebappBucket}/*"
+            Principal:
+              CanonicalUser: !GetAtt CloudFrontOriginAccessIdentity.S3CanonicalUserId
+  CloudFrontOriginAccessIdentity:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: !Ref WebappBucket
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        WebACLId: !Sub ${WebACLArn}
+        Aliases: !If
+          - IsNotDev
+          - [!FindInMap [EnvTypeMap, !Ref EnvType, DomainName]]
+          - !Ref "AWS::NoValue"
+        ViewerCertificate: !If
+          - IsNotDev
+          - AcmCertificateArn: !FindInMap [EnvTypeMap, !Ref EnvType, AcmCertificateArn]
+            SslSupportMethod: sni-only
+          - CloudFrontDefaultCertificate: true
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponseCode: 200
+            ErrorCachingMinTTL: 0
+            ResponsePagePath: "/index.html"
+          - ErrorCode: 404
+            ResponseCode: 200
+            ErrorCachingMinTTL: 0
+            ResponsePagePath: "/index.html"
+        CacheBehaviors:
+          - PathPattern: "/css/*"
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            CachedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            Compress: true
+            DefaultTTL: 0
+            MaxTTL: 0
+            MinTTL: 0
+            TargetOriginId: !Ref WebappBucketName
+            ViewerProtocolPolicy: "redirect-to-https"
+            ForwardedValues:
+              QueryString: false
+          - PathPattern: "/js/*"
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            CachedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            Compress: true
+            DefaultTTL: 0
+            MaxTTL: 0
+            MinTTL: 0
+            TargetOriginId: !Ref WebappBucketName
+            ViewerProtocolPolicy: "redirect-to-https"
+            ForwardedValues:
+              QueryString: false
+          - PathPattern: "/img/*"
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            CachedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            Compress: true
+            DefaultTTL: 0
+            MaxTTL: 0
+            MinTTL: 0
+            TargetOriginId: !Ref WebappBucketName
+            ViewerProtocolPolicy: "redirect-to-https"
+            ForwardedValues:
+              QueryString: false
+          - PathPattern: "/fonts/*"
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            CachedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            Compress: true
+            DefaultTTL: 0
+            MaxTTL: 0
+            MinTTL: 0
+            TargetOriginId: !Ref WebappBucketName
+            ViewerProtocolPolicy: "redirect-to-https"
+            ForwardedValues:
+              QueryString: false
+          - PathPattern: "/file/*"
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            CachedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            Compress: true
+            DefaultTTL: 0
+            MaxTTL: 0
+            MinTTL: 0
+            TargetOriginId: !Ref WebappBucketName
+            ViewerProtocolPolicy: "redirect-to-https"
+            ForwardedValues:
+              QueryString: false
+          - PathPattern: "/favicon.ico"
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            CachedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            Compress: true
+            DefaultTTL: 0
+            MaxTTL: 0
+            MinTTL: 0
+            TargetOriginId: !Ref WebappBucketName
+            ViewerProtocolPolicy: "redirect-to-https"
+            ForwardedValues:
+              QueryString: false
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          CachedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          Compress: true
+          DefaultTTL: 0
+          MaxTTL: 0
+          MinTTL: 0
+          ForwardedValues:
+            Cookies:
+              Forward: none
+            QueryString: false
+          TargetOriginId: !Ref WebappBucketName
+          ViewerProtocolPolicy: "redirect-to-https"
+        DefaultRootObject: "index.html"
+        Enabled: true
+        HttpVersion: http2
+        Origins:
+          - DomainName: !GetAtt "WebappBucket.RegionalDomainName"
+            Id: !Ref WebappBucketName
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${CloudFrontOriginAccessIdentity}"
+        PriceClass: "PriceClass_All"
+  CloudFrontDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Condition: IsNotDev
+    Properties:
+      HostedZoneId: !FindInMap [EnvTypeMap, !Ref EnvType, HostedZoneId]
+      Name: !If
+        - IsNotDev
+        - !FindInMap [EnvTypeMap, !Ref EnvType, DomainName]
+        - !Ref "AWS::NoValue"
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt CloudFrontDistribution.DomainName
+        HostedZoneId: Z051864831RELXO1IWRT7
+
+Outputs:
+  WebappBucketName:
+    Value: !Ref WebappBucket
+  WebappDomain:
+    Value: !If
+      - IsNotDev
+      - !FindInMap [EnvTypeMap, !Ref EnvType, DomainName]
+      - !GetAtt CloudFrontDistribution.DomainName
+  CloudFrontDistributionId:
+    Value: !Ref CloudFrontDistribution

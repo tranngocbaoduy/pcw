@@ -1,0 +1,345 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  Version:
+    Type: String
+  EnvName:
+    Type: String 
+
+Mappings:
+  EnvTypeMap:
+    dev:
+      firstVar: "123"
+
+Resources:
+  DefaultAccessRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              AWS: "*"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+        - arn:aws:iam::aws:policy/AmazonAPIGatewayInvokeFullAccess
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+      MaxSessionDuration: 43200
+  DefaultFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaSQSQueueExecutionRole
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+        # - arn:aws:iam::aws:policy/AmazonSQSFullAccess
+        # - arn:aws:iam::aws:policy/AmazonSNSFullAccess
+        - arn:aws:iam::aws:policy/AWSLambda_FullAccess
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - arn:aws:iam::aws:policy/AmazonAPIGatewayInvokeFullAccess
+        - arn:aws:iam::aws:policy/AmazonSESFullAccess
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+        - arn:aws:iam::aws:policy/AmazonSSMFullAccess
+      # Policies:
+      #   - PolicyName: !Sub "${AWS::StackName}-DefaultRolePolicy"
+      #     PolicyDocument:
+      #       Version: "2012-10-17"
+      #       Statement:
+      #         Effect: Allow
+      #         Action:
+      #           - kms:Decrypt
+      # Resource: !FindInMap [EnvTypeMap, !Ref EnvType, KmsKeyArn]
+  STSFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-STSFunction"
+      Code:
+        S3Bucket: !Sub "${AWS::StackName}-source-bucket"
+        S3Key: !Sub "packages/${Version}/STSFunction.zip"
+      Handler: sts/app.lambdaHandler
+      Runtime: nodejs12.x
+      Role: !GetAtt STSFunctionRole.Arn
+      MemorySize: 256
+      Timeout: 900
+      Environment:
+        Variables:
+          ENV_NAME: !Ref EnvName
+          COGNITO_REGION: !Ref AWS::Region
+          API_REGION: !Ref AWS::Region
+          AWS_ACCOUNT_ID: !Ref AWS::AccountId
+          DEFAULT_ROLE_ARN: !GetAtt DefaultAccessRole.Arn
+          REST_API_ID: !Ref RestApi
+          LOG_LEVEL: debug
+  STSFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+                - apigateway.amazonaws.com
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - arn:aws:iam::aws:policy/AmazonSESFullAccess
+        - arn:aws:iam::aws:policy/AmazonCognitoPowerUser
+      Policies:
+        - PolicyName: !Sub "${AWS::StackName}-STSFunctionRolePolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Action: lambda:InvokeFunction
+                Effect: Allow
+                Resource:
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-STSFunction"
+      MaxSessionDuration: 43200 
+  ProductFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-ProductFunction"
+      Code:
+        S3Bucket: !Sub "${AWS::StackName}-source-bucket"
+        S3Key: !Sub "packages/${Version}/ProductFunction.zip"
+      Handler: pages/app.lambdaHandler
+      Runtime: nodejs12.x
+      Role: !GetAtt DefaultFunctionRole.Arn
+      MemorySize: 256
+      Timeout: 900
+      Environment:
+        Variables:
+          PRODUCT_TABLE_NAME: !Sub "${AWS::StackName}-PRODUCT"
+          CATEGORY_TABLE_NAME: !Sub "${AWS::StackName}-CATEGORY"
+          PAGES_TABLE_NAME: !Sub "${AWS::StackName}-PAGES"
+          ENV_NAME: !Ref EnvName
+          COGNITO_REGION: !Ref AWS::Region
+          API_REGION: !Ref AWS::Region
+          AWS_ACCOUNT_ID: !Ref AWS::AccountId
+          DEFAULT_ROLE_ARN: !GetAtt DefaultAccessRole.Arn
+          REST_API_ID: !Ref RestApi
+          LOG_LEVEL: debug
+  RestApiProductRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - apigateway.amazonaws.com
+      Policies:
+        - PolicyName: !Sub "${AWS::StackName}-RestApiProductRolePolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Action: lambda:InvokeFunction
+                Effect: Allow
+                Resource: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-ProductFunction"
+  RestApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub "${AWS::StackName}-RestApi"
+      Body:
+        openapi: "3.0.1"
+        info:
+          title: "Price Comparasion Web API Gateway"
+          version: "1.0"
+        paths:
+          /category:
+            get:
+              x-amazon-apigateway-auth:
+                type: NONE
+              x-amazon-apigateway-integration:
+                credentials: !GetAtt RestApiProductRole.Arn
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-ProductFunction/invocations"
+                httpMethod: "POST"
+                type: "aws_proxy"
+            post:
+              x-amazon-apigateway-auth:
+                type: NONE
+              x-amazon-apigateway-integration:
+                credentials: !GetAtt RestApiProductRole.Arn
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-ProductFunction/invocations"
+                httpMethod: "POST"
+                type: "aws_proxy"
+            options:
+              responses:
+                "200":
+                  description: "200 response"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      schema:
+                        type: "string"
+                    Access-Control-Allow-Methods:
+                      schema:
+                        type: "string"
+                    Access-Control-Allow-Headers:
+                      schema:
+                        type: "string"
+                  content:
+                    application/json:
+                      schema:
+                        $ref: "#/components/schemas/Empty"
+              x-amazon-apigateway-integration:
+                responses:
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Methods: "'OPTIONS,GET,POST'"
+                      method.response.header.Access-Control-Allow-Headers: "'*'"
+                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                    responseTemplates:
+                      application/json: |
+                        #if ($input.params('Access-Control-Request-Headers') != '')
+                          #set($context.responseOverride.header['Access-Control-Allow-Headers'] = "$input.params('Access-Control-Request-Headers')")
+                        #end
+                requestTemplates:
+                  application/json: '{"statusCode": 200}'
+                passthroughBehavior: "when_no_match"
+                type: "mock"
+          /product:
+            get:
+              x-amazon-apigateway-auth:
+                type: NONE
+              x-amazon-apigateway-integration:
+                credentials: !GetAtt RestApiProductRole.Arn
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-ProductFunction/invocations"
+                httpMethod: "POST"
+                type: "aws_proxy"
+            post:
+              x-amazon-apigateway-auth:
+                type: NONE
+              x-amazon-apigateway-integration:
+                credentials: !GetAtt RestApiProductRole.Arn
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-ProductFunction/invocations"
+                httpMethod: "POST"
+                type: "aws_proxy"
+            options:
+              responses:
+                "200":
+                  description: "200 response"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      schema:
+                        type: "string"
+                    Access-Control-Allow-Methods:
+                      schema:
+                        type: "string"
+                    Access-Control-Allow-Headers:
+                      schema:
+                        type: "string"
+                  content:
+                    application/json:
+                      schema:
+                        $ref: "#/components/schemas/Empty"
+              x-amazon-apigateway-integration:
+                responses:
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Methods: "'OPTIONS,GET,POST'"
+                      method.response.header.Access-Control-Allow-Headers: "'*'"
+                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                    responseTemplates:
+                      application/json: |
+                        #if ($input.params('Access-Control-Request-Headers') != '')
+                          #set($context.responseOverride.header['Access-Control-Allow-Headers'] = "$input.params('Access-Control-Request-Headers')")
+                        #end
+                requestTemplates:
+                  application/json: '{"statusCode": 200}'
+                passthroughBehavior: "when_no_match"
+                type: "mock"
+          /credentials:
+            get:
+              responses:
+                "200":
+                  description: "200 response"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      schema:
+                        type: "string"
+                    Access-Control-Allow-Methods:
+                      schema:
+                        type: "string"
+                    Access-Control-Allow-Headers:
+                      schema:
+                        type: "string"
+                  content: {}
+              x-amazon-apigateway-auth:
+                type: NONE
+              x-amazon-apigateway-integration:
+                credentials: !GetAtt STSFunctionRole.Arn
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-STSFunction/invocations"
+                type: "aws_proxy"
+                responses:
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Methods: "'OPTIONS,GET,POST'"
+                      method.response.header.Access-Control-Allow-Headers: "'*'"
+                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                    responseTemplates:
+                      application/json: |
+                        #set($inputRoot = $input.path('$'))
+                        {
+                          "result": $inputRoot
+                        }
+                passthroughBehavior: "never"
+                httpMethod: "POST"
+            options:
+              responses:
+                "200":
+                  description: "200 response"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      schema:
+                        type: "string"
+                    Access-Control-Allow-Methods:
+                      schema:
+                        type: "string"
+                    Access-Control-Allow-Headers:
+                      schema:
+                        type: "string"
+                  content:
+                    application/json:
+                      schema:
+                        $ref: "#/components/schemas/Empty"
+              x-amazon-apigateway-integration:
+                responses:
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Methods: "'OPTIONS,GET,POST'"
+                      method.response.header.Access-Control-Allow-Headers: "'*'"
+                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                    responseTemplates:
+                      application/json: |
+                        #if ($input.params('Access-Control-Request-Headers') != '')
+                          #set($context.responseOverride.header['Access-Control-Allow-Headers'] = "$input.params('Access-Control-Request-Headers')")
+                        #end
+                requestTemplates:
+                  application/json: '{"statusCode": 200}'
+                passthroughBehavior: "when_no_match"
+                type: "mock"

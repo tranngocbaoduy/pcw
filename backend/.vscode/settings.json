@@ -1,0 +1,43 @@
+{
+    "editor.formatOnSave": true,
+    "python.analysis.autoSearchPaths": false,
+    "yaml.customTags": [
+        "!And",
+        "!And sequence",
+        "!If",
+        "!If sequence",
+        "!Not",
+        "!Not sequence",
+        "!Equals",
+        "!Equals sequence",
+        "!Or",
+        "!Or sequence",
+        "!FindInMap",
+        "!FindInMap sequence",
+        "!Base64",
+        "!Join",
+        "!Join sequence",
+        "!Cidr",
+        "!Ref",
+        "!Sub",
+        "!Sub sequence",
+        "!GetAtt",
+        "!GetAZs",
+        "!ImportValue",
+        "!ImportValue sequence",
+        "!Select",
+        "!Select sequence",
+        "!Split",
+        "!Split sequence"
+    ],
+    "yaml.validate": true,
+    "aws.profile": "profile:pcw-admin",
+    "aws.onDefaultRegionMissing": "ignore",
+    "[asl-yaml]": {
+        "editor.defaultFormatter": "amazonwebservices.aws-toolkit-vscode"
+    },
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true
+      },
+      "eslint.validate": ["javascript"]
+}

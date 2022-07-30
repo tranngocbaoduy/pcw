@@ -1,0 +1,92 @@
+<template>
+  <div class="footer py-9">
+    <v-container>
+      <v-row no-gutters>
+        <v-col cols="6" md="3" sm="4" class="pa-2">
+          <v-card-title class="font-size-18 primary-color-1 font-weight-4 pa-0 mb-4">{{ $t('aboutUs') }}</v-card-title>
+          <v-card-text class="font-size-14 font-weight-2 pa-0">{{ $t('aboutUsContent') }} </v-card-text>
+        </v-col>
+        <v-col cols="6" md="3" sm="2" class="pa-2">
+          <v-card-title class="font-size-18 primary-color-1 font-weight-4 pa-0 mb-4">{{ $t('catalog') }}</v-card-title>
+          <router-link class="custom-link" :to="category.url" v-for="category in categories" :key="category.id">
+            <v-card-text class="custom-link black--text font-size-14 font-weight-2 my-1 pa-0"
+              >{{ category.name }}
+            </v-card-text>
+          </router-link>
+        </v-col>
+
+        <v-col cols="6" md="3" sm="4" class="pa-2">
+          <v-card-title class="font-size-18 primary-color-1 font-weight-4 pa-0 mb-4">{{ $t('linking') }}</v-card-title>
+          <v-card-text
+            class="font-size-14 font-weight-2 pa-0 my-1"
+            v-for="link in links"
+            :key="link"
+            @click="$router.push(`/category/phone?agencyItems=${link}`)"
+          >
+            {{ link }}
+          </v-card-text>
+        </v-col>
+        <v-col cols="6" md="3" sm="2" class="pa-2">
+          <v-card-title class="font-size-18 primary-color-1 font-weight-4 pa-0 mb-2">{{ $t('contact') }}</v-card-title>
+          <v-card-text class="font-size-14 font-weight-2 pa-0">
+            <div class="mb-2">
+              Email: <span class="primary-color-2 font-weight-5">pcw.project2021@gmail.com.vn</span>
+            </div>
+            <div class="mb-2">Phone: (+84) 79 333 5049</div>
+            <div>
+              <v-btn class="mr-3" v-for="icon in icons" :key="icon" icon>
+                <v-icon size="24px">
+                  {{ icon }}
+                </v-icon>
+              </v-btn>
+            </div>
+          </v-card-text>
+        </v-col>
+      </v-row>
+    </v-container>
+  </div>
+</template>
+<script lang="ts">
+import Vue from 'vue';
+
+export default Vue.extend({
+  name: 'Footer',
+  data: () => ({
+    links: ['Shopee', 'Tiki'], //, 'Lazada', 'Điện máy xanh', 'FPT Shop', 'Nguyễn Kim'],
+    icons: ['mdi-facebook', 'mdi-instagram'],
+  }),
+  computed: {
+    categories() {
+      return [
+        {
+          id: 'phone',
+          name: this.$t('category.Phone'),
+          url: '/category/phone',
+        },
+        {
+          id: 'television',
+          name: this.$t('category.Television'),
+          url: '/category/television',
+        },
+        {
+          id: 'tu-lanh',
+          name: this.$t('category.Fridge'),
+          url: '/category/fridge',
+        },
+        {
+          id: 'washing',
+          name: this.$t('category.Washing'),
+          url: '/category/washing',
+        },
+      ];
+    },
+  },
+});
+</script>
+
+<style lang="scss">
+@import '@/assets/scss/FontWeight.scss';
+.footer {
+  background-color: #f0f3f5 !important;
+}
+</style>

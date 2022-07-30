@@ -1,0 +1,4 @@
+{
+  "function_name": "BackupFunction",
+  "function_zip_rpath": ".aws-sam/build/BackupFunction"
+}

@@ -1,0 +1,176 @@
+{
+    "20": [
+        "DienThoai",
+        "Dien_thoai"
+    ],
+    "19": [
+        "Xe_keo"
+    ],
+    "18": [
+        "San_pham_khac",
+        "San_pham_phu"
+    ],
+    "17": [
+        "Dung_cu_cham_soc_ca_nhan",
+        "Thiet_bi_y_te",
+        "Can_dien_tu",
+        "Can_suc_khoe"
+    ],
+    "16": [
+        "Moc_quan_ao",
+        "Ke_dung_do",
+        "Tu_say_quan_ao",
+        "May_say_quan_ao"
+    ],
+    "15": [
+        "Ban_ui"
+    ],
+    "14": [
+        "Loa",
+        "Dan_am_thanh"
+    ],
+    "13": [
+        "Tivi"
+    ],
+    "12": [
+        "Cay_nuoc_nong_lanh",
+        "Binh_giu_nhiet",
+        "Binh_dung_nuoc",
+        "Binh_dun",
+        "Binh_thuy",
+        "Binh_thuy_(dien)",
+        "May_loc_nuoc"
+    ],
+    "11": [
+        "May_bao_da",
+        "May_say_hoa_qua",
+        "May_tao_nuoc_hydrogen",
+        "May_vat_long_ga",
+        "May_lam_sua_chua",
+        "May_lam_sua_dau_nanh",
+        "May_lam_kem",
+        "May_lam_toi_den",
+        "May_xay_da_nang",
+        "May_xay_thit",
+        "May_pha_ca_phe",
+        "May_rua_chen",
+        "May_danh_trung",
+        "May_hut_mui",
+        "May_xay_dau_nanh",
+        "May_ep_trai_cay",
+        "May_xay_sinh_to",
+        "May_vat_cam",
+        "May_nuong_banh_mi",
+        "May_lam_gia_do",
+        "May_lam_sua_hat"
+    ],
+    "10": [
+        "Thiet_bi_dien_gia_dung",
+        "Vot_bat_muoi",
+        "Vot_muoi",
+        "O_cam_dien",
+        "Den_dien",
+        "Den_bat_muoi",
+        "Den_ban",
+        "Den_pin"
+    ],
+    "9": [
+        "May_giat",
+        "Phu_kien_may_giat"
+    ],
+    "8": [
+        "Tu_lanh",
+        "TuLanh"
+    ],
+    "7": [
+        "Dung_cu_ve_sinh",
+        "Bo_lau_nha",
+        "Voi_rua_chen",
+        "Thiet_bi_gia_dinh",
+        "Dien_gia_dung"
+    ],
+    "6": [
+        "Ly",
+        "Am_tra",
+        "To_chen_dia",
+        "Thau_ro",
+        "Va,_san",
+        "Dua_muong"
+    ],
+    "5": [
+        "May_nuoc_nong",
+        "Voi_sen",
+        "May_rua_mat",
+        "May_say_toc",
+        "May_cao_rau",
+        "May_massage",
+        "May_tap_the_duc",
+        "May_do_huyet_ap",
+        "May_hut_bui"
+    ],
+    "4": [
+        "Noi",
+        "Cac_loai_noi",
+        "Noi_chien_khong_dau",
+        "Noi_com_dien",
+        "Noi_ap_suat",
+        "Bo_noi",
+        "Chao_chong_dinh",
+        "Noi_lau_dien",
+        "Lau_dien",
+        "Vi_nuong"
+    ],
+    "3": [
+        "Dao_keo_thot",
+        "Khay_lam_da",
+        "Dung_cu_pha_che",
+        "Hop_com_giu_nhiet",
+        "Hop_dung_thuc_pham",
+        "Dung_cu_kep_gap",
+        "Phu_kien_nha_bep",
+        "Dung_cu_nha_bep",
+        "Hu_dung_thuc_pham",
+        "Dung_cu_lam_banh",
+        "Dien_gia_dung_nha_bep"
+    ],
+    "2": [
+        "Bep",
+        "Bep_tu",
+        "Bep_nuong_dien",
+        "Bep_hong_ngoai",
+        "Bep_dien_tu",
+        "Bep_gas",
+        "Bep_lau_-_Noi_lau",
+        "Lo_nuong",
+        "Lo_vi_song",
+        "Lo_suoi"
+    ],
+    "1": [
+        "Dien_lanh",
+        "May_lanh",
+        "May_lam_mat",
+        "May_lam_mat_cong_nghiep",
+        "May_lanh_mini",
+        "May_loc_khong_khi",
+        "Dieu_hoa_va_loc_khong_khi",
+        "May_hut_am"
+    ],
+    "0": [
+        "Quat",
+        "Quat_dieu_hoa",
+        "Quat_thong_gio",
+        "Quat_chan_gio",
+        "Quat_dao_tran",
+        "Quat_ban",
+        "Quat_treo_tuong",
+        "Quat_cong_nghiep",
+        "Quat_tran",
+        "Quat_dung",
+        "Quat_hop",
+        "Quat_thap",
+        "Quat_tich_dien",
+        "Quat_hoi_nuoc",
+        "Quat_nang_luong_mat_troi",
+        "May_hut_chan_khong"
+    ]
+}
