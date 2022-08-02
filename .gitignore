@@ -3,6 +3,8 @@ backend/example/patch/node_modules
 backend/tools/aws_service/training
 backend/tools/aws_service/model
 
+web-app/.env*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
