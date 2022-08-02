@@ -8,12 +8,20 @@
       </v-card-title>
     </div>
 
-    <v-row no-gutters class="d-flex mb-6 px-0 align-start" align="start">
-      <v-col lg="3" md="3" sm="6" xl="2" cols="4" v-for="item in filterItems" :key="item.url">
-        <a :href="item.url" class="custom-link" target="_blank">
+    <v-row no-gutters>
+      <v-col
+        v-for="item in sortItems"
+        :key="item.url"
+        :style="$vuetify.breakpoint.mdAndUp ? ' flex: 1 0 18%;' : ''"
+        cols="3"
+        sm="3"
+      >
+        <a :href="getURLAccessTrade(item)" class="custom-link" target="_blank">
           <ProductRelatedCard :item="item" />
         </a>
       </v-col>
+    </v-row>
+    <v-row no-gutters>
       <v-col cols="12" class="d-flex justify-center align-center">
         <v-btn
           v-if="!isShowMore"
@@ -96,6 +104,11 @@ export default Vue.extend({
         }
       }
       return this.sortItems;
+    },
+  },
+  methods: {
+    getURLAccessTrade(item: ProductItem): string {
+      return `${process.env.VUE_APP_BASE_ACCESS_TRADE_URL}?url=${item.url}`;
     },
   },
 });

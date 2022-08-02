@@ -29,9 +29,7 @@
         <v-col cols="6" md="3" sm="2" class="pa-2">
           <v-card-title class="font-size-18 primary-color-1 font-weight-4 pa-0 mb-2">{{ $t('contact') }}</v-card-title>
           <v-card-text class="font-size-14 font-weight-2 pa-0">
-            <div class="mb-2">
-              Email: <span class="primary-color-2 font-weight-5">pcw.project2021@gmail.com.vn</span>
-            </div>
+            <div class="mb-2">Email: <span class="primary-color-1 font-weight-5">duytnb2608.work@gmail.com</span></div>
             <div class="mb-2">Phone: (+84) 79 333 5049</div>
             <div>
               <v-btn class="mr-3" v-for="icon in icons" :key="icon" icon>

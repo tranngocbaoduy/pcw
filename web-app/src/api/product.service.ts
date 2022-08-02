@@ -36,6 +36,26 @@ export interface QueryProductItems {
 }
 
 export default class ProductService {
+  static async queryItemBySlugId({
+    ENCODED_SLUG_ID,
+    isHasChild = false,
+  }: {
+    ENCODED_SLUG_ID: string;
+    isHasChild?: boolean;
+  }) {
+    const url =
+      process.env.VUE_APP_API_BASE_URL +
+      `/${process.env.VUE_APP_ENV}/product?action=queryItemBySlugId&ENCODED_SLUG_ID=${ENCODED_SLUG_ID}&isHasChild=${isHasChild}`;
+    const data = await AuthService.api
+      .get(url)
+      .then((response) => response.data)
+      .then((res) => ({
+        mainItem: ProductService.parseProductItem(res.data.mainItem),
+        childItems: ProductService.parseListProductItem(res.data.childItems),
+      }));
+    return data;
+  }
+
   static async queryChildItems({
     PK,
     RELATIONSHIP_ID,
@@ -66,7 +86,7 @@ export default class ProductService {
     return data;
   }
 
-  static async queryItemByCategoryId(category: string, discountRate = 0, limit = 32, page = 1): Promise<ProductItem[]> {
+  static async queryItemByCategoryId(category: string, discountRate = 0, limit = 20, page = 1): Promise<ProductItem[]> {
     if (!category) return [];
     const url =
       process.env.VUE_APP_API_BASE_URL +
@@ -80,7 +100,7 @@ export default class ProductService {
 
   static async queryItemByTarget({
     category,
-    limit = 32,
+    limit = 20,
     page = 1,
     agencyItems,
     brandItems,
@@ -136,7 +156,7 @@ export default class ProductService {
     return {
       PK: item.PK,
       SK: item.SK,
-      brand: ProductService.properText(item.SK.split('#')[1]),
+      brand: item.brand.toUpperCase(),
       id: item.SK.split('#')[item.SK.split('#').length - 1],
       relationshipID: item.RELATIONSHIP_ID,
       baseEncodedURL: item.base_encoded_url,

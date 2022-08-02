@@ -19,13 +19,22 @@
 .border-custom-4 {
   box-shadow: 4px 4px 16px #cfd8dc;
   box-sizing: border-box;
-  border-radius: 16px !important;
+  border-radius: 2px !important;
+  box-shadow: 1px 6px 12px -10px rgba(0, 0, 0, 0.75) !important;
+  -webkit-box-shadow: 1px 6px 12px -10px rgba(0, 0, 0, 0.75) !important;
+  -moz-box-shadow: 1px 6px 12px -10px rgba(0, 0, 0, 0.75) !important;
 }
 
 .border-custom-5 {
   border: 1px solid #cfd8dc;
   box-sizing: border-box;
   border-radius: 8px !important;
+}
+
+border-custom-6{
+  border: #cdcdcd 0.1px solid;
+  box-shadow: none;
+  border-radius: 0px !important;
 }
 
 .border-product-line {

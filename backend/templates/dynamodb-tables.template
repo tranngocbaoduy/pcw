@@ -25,12 +25,22 @@ Resources:
           AttributeType: S
         - AttributeName: RELATIONSHIP_ID
           AttributeType: S
+        - AttributeName: ENCODED_SLUG_ID
+          AttributeType: S
       GlobalSecondaryIndexes:
         - IndexName: RELATIONSHIP-INDEX
           KeySchema:
             - AttributeName: PK
               KeyType: HASH
             - AttributeName: RELATIONSHIP_ID
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: SLUG-ID-INDEX
+          KeySchema:
+            - AttributeName: PK
+              KeyType: HASH
+            - AttributeName: ENCODED_SLUG_ID
               KeyType: RANGE
           Projection:
             ProjectionType: ALL

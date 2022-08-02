@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <router-view />
+    <router-view :key="$route.fullPath" />
   </v-app>
 </template>
 
@@ -25,6 +25,7 @@ export default Vue.extend({
   mounted() {
     this.onResize();
     window.addEventListener('resize', this.onResize, { passive: true });
+    window.addEventListener('scroll', this.onResize, { passive: true });
   },
   methods: {
     onResize() {
@@ -32,8 +33,8 @@ export default Vue.extend({
       if (this.isMobile != isMobile) {
         this.$store.dispatch('setIsMobile', { isMobile: isMobile });
       }
-      this.$store.dispatch('setInnerWidth', { innerWidth: window.innerWidth });
-      console.log(isMobile, window.innerWidth);
+      this.$store.dispatch('setBoxDistance', { innerWidth: window.innerWidth, offsetHeight: window.pageYOffset });
+      // console.log(isMobile, window.innerWidth, window.pageYOffset);
     },
   },
   beforeDestroy() {

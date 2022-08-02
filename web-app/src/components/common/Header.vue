@@ -1,5 +1,5 @@
 <template>
-  <div class="header elevation-3">
+  <div class="elevation-0 header">
     <v-toolbar class="py-3 toolbar-header" min-width="100%" :min-height="isMobile ? '80px' : '90px'">
       <router-link class="custom-link pa-2" :to="`/`">
         <v-img
@@ -14,14 +14,12 @@
       </router-link>
       <v-spacer></v-spacer>
       <v-autocomplete
-        class="border-radius-8 elevation-0"
-        single-line
+        class="rounded-sm elevation-0 mr-4"
+        style="border: #6e6e6e 0.5px solid; box-shadow: none !important"
         validate-on-blur
-        full-width
         :items="productSearchItems"
         hide-details
-        flat
-        background-color="#eceff1"
+        background-color="white"
         :placeholder="$t('search')"
         color="#ECEFF1"
         solo
@@ -32,7 +30,6 @@
         item-value="code"
         :no-data-text="$t('No products found!!!')"
         hide-no-data
-        hint
         :menu-props="{
           closeOnClick: false,
           closeOnContentClick: false,
@@ -55,22 +52,22 @@
           <v-fade-transition hide-on-leave>
             <v-progress-circular v-if="isLoading" size="24" color="info" indeterminate></v-progress-circular>
             <v-btn
-              color="#1859db"
+              color="transparent"
               v-else
               width="48"
-              height="48"
+              height="32"
               style="color: white"
               @click="searchProduct"
-              class="border-radius-8 mr-n2"
+              class="border-radius-0 elevation-0 mr-n6"
             >
-              <v-icon size="24">mdi-magnify</v-icon>
+              <v-icon color="#1859db" size="24">mdi-magnify</v-icon>
             </v-btn>
           </v-fade-transition>
         </template>
       </v-autocomplete>
       <v-spacer v-if="!isMobile"></v-spacer>
 
-      <v-menu v-if="!isMobile" :close-on-click="true" bottom right nudge-bottom="40">
+      <v-menu v-if="!isMobile" :close-on-click="true" bottom right nudge-bottom="40" z-index="2000">
         <template v-slot:activator="{ on, attrs }">
           <v-btn color="white" tile elevation="0" light v-bind="attrs" retain-focus-on-click v-on="on">
             <v-avatar size="24">
@@ -291,6 +288,9 @@ export default Vue.extend({
 <style lang="scss">
 @import '@/assets/scss/Common.scss';
 .header {
+  box-shadow: 1px 6px 12px -10px rgba(0, 0, 0, 0.75) !important;
+  -webkit-box-shadow: 1px 6px 12px -10px rgba(0, 0, 0, 0.75) !important;
+  -moz-box-shadow: 1px 6px 12px -10px rgba(0, 0, 0, 0.75) !important;
   .nav-left {
     width: 100px;
   }
@@ -315,6 +315,11 @@ export default Vue.extend({
     @include for_breakpoint(mobile tablet) {
       padding: 0px;
     }
+  }
+  .v-text-field.v-text-field--solo .v-input__control {
+    min-height: 40px !important;
+    height: 40px !important;
+    font-size: 13px;
   }
 }
 </style>

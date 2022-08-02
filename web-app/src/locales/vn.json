@@ -11,8 +11,11 @@
   "anotherProduct": "Sản phẩm khác",
   "seeMore": "Xem các sản phẩm khác",
   "featureBrand": "Thương hiệu nổi bật",
-  "trendingPromotion": "Xu hướng khuyến mãi",
-  "trendingSearch": "Tìm kiểm nối bật",
+  "trendingPromotion": "Khuyến mãi",
+  "trendingSearch": "Xu hướng tìm kiếm",
+  "trendingCategory": "Danh mục xu hướng",
+  "searchProducts": "Tìm kiếm sản phẩm",
+  "recommendProducts": "Sản phẩm gợi ý",
   "content": "Thông tin sản phẩm",
   "See more": "Xem thêm",
   "See all": "Xem tất cả",
@@ -34,7 +37,7 @@
   "Huge price gap": "Biến động giá lớn",
   "Significant price gap": "Biến động giá vừa phải",
   "Need consider": "Có thể xem xét",
-  "aboutUsContent": "Chúng tôi tạo ra trang web này nhằm mục đích hỗ trợ mua hàng giữa các đại lý khác nhau, không dành cho mục đích thương mại. Cám ơn",
+  "aboutUsContent": "*Trang web được thu thập tự động, hỗ trợ cho việc mua hàng, chúng tôi không bán hàng",
   "contact": "Liên hệ",
   "linking": "Liên kết với",
   "category": {
@@ -48,7 +51,7 @@
 
   "en": "Tiếng Anh",
   "vn": "Tiếng Việt",
-  "in stores": "nơi bán",
+  "in stores": "cửa hàng",
 
   "Workstation": "Workstation",
   "Kitchen": "Nhà bếp",
@@ -57,5 +60,8 @@
   "Smart Home": "Nhà thông minh",
   "Business Equipment": "Thiết bị doanh nghiệp",
   "search": "Tìm kiếm",
-  "No products found!!!": "Không tìm thấy sản phẩm !!!"
+  "No products found!!!": "Không tìm thấy sản phẩm !!!",
+  "Below": "Dưới",
+  "Range": "Trong khoảng",
+  "Above": "Trên"
 }

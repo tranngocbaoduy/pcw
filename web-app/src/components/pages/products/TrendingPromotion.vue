@@ -1,16 +1,8 @@
 <template>
-  <v-card class="rounded-0 elevation-0 py-4 trending-promotion">
-    <v-card-title class="pa-0 px-4">
-      <v-row no-gutters class="pa-0">
-        <div>
-          <v-img
-            width="40px"
-            height="40px"
-            aspect-ratio="4.2"
-            src="https://i.pinimg.com/736x/2a/ec/b9/2aecb93a75d08bbebec5800b1cfa59a3.jpg"
-          ></v-img>
-        </div>
-        <div class="font-size-24 font-weight-2 py-3">{{ $t('trendingPromotion') }}</div>
+  <v-col sm="12" md="12" cols="12" :class="isMobile ? 'py-0' : 'py-3'" class="trending-brand">
+    <div class="mt-2 pa-0">
+      <v-card-title class="trending-page-name font-size-32 font-weight-3 px-0 mt-2 mx-0">
+        {{ $t('trendingPromotion') }}
         <v-spacer></v-spacer>
         <div
           v-if="!isMobile"
@@ -19,64 +11,63 @@
           <span class="py-1">{{ $t('seeMore') }}</span>
           <v-icon class="primary-color-1 pb-1" size="20px">mdi-chevron-right</v-icon>
         </div>
-      </v-row>
-    </v-card-title>
-
-    <v-carousel
-      :show-arrows="false"
-      light
-      touchless
-      :cycle="true"
-      hide-delimiters
-      hide-delimiter-background
-      class="px-3"
-      height="100%"
-    >
-      <template v-for="(item, index) in filterPromotionItems">
-        <v-carousel-item
-          v-if="(index + 1) % quantityItemsInCarousel === 1 || quantityItemsInCarousel === 1"
-          :key="index"
-        >
-          <v-row class="pt-3 mx-0" no-gutters>
-            <template v-for="(n, i) in quantityItemsInCarousel">
-              <template v-if="+index + i < filterPromotionItems.length">
-                <v-col class="pa-5 py-6" :key="i">
-                  <v-hover v-slot="{ hover }">
-                    <v-card
-                      :elevation="hover ? 12 : 2"
-                      v-if="+index + i < filterPromotionItems.length"
-                      class="border-custom-4 pa-4 py-4 mx-auto"
-                    >
-                      <span
-                        v-if="item.listPrice != item.price"
-                        class="discount-rate px-3 font-size-16 font-weight-2 text-right"
+      </v-card-title>
+      <v-carousel
+        :show-arrows="false"
+        light
+        touchless
+        :cycle="true"
+        hide-delimiters
+        hide-delimiter-background
+        class="px-0"
+        height="100%"
+      >
+        <template v-for="(item, index) in filterPromotionItems">
+          <v-carousel-item
+            v-if="(index + 1) % quantityItemsInCarousel === 1 || quantityItemsInCarousel === 1"
+            :key="index"
+          >
+            <v-row class="pt-0 mx-0" no-gutters>
+              <template v-for="(n, i) in quantityItemsInCarousel">
+                <template v-if="+index + i < filterPromotionItems.length">
+                  <v-col class="pa-2 px-0" :key="i">
+                    <v-hover v-slot="{ hover }">
+                      <v-card
+                        :elevation="hover ? 3 : 1"
+                        v-if="+index + i < filterPromotionItems.length"
+                        class="border-custom-4 pa-4 py-4 mx-auto"
                       >
-                        {{ filterPromotionItems[+index + i].sale }}%
-                      </span>
+                        <span
+                          v-if="item.listPrice != item.price"
+                          class="discount-rate px-3 font-size-16 font-weight-2 text-right"
+                        >
+                          {{ filterPromotionItems[+index + i].sale }}%
+                        </span>
 
-                      <v-img
-                        height="100%"
-                        aspect-ratio="1.2"
-                        class="my-2 rounded-0"
-                        :src="filterPromotionItems[+index + i].img"
-                      ></v-img>
-                      <v-card-title class="font-size-16 font-weight-3 pa-2">
-                        <v-row class="justify-center">
-                          <div class="primary-color-2 mr-4">
-                            {{ filterPromotionItems[+index + i].price | formatPrice }}đ
-                          </div>
-                        </v-row>
-                      </v-card-title>
-                    </v-card>
-                  </v-hover>
-                </v-col>
+                        <v-img
+                          height="100%"
+                          aspect-ratio="1.2"
+                          class="my-2 rounded-0"
+                          :src="filterPromotionItems[+index + i].img"
+                        ></v-img>
+                        <v-card-title class="font-size-16 font-weight-3 pa-2">
+                          <v-row class="justify-center">
+                            <div class="primary-color-2 mr-4">
+                              {{ filterPromotionItems[+index + i].price | formatPrice }}đ
+                            </div>
+                          </v-row>
+                        </v-card-title>
+                      </v-card>
+                    </v-hover>
+                  </v-col>
+                </template>
               </template>
-            </template>
-          </v-row>
-        </v-carousel-item>
-      </template>
-    </v-carousel>
-  </v-card>
+            </v-row>
+          </v-carousel-item>
+        </template>
+      </v-carousel>
+    </div>
+  </v-col>
 </template>
 
 <script lang="ts">
@@ -173,10 +164,10 @@ export default Vue.extend({
       );
     },
     quantityItemsInCarousel(): number {
-      if (this.$vuetify.breakpoint.xl) return 5;
-      if (this.$vuetify.breakpoint.lg) return 4;
-      if (this.$vuetify.breakpoint.md) return 4;
-      if (this.$vuetify.breakpoint.sm) return 3;
+      if (this.$vuetify.breakpoint.xl) return 7;
+      if (this.$vuetify.breakpoint.lg) return 7;
+      if (this.$vuetify.breakpoint.md) return 7;
+      if (this.$vuetify.breakpoint.sm) return 7;
       return 2;
     },
   },

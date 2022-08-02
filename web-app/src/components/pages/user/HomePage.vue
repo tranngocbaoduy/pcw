@@ -1,32 +1,37 @@
 <template>
   <div class="body-user-page pa-2" ref="body-user-page-ref">
-    <Carousel></Carousel>
-    <TrendingCategory></TrendingCategory>
-    <TrendingBrand></TrendingBrand>
-    <TrendingPromotion class="my-4"></TrendingPromotion>
+    <Carousel />
+    <RecommendProducts />
+    <!-- <TrendingCategory></TrendingCategory> -->
+    <TrendingPromotion />
+    <!-- <TrendingBrand /> -->
+    <TrendingSearchProducts />
+    <TrendingCategory />
     <!-- <TrendingSearch></TrendingSearch> -->
-    <Feature></Feature>
+    <!-- <Feature></Feature> -->
   </div>
 </template>
 
 <script lang="ts">
 import Vue from 'vue';
 import Carousel from '@/components/common/CarouselCustom.vue';
-import TrendingCategory from '@/components/product/TrendingCategory.vue';
-import TrendingBrand from '@/components/product/TrendingBrand.vue';
-import TrendingPromotion from '@/components/product/TrendingPromotion.vue';
-import TrendingSearch from '@/components/product/TrendingSearch.vue';
-import Feature from '@/components/common/Feature.vue';
+import TrendingBrand from '@/components/pages/products/TrendingBrand.vue';
+import TrendingPromotion from '@/components/pages/products/TrendingPromotion.vue';
+import RecommendProducts from '@/components/pages/products/TrendingRecommendProducts.vue';
+import TrendingSearchProducts from '@/components/pages/products/TrendingCategory.vue';
+import TrendingCategory from '@/components/pages/products/TrendingSearchProducts.vue';
 
 export default Vue.extend({
   name: 'Body',
   components: {
     Carousel,
     TrendingCategory,
-    TrendingBrand,
+    // TrendingBrand,
     TrendingPromotion,
+    RecommendProducts,
+    TrendingSearchProducts,
     // TrendingSearch,
-    Feature,
+    // Feature,
   },
   data: () => ({}),
   computed: {
