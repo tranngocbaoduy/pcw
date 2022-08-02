@@ -128,7 +128,7 @@ export default Vue.extend({
     position: absolute;
     left: 0px;
     top: 0px;
-    z-index: 100;
+    z-index: 2;
     border-radius: 8px 0px 8px 0px !important;
   }
   .discount-rate {
@@ -138,7 +138,7 @@ export default Vue.extend({
     position: absolute;
     right: 0px;
     top: 0px;
-    z-index: 100;
+    z-index: 2;
     border-radius: 0px 8px 0px 8px !important;
   }
 

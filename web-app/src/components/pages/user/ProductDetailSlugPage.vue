@@ -56,6 +56,7 @@ import ProductInfo from '@/components/pages/common/product-detail-page/ProductIn
 import ProductAnotherAgency from '@/components/pages/common/product-detail-page/ProductAnotherAgency.vue';
 // import ListProductRelated from '@/components/pages/common/product-detail-page/ListProductRelated.vue';
 
+import base64url from 'base64url';
 import CategoryService, { CategoryItem } from '@/api/category.service';
 import ProductService, { ProductItem } from '@/api/product.service';
 
@@ -80,16 +81,17 @@ export default Vue.extend({
     averagePrice: 0 as number,
     anotherCategoryId: '' as string,
     isLoadedFinish: false,
+    encodedSlugId: '',
   }),
   computed: {
+    slugId(): string {
+      return this.$route.params['slugId'];
+    },
     isMobile(): boolean {
       return this.$store.getters.isMobile;
     },
-    codeProduct(): string {
-      return this.$route.params['idProd'].split('_').join('#');
-    },
     categoryId(): string {
-      return this.$route.params['idCate'].toUpperCase();
+      return this.mainProduct ? this.mainProduct.PK : '';
     },
     categoryItems(): any[] {
       return this.$store.getters.categoryItems;
@@ -110,13 +112,13 @@ export default Vue.extend({
         },
         {
           text: this.$t(`category.${CategoryService.code2category(this.categoryId)}`),
-          to: `/category/${this.$route.params['idCate']}`,
+          to: `/category/${this.categoryId ? this.categoryId.toLowerCase() : ''}`,
           disabled: false,
           exact: true,
         },
         {
           text: CategoryService.upperCaseFirstLetter(`${(this as any).mainProduct.name || ''}`),
-          to: `/category/${this.categoryId}/product/${this.codeProduct}`,
+          to: `/${this.slugId}`,
           disabled: true,
           exact: true,
         },
@@ -124,14 +126,13 @@ export default Vue.extend({
     },
   },
   async created() {
-    console.log('ProductDetailPage component is created');
+    console.log('ProductDetailPage component is created', this.slugId);
     window.scrollTo({ top: 0, left: 0 });
-
     await this.initialize();
   },
   watch: {
-    async codeProduct() {
-      if (this.codeProduct) await this.initialize();
+    async slugId() {
+      if (this.slugId) await this.initialize();
     },
     async categoryItems() {
       if (this.categoryItems && this.categoryItems.length != 0 && !this.isLoadedFinish) {
@@ -151,26 +152,35 @@ export default Vue.extend({
     async initialize() {
       const loading = this.$loading.show();
       try {
-        const items = await ProductService.queryChildItems({
-          PK: this.categoryId,
-          RELATIONSHIP_ID: this.codeProduct,
-        }).then((items) => this.filterConfidentItems(items));
+        this.encodedSlugId = base64url.encode(`/${this.slugId}`);
+        const response = await ProductService.queryItemBySlugId({
+          ENCODED_SLUG_ID: this.encodedSlugId,
+          isHasChild: true,
+        });
 
-        console.log('items', items);
-        this.mainProduct = items[0] as ProductItem;
-        this.subProductItems = JSON.parse(JSON.stringify(items.slice(1, items.length))).sort(
+        this.mainProduct = response.mainItem as ProductItem;
+        console.log('this.mainProduct', this.mainProduct);
+        this.subProductItems = JSON.parse(JSON.stringify(response.childItems.concat(response.mainItem))).sort(
           (itemA: ProductItem, itemB: ProductItem) => {
             if (itemA.discountRate < itemB.discountRate) return 1;
             else return -1;
           }
         );
-        console.log(items.map((i) => i.price));
-        const allPrice = items.map((item: ProductItem) => item.price) as number[];
+        const allPrice = response.childItems
+          .concat(response.mainItem)
+          .map((item: ProductItem) => item.price) as number[];
         this.averagePrice = Math.round(
           (allPrice.reduce((a: number, b: number) => a + b, 0) / allPrice.length) as number
         );
 
-        const listPhotoItems = Array.from(new Set(items.map((item: ProductItem) => item.listImage).flat(1)));
+        const listPhotoItems = Array.from(
+          new Set(
+            response.childItems
+              .concat(response.mainItem)
+              .map((item: ProductItem) => item.listImage)
+              .flat(1)
+          )
+        );
         this.listPhotoItems = listPhotoItems.slice(0, 6).map((imageUrl: string) => ({
           name: imageUrl || '',
           url: imageUrl || '',
@@ -182,10 +192,12 @@ export default Vue.extend({
         //   this.isLoadedFinish = true;
         // }
 
-        const saleOffSortedItems = JSON.parse(JSON.stringify(items)).sort((itemA: ProductItem, itemB: ProductItem) => {
-          if (itemA.discountRate < itemB.discountRate) return 1;
-          else return -1;
-        });
+        const saleOffSortedItems = JSON.parse(JSON.stringify(response.childItems.concat(response.mainItem))).sort(
+          (itemA: ProductItem, itemB: ProductItem) => {
+            if (itemA.discountRate < itemB.discountRate) return 1;
+            else return -1;
+          }
+        );
         this.largestSaleOffItem = saleOffSortedItems[0] as ProductItem;
       } catch (err) {
         console.log(err);

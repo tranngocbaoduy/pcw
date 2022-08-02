@@ -1,4 +1,5 @@
 const dynamodbHelper = require("../helper/DynamodbHelper");
+const fs = require('fs');
 
 function checkIsValidDomain(event) {
   const listDomainValid = ['https://x-pcw.com', 'http://localhost:8080']
@@ -28,6 +29,9 @@ module.exports = async (event, context) => {
           break;
         case "queryItemByCategoryId":
           result = await queryItemByCategoryId(event);
+          break;
+        case "queryItemBySlugId":
+          result = await queryItemBySlugId(event);
           break;
         default:
           result = [];
@@ -110,6 +114,66 @@ async function queryChildItem(event) {
   };
 
   return await dynamodbHelper.queryItems(params)
+}
+
+async function queryItemBySlugId(event) {
+
+  let ENCODED_SLUG_ID = event.queryStringParameters["ENCODED_SLUG_ID"] || null;
+  let isHasChild = event.queryStringParameters["isHasChild"] || false;
+  if (!ENCODED_SLUG_ID) return null;
+  let PK = ''
+
+  try {
+    const data = JSON.parse(fs.readFileSync('data.json', 'utf8'));
+    PK = data[ENCODED_SLUG_ID]
+    console.log(data, typeof data);
+    console.log('category ID', PK)
+  } catch (err) {
+    console.error(err);
+  }
+
+  if (!PK) return null;
+  const params = {
+    TableName: process.env.PRODUCT_TABLE_NAME,
+    IndexName: 'SLUG-ID-INDEX',
+    KeyConditionExpression: "#PK = :pk AND #ENCODED_SLUG_ID = :encoded_slug_id",
+    ExpressionAttributeNames: {
+      '#PK': 'PK',
+      '#ENCODED_SLUG_ID': 'ENCODED_SLUG_ID',
+    },
+    ExpressionAttributeValues: {
+      ":pk": PK,
+      ":encoded_slug_id": ENCODED_SLUG_ID
+    },
+  };
+
+  console.log('params', params)
+  try {
+    const res = await dynamodbHelper.queryAllItems(params);
+    if (isHasChild && res[0]) {
+      const params = {
+        TableName: process.env.PRODUCT_TABLE_NAME,
+        IndexName: 'RELATIONSHIP-INDEX',
+        KeyConditionExpression: "#PK = :pk AND #RELATIONSHIP_ID = :relationshipId",
+        ExpressionAttributeNames: {
+          '#PK': 'PK',
+          '#RELATIONSHIP_ID': 'RELATIONSHIP_ID',
+        },
+        ExpressionAttributeValues: {
+          ":pk": PK,
+          ":relationshipId": res[0]['id_pcw']
+        },
+      };
+      return {
+        mainItem: res[0],
+        childItems: await dynamodbHelper.queryItems(params),
+      }
+    }
+    return res[0];
+  } catch (err) {
+    console.log('err', err)
+    return null
+  }
 }
 
 async function queryItemByCategoryId(event) {

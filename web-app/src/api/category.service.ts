@@ -86,6 +86,7 @@ export default class CategoryService {
       TELEVISION: 'Television',
       WASHING: 'Washing',
     } as any;
+    if (!code) return '';
     return categoryDict[code.toUpperCase()];
   }
 

@@ -14,19 +14,26 @@
     </v-card-text>
 
     <v-card-text class="ma-0 pa-0 primary-color-4">
-      <v-row align="center" no-gutters>
-        <div class="mr-6">{{ $t('freeShip') }}</div>
-        <div>{{ $t('genuine') }}</div>
+      <v-row align="center" no-gutters class="py-0 my-0">
+        <!-- <div class="mr-6">{{ $t('freeShip') }}</div>
+        <div>{{ $t('genuine') }}</div> -->
+
+        <div class="font-size-16 font-weight-1 line-through">{{ item.listPrice | formatPrice }}đ</div>
       </v-row>
     </v-card-text>
 
-    <v-card-text class="my-2 py-4 pl-2">
+    <v-card-text class="my-2 py-2 pl-2">
       <v-row align="center">
         <div class="font-size-30 font-weight-3 mr-7 primary-color-1">{{ item.price | formatPrice }}đ</div>
-        <div class="font-size-16 font-weight-1 line-through">{{ item.listPrice | formatPrice }}đ</div>
-        <div style="border: red 1px solid" class="px-2 rounded-lg font-size-14 font-weight-2 text-right ml-5 red--text">
+        <div
+          style="border: red 1px solid"
+          class="px-2 rounded-0 font-size-14 font-weight-2 text-right ml-5 red white--text elevation-1 mr-2"
+        >
           {{ item.discountRate }}%
         </div>
+        <span class="domain-photo font-size-14 px-2 font-weight-2 text-right rounded-0 elevation-1">
+          {{ domain }}
+        </span>
       </v-row>
     </v-card-text>
     <div class="properties pt-5 px-4" v-show="isShowDetail">
@@ -44,15 +51,15 @@
       </div>
     </div>
     <v-card-actions class="pa-0">
-      <a :href="item.url" target="_blank">
+      <a :href="getURLAccessTrade()" target="_blank">
         <v-btn class="white--text rounded-lg my-2" color="#1859db" height="42px" width="100%">{{ $t('buyNow') }}</v-btn>
       </a>
     </v-card-actions>
-    <v-card color="white" class="mt-5 rounded-lg px-3">
+    <v-card color="white" class="mt-5 rounded-0 px-3" elevation="0.2">
       <v-card-title class="pb-3">{{ $t('note') }}:</v-card-title>
 
       <v-card-text class="font-size-14 font-weight-1">
-        <ul class="font-size-14 font-weight-3 mr-7 line-height-24" :class="isMobile ? ' pa-0' : ''">
+        <ul class="font-size-14 font-weight-2 mr-7 line-height-24" :class="isMobile ? ' pa-0' : ''">
           <li class="py-1">
             {{ $t('The cheapest product is on sale at') }}
             <a :href="item.url" target="_blank">
@@ -87,11 +94,6 @@
         </ul>
       </v-card-text>
     </v-card>
-
-    <v-card color="white" class="mt-5 rounded-lg px-3" v-if="item.content">
-      <v-card-title class="pb-3">{{ $t('content') }}:</v-card-title>
-      <v-card-text>{{ item.content }} </v-card-text>
-    </v-card>
   </div>
 </template>
 
@@ -100,7 +102,7 @@ import CategoryService from '@/api/category.service';
 import Vue from 'vue';
 
 export default Vue.extend({
-  props: ['item', 'averagePrice', 'subProductItems', 'largestSaleOffItem'],
+  props: ['item', 'averagePrice', 'subProductItems', 'largestSaleOffItem', 'domain'],
   data: () => ({
     isShowDetail: false,
     propertyItems: [
@@ -141,7 +143,11 @@ export default Vue.extend({
       return res ? `- ${res}` : '';
     },
   },
-  methods: {},
+  methods: {
+    getURLAccessTrade(): string {
+      return `${process.env.VUE_APP_BASE_ACCESS_TRADE_URL}?url=${this.item.url}`;
+    },
+  },
 });
 </script>
 
@@ -150,6 +156,13 @@ export default Vue.extend({
   .properties {
     height: 224px;
     background-color: #f9f9f9;
+  }
+  .domain-photo {
+    background: #1859db !important;
+    border: #1859db 1px solid;
+    color: white;
+    z-index: 100;
+    border-radius: 0px 0px 0px 0px !important;
   }
 }
 </style>

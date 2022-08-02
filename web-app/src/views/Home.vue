@@ -1,8 +1,9 @@
 <template>
   <div class="home">
     <Header @handle-show-menu="handleShowMenu" :isShowMenu="isShowMenu"> </Header>
-    <v-container f class="body-custom" :class="isMobile ? 'pa-0' : ''" :fluid="isFluid">
-      <router-view />
+
+    <v-container class="body-custom" :class="isMobile ? 'pa-0' : ''" :fluid="isFluid">
+      <router-view :key="$route.fullPath" />
     </v-container>
     <v-divider class="divider-custom"></v-divider>
     <Footer></Footer>
@@ -12,9 +13,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
-
 import NavigationMobile from '@/components/common/NavigationMobile.vue';
-
 import Header from '@/components/common/Header.vue';
 import Footer from '@/components/common/Footer.vue';
 import CategoryService from '@/api/category.service';
@@ -54,7 +53,6 @@ export default Vue.extend({
   },
   methods: {
     async initialize() {
-      const loading = this.$loading.show();
       let retryCount = 0;
       let categoryItems = null;
       if (!this.getCategoryItems || this.getCategoryItems.length == 0) {
@@ -66,7 +64,7 @@ export default Vue.extend({
           retryCount += 1;
         } while (!categoryItems && retryCount < 3);
       }
-      loading.hide();
+      console.log('this.$store.getters.categoryItems', this.$store.getters.categoryItems);
     },
     handleShowMenu() {
       this.isShowMenu = !this.isShowMenu;

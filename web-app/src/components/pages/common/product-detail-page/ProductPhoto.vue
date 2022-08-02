@@ -1,15 +1,12 @@
 <template>
   <div v-if="listPhotoItems && listPhotoItems.length != 0">
     <v-card
-      class="mb-6 pa-auto ma-auto d-flex align-center justify-center pa-2 product-photo elevation-1 rounded-xl"
+      class="mb-6 pa-auto ma-auto d-flex align-center justify-center pa-2 product-photo elevation-1 rounded-0"
       min-height="400"
       max-height="600"
       loading="true"
       v-if="!isLoadingImage"
     >
-      <span class="domain pa-3 font-size-24 font-weight-2 text-right">
-        {{ domain }}
-      </span>
       <v-img
         transition="fade-transition"
         :lazy-src="currentPhotoUrl"
@@ -29,8 +26,9 @@
             :height="92"
             :elevation="hover ? 12 : 2"
             :class="hover ? 'pa-2' : 'pa-3'"
+            class="rounded-0"
           >
-            <v-img class="" width="100%" height="100%" :src="photo.url"></v-img>
+            <v-img class="" width="100%" height="100%" contain :src="photo.url"></v-img>
           </v-card>
         </v-hover>
       </div>
@@ -90,15 +88,5 @@ export default Vue.extend({
 
 <style lang="scss">
 .product-photo {
-  .domain {
-    background: #1859db !important;
-    border: #1859db 1px solid;
-    color: white;
-    position: absolute;
-    left: 0px;
-    top: 0px;
-    z-index: 100;
-    border-radius: 8px 0px 8px 0px !important;
-  }
 }
 </style>

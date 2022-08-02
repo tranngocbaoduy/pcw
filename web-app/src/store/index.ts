@@ -11,11 +11,11 @@ interface RootState {
   categoryItems: any[];
   domainItems: any[];
   searchString: string;
-
   brandItemsStore: {};
-
   isMobile: boolean;
   innerWidth: number;
+  offsetHeight: number;
+  searchFilter?: {};
 }
 
 interface ProductItemByCategory {
@@ -32,7 +32,8 @@ const state: RootState = {
   brandItemsStore: {},
   isMobile: false,
   innerWidth: 0,
-
+  offsetHeight: 0,
+  searchFilter: {},
   domainItems: [
     {
       id: 'bmd1eWVua2ltLmNvbQ',
@@ -212,10 +213,11 @@ export default new Vuex.Store({
     categoryItems: (state) => state.categoryItems,
     domainItems: (state) => state.domainItems,
     searchString: (state) => state.searchString,
+    searchFilter: (state) => state.searchFilter,
     brandItemsStore: () => state.brandItemsStore,
-
     isMobile: (state) => state.isMobile,
     innerWidth: (state) => state.innerWidth,
+    offsetHeight: (state) => state.offsetHeight,
   },
   mutations: {
     setState(state, nextState) {
@@ -232,8 +234,8 @@ export default new Vuex.Store({
     setIsMobile({ commit }, { isMobile }) {
       commit('setState', { isMobile: isMobile });
     },
-    setInnerWidth({ commit }, { innerWidth }) {
-      commit('setState', { innerWidth: innerWidth });
+    setBoxDistance({ commit }, { innerWidth, offsetHeight }) {
+      commit('setState', { innerWidth: innerWidth, offsetHeight: offsetHeight });
     },
   },
   modules: {},

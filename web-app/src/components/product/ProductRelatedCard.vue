@@ -1,43 +1,54 @@
 <template>
   <v-hover v-slot="{ hover }">
     <v-card
-      :elevation="hover ? 12 : 2"
+      :elevation="hover ? 4 : 1"
       :loading="loading"
-      class="product-related rounded-lg box-sizing px-4 py-4 mb-4 mx-2"
+      class="product-related rounded-0 px-2 py-4"
       v-if="item"
+      :style="hover ? 'z-index:4' : ''"
     >
       <v-card-title class="pa-0 ma-0">
         <span class="domain font-size-16 px-4">{{ item.domain }}</span>
-        <span class="discount-rate px-3 font-size-16 font-weight-2 text-right"> {{ item.discountRate }}% </span>
       </v-card-title>
 
-      <v-card-title class="pa-0 ma-0 mb-0 pt-7" style="line-height: 23px">
-        <v-row align="center">
-          <v-col cols="10 pr-0 py-0" style="min-height: 55px">
-            <div class="font-size-14 font-weight-2" v-if="hover">{{ item.name | lowerText }}</div>
-            <div class="font-size-14 font-weight-2" v-else>{{ item.name | reduceText(55) }}</div>
+      <v-card-title class="pa-0 ma-0 mb-0 pt-7 pb-3" style="line-height: 23px">
+        <v-row align="center" no-gutters>
+          <v-col cols="12">
+            <div class="font-size-14 font-weight-2 title-product">{{ item.name }}</div>
           </v-col>
         </v-row>
       </v-card-title>
 
-      <v-card-text align="left" class="pa-0 pt-2">
-        <div class="font-size-18 font-weight-3 primary-color-1 py-1">{{ item.price | formatPrice }}đ</div>
-        <div class="font-size-12 font-weight-1 py-0" v-if="item.listPrice != item.price">
-          <span class="line-through">{{ item.listPrice | formatPrice }}đ</span>
-        </div>
-      </v-card-text>
-      <v-card-text class="ma-0 pa-0">
-        <v-row align="center" no-gutters>
-          <v-rating :value="getRatingAverage" color="yellow" dense half-increments readonly size="14"></v-rating>
-        </v-row>
-        <v-row align="center" no-gutters>
-          <div class="font-size-12 font-weight-1 pa-0 ma-0 float-right mr-4">{{ $t('freeShip') }}</div>
-          <v-spacer />
-          <v-btn icon>
+      <v-row class="pa-0 mx-0 mb-0 text-center py-0" align="center" no-gutters>
+        <v-col cols="6" class="ma-0 pa-0 primary-color-4 text-left">
+          <span class="font-size-12 font-weight-1 old-price line-height-22"> {{ item.listPrice | formatPrice }}đ</span>
+          <span class="discount-rate px-1 font-size-14 font-weight-2 text-right"> {{ item.discountRate }}% </span>
+        </v-col>
+
+        <v-col cols="6" class="ma-0 pa-0">
+          <div class="font-size-10 font-weight-1 pa-0 ma-0 text-right line-height-20">
             <v-icon> mdi-heart-outline </v-icon>
-          </v-btn>
-        </v-row>
-      </v-card-text>
+
+            <!-- <span class="line-height-20 font-size-12">{{ $t('freeShip') }}</span> -->
+          </div>
+        </v-col>
+      </v-row>
+      <v-row class="pa-0 mx-0 my-0 text-center py-0" align="center" no-gutters>
+        <v-col cols="6" class="ma-0 pa-0 font-size-16 font-weight-3 text-left primary-color-1 line-height-26">
+          {{ item.price | formatPrice }}đ
+        </v-col>
+        <v-col cols="6" class="ma-0 pa-0 text-right">
+          <v-rating
+            class="product-rate line-height-18 pa-0"
+            :value="getRatingAverage"
+            color="#FFA200"
+            dense
+            half-increments
+            readonly
+            size="13"
+          ></v-rating>
+        </v-col>
+      </v-row>
     </v-card>
   </v-hover>
 </template>
@@ -85,6 +96,7 @@ export default Vue.extend({
 
 <style lang="scss">
 .product-related {
+  height: 100%;
   .domain {
     background: #1859db !important;
     border: #1859db 1px solid;
@@ -93,17 +105,24 @@ export default Vue.extend({
     left: 0px;
     top: 0px;
     z-index: 100;
-    border-radius: 8px 0px 8px 0px !important;
+    border-radius: 0px !important;
   }
   .discount-rate {
-    border: #ca3e29 1px solid;
-    background-color: #ca3e29;
-    color: white;
-    position: absolute;
-    right: 0px;
-    top: 0px;
-    z-index: 100;
-    border-radius: 0px 8px 0px 8px !important;
+    color: #ca3e29;
+    z-index: 2;
+  }
+
+  .old-price {
+    text-decoration: line-through !important;
+    text-decoration-color: #607d8b !important;
+    text-decoration-style: solid 1px !important;
+  }
+  .title-product {
+    line-height: 1.5em;
+    height: 5em; /* height is 2x line-height, so two lines will display */
+    overflow: hidden; /* prevents extra lines from being visible */
+    // text-overflow: ellipsis;
+    // white-space: nowrap;
   }
 }
 </style>
