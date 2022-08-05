@@ -19,8 +19,9 @@ module.exports.putItem = function (params) {
 /**
  * @param {AWS.DynamoDB.DocumentClient.QueryInput} params
  */
-module.exports.getItem = function (params) {
-  return dynamodbClient.get(params).promise();
+module.exports.getItem = async function (params) {
+  const result = await dynamodbClient.get(params).promise();
+  return result.Item
 };
 
 /**

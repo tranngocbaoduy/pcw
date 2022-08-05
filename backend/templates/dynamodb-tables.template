@@ -23,24 +23,24 @@ Resources:
           AttributeType: S
         - AttributeName: SK
           AttributeType: S
-        - AttributeName: RELATIONSHIP_ID
+        - AttributeName: GROUP_ID
           AttributeType: S
-        - AttributeName: ENCODED_SLUG_ID
+        - AttributeName: RBGI
           AttributeType: S
       GlobalSecondaryIndexes:
-        - IndexName: RELATIONSHIP-INDEX
+        - IndexName: GROUP-INDEX
           KeySchema:
             - AttributeName: PK
               KeyType: HASH
-            - AttributeName: RELATIONSHIP_ID
+            - AttributeName: GROUP_ID
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
-        - IndexName: SLUG-ID-INDEX
+        - IndexName: RELATIONSHIP-BRAND-GROUP-INDEX
           KeySchema:
             - AttributeName: PK
               KeyType: HASH
-            - AttributeName: ENCODED_SLUG_ID
+            - AttributeName: RBGI
               KeyType: RANGE
           Projection:
             ProjectionType: ALL

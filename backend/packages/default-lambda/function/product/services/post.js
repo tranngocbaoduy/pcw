@@ -17,7 +17,7 @@ module.exports = async (event) => {
     if (checkIsValidDomain(event)) {
       switch (queryParams["action"]) {
         case "queryItemByTarget":
-          result = await queryItemByCategoryId(event);
+          result = await queryItemByTarget(event);
           break;
 
         default:
@@ -62,7 +62,7 @@ function parseParams(body) {
   // }
 }
 
-async function queryItemByCategoryId(event) {
+async function queryItemByTarget(event) {
   console.log("event", event);
   const body = JSON.parse(event.body);
   const PK = body["category"];
@@ -100,6 +100,7 @@ async function queryItemByCategoryId(event) {
   const params = {
     TableName: process.env.PRODUCT_TABLE_NAME,
     KeyConditionExpression: isRep ? "#PK = :pk and begins_with(SK, :sk)" : "#PK = :pk",
+    IndexName: 'RELATIONSHIP-BRAND-GROUP-INDEX',
     FilterExpression: `${brandFilterExpressionValues.length != 0
       ? `(${brandFilterExpressionValues.join(" OR ")}) AND`
       : ``

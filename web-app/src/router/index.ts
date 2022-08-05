@@ -120,16 +120,16 @@ const router = new VueRouter({
   routes,
 });
 
+// router.beforeEach((to, from, next) => {
+//   new Promise<RawLocation | undefined>((resolve) => {
+//     resolve(undefined);
+//   }).then((location) => {
+//     console.log('location', location);
+//     if (location) next(location);
+//     else if (to.path === from.path && to.fullPath.length < from.fullPath.length) {
+//       // Do nothing
+//     } else next();
+//   });
+// });
+
 export default router;
-router.beforeEach((to, from, next) => {
-  console.log(to, from);
-  new Promise<RawLocation | undefined>((resolve) => {
-    resolve();
-  }).then((location) => {
-    console.log('location', location);
-    if (location) next(location);
-    else if (to.path === from.path && to.fullPath.length < from.fullPath.length) {
-      // Do nothing
-    } else next();
-  });
-});

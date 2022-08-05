@@ -335,10 +335,11 @@ export default Vue.extend({
       for (const field of Object.keys(query)) {
         newQuery[field] = '';
       }
-      this.$router.replace({ query: newQuery || {} });
+      this.$router.replace({ path: this.$route.path, query: newQuery || {} });
     },
     handleChoosePrice() {
       let minMaxTuple = [0, 1000];
+      console.log('handleChoosePrice', this.selectedPrices);
       if (this.selectedPrices && this.selectedPrices.length != 0) {
         const minItems = this.selectedPrices.map((item: any) => item.min);
         const maxItems = this.selectedPrices.map((item: any) => item.max);
@@ -355,12 +356,13 @@ export default Vue.extend({
           minPrice: minMaxTuple[0].toString(),
           maxPrice: minMaxTuple[1].toString(),
         };
-        this.$router.replace({ query: query || {} });
+        console.log('query', query);
+        this.$router.replace({ path: this.$route.path, query: query || {} });
       } else {
         const query = { ...this.$route.query };
         delete query['minPrice'];
         delete query['maxPrice'];
-        this.$router.replace({ query: query || {} });
+        this.$router.replace({ path: this.$route.path, query: query || {} });
       }
     },
     handleChangeSelectedAgency() {
@@ -369,11 +371,11 @@ export default Vue.extend({
           ...this.$route.query,
           agencyItems: this.selectedAgencies.map((i: any) => i.name).join(','),
         };
-        this.$router.replace({ query: query || {} });
+        this.$router.replace({ path: this.$route.path, query: query || {} });
       } else {
         const query = { ...this.$route.query };
         delete query['agencyItems'];
-        this.$router.replace({ query: query || {} });
+        this.$router.replace({ path: this.$route.path, query: query || {} });
       }
     },
     handleChangeSelectedBrand() {
@@ -382,11 +384,11 @@ export default Vue.extend({
           ...this.$route.query,
           brandItems: this.selectedBrands.map((i: any) => i.name).join(','),
         };
-        this.$router.replace({ query: query || {} });
+        this.$router.replace({ path: this.$route.path, query: query || {} });
       } else {
         const query = { ...this.$route.query };
         delete query['brandItems'];
-        this.$router.replace({ query: query || {} });
+        this.$router.replace({ path: this.$route.path, query: query || {} });
       }
     },
     async searchProduct(event: any) {

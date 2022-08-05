@@ -74,26 +74,29 @@ export default Vue.extend({
   methods: {
     async initialize() {
       this.trendingCategoryItems = [] as any[];
-      const catalog = [
-        'Điện thoại',
-        'Truyện Tranh',
-        'Tủ lạnh',
-        'Tác phẩm kinh điển',
-        'Tivi',
-        'Máy giặt',
-        'Balo',
-        'Sách nghệ thuật',
-        'Kem chống nắng',
-        'Tủ',
-        'Sách tư duy',
-        'Bàn ghế làm việc',
-      ];
+      const categoryItems = this.categoryItems.map((i) => i.translateName);
+      const catalog = categoryItems
+        .concat([
+          'Điện thoại',
+          'Truyện Tranh',
+          'Tủ lạnh',
+          'Tác phẩm kinh điển',
+          'Tivi',
+          'Máy giặt',
+          'Balo',
+          'Sách nghệ thuật',
+          'Kem chống nắng',
+          'Tủ',
+          'Sách tư duy',
+          'Bàn ghế làm việc',
+        ])
+        .slice(0, 12);
       for (const i of catalog) {
         this.trendingCategoryItems.push({
           name: i,
           img: require('@/assets/brand/apple/brand.png'),
           logo: require('@/assets/brand/apple/logo.jpg'),
-          href: '/category/television/?' + i,
+          href: '/category/' + i,
         });
       }
     },

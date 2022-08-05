@@ -31,7 +31,10 @@
         >
           {{ item.discountRate }}%
         </div>
-        <span class="domain-photo font-size-14 px-2 font-weight-2 text-right rounded-0 elevation-1">
+        <span
+          :class="domain ? domain.toLowerCase() : ''"
+          class="domain-photo font-size-14 px-2 font-weight-2 text-right rounded-0 elevation-1"
+        >
           {{ domain }}
         </span>
       </v-row>
@@ -158,9 +161,6 @@ export default Vue.extend({
     background-color: #f9f9f9;
   }
   .domain-photo {
-    background: #1859db !important;
-    border: #1859db 1px solid;
-    color: white;
     z-index: 100;
     border-radius: 0px 0px 0px 0px !important;
   }

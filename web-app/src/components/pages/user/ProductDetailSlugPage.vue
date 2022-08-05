@@ -57,7 +57,7 @@ import ProductAnotherAgency from '@/components/pages/common/product-detail-page/
 // import ListProductRelated from '@/components/pages/common/product-detail-page/ListProductRelated.vue';
 
 import base64url from 'base64url';
-import CategoryService, { CategoryItem } from '@/api/category.service';
+import CategoryService from '@/api/category.service';
 import ProductService, { ProductItem } from '@/api/product.service';
 
 export default Vue.extend({
@@ -136,7 +136,6 @@ export default Vue.extend({
     },
     async categoryItems() {
       if (this.categoryItems && this.categoryItems.length != 0 && !this.isLoadedFinish) {
-        await this.loadAnotherProductItems();
         this.isLoadedFinish = true;
       }
     },
@@ -160,7 +159,7 @@ export default Vue.extend({
 
         this.mainProduct = response.mainItem as ProductItem;
         console.log('this.mainProduct', this.mainProduct);
-        this.subProductItems = JSON.parse(JSON.stringify(response.childItems.concat(response.mainItem))).sort(
+        this.subProductItems = JSON.parse(JSON.stringify(response.childItems)).sort(
           (itemA: ProductItem, itemB: ProductItem) => {
             if (itemA.discountRate < itemB.discountRate) return 1;
             else return -1;
@@ -186,11 +185,6 @@ export default Vue.extend({
           url: imageUrl || '',
           selected: false,
         }));
-        // this.loadRelatedProductItems();
-        // if (this.categoryItems && this.categoryItems.length != 0 && !this.isLoadedFinish) {
-        //   await this.loadAnotherProductItems();
-        //   this.isLoadedFinish = true;
-        // }
 
         const saleOffSortedItems = JSON.parse(JSON.stringify(response.childItems.concat(response.mainItem))).sort(
           (itemA: ProductItem, itemB: ProductItem) => {
@@ -203,20 +197,6 @@ export default Vue.extend({
         console.log(err);
       }
       loading.hide();
-    },
-    async loadRelatedProductItems() {
-      this.relatedProductItems = (await ProductService.queryItemByCategoryId(
-        this.categoryId.toUpperCase(),
-        6
-      )) as ProductItem[];
-    },
-    async loadAnotherProductItems() {
-      console.log(this.categoryItems, this.categoryId);
-      const category = this.categoryItems.find((item: CategoryItem) => item.SK != this.categoryId.toUpperCase());
-      if (category) {
-        this.anotherCategoryId = category.SK;
-        this.anotherProductItems = (await ProductService.queryItemByCategoryId(category.SK, 6)) as ProductItem[];
-      }
     },
   },
 });

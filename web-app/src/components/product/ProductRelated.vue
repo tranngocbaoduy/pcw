@@ -7,7 +7,7 @@
       class="product border-radius-4 box-sizing pb-5 mb-4 mx-2"
     >
       <v-row class="px-2 pb-0 pt-3 ma-0">
-        <span class="domain px-3 font-size-14 font-weight-2 text-right">
+        <span :class="item.domain.toLowerCase()" class="domain px-3 font-size-14 font-weight-2 text-right">
           {{ item.domain }}
         </span>
         <span v-if="item.listPrice != item.price" class="discount-rate px-3 font-size-14 font-weight-2 text-right">
@@ -122,9 +122,6 @@ export default Vue.extend({
 @import '@/assets/scss/PrimaryColor.scss';
 .product {
   .domain {
-    background: #1859db !important;
-    border: #1859db 1px solid;
-    color: white;
     position: absolute;
     left: 0px;
     top: 0px;

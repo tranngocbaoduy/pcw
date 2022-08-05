@@ -53,5 +53,6 @@ export default Vue.extend({
 @import '@/assets/scss/LineHeight.scss';
 @import '@/assets/scss/PrimaryColor.scss';
 @import '@/assets/scss/BackgroundColor.scss';
+@import '@/assets/scss/Platform.scss';
 @import './App.scss';
 </style>

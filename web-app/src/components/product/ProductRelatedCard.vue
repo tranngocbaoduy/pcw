@@ -8,7 +8,7 @@
       :style="hover ? 'z-index:4' : ''"
     >
       <v-card-title class="pa-0 ma-0">
-        <span class="domain font-size-16 px-4">{{ item.domain }}</span>
+        <span :class="item.domain.toLowerCase()" class="domain font-size-16 px-4">{{ item.domain }}</span>
       </v-card-title>
 
       <v-card-title class="pa-0 ma-0 mb-0 pt-7 pb-3" style="line-height: 23px">
@@ -98,9 +98,6 @@ export default Vue.extend({
 .product-related {
   height: 100%;
   .domain {
-    background: #1859db !important;
-    border: #1859db 1px solid;
-    color: white;
     position: absolute;
     left: 0px;
     top: 0px;

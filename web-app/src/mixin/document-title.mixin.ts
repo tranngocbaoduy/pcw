@@ -20,6 +20,8 @@ const updateDocumentTitleMixin = Vue.extend({
     code2category(code: any) {
       const categoryDict = {
         AIRCONDITION: 'Air Condition',
+        MOTOR: 'Motor',
+        TABLET: 'Tablet',
         FRIDGE: 'Fridge',
         LAPTOP: 'Laptop',
         PHONE: 'Phone',

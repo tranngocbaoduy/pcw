@@ -2,7 +2,6 @@
   <div class="body-user-page pa-2" ref="body-user-page-ref">
     <Carousel />
     <RecommendProducts />
-    <!-- <TrendingCategory></TrendingCategory> -->
     <TrendingPromotion />
     <!-- <TrendingBrand /> -->
     <TrendingSearchProducts />

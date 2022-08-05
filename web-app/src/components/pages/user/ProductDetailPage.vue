@@ -135,7 +135,6 @@ export default Vue.extend({
     },
     async categoryItems() {
       if (this.categoryItems && this.categoryItems.length != 0 && !this.isLoadedFinish) {
-        await this.loadAnotherProductItems();
         this.isLoadedFinish = true;
       }
     },
@@ -176,11 +175,6 @@ export default Vue.extend({
           url: imageUrl || '',
           selected: false,
         }));
-        // this.loadRelatedProductItems();
-        // if (this.categoryItems && this.categoryItems.length != 0 && !this.isLoadedFinish) {
-        //   await this.loadAnotherProductItems();
-        //   this.isLoadedFinish = true;
-        // }
 
         const saleOffSortedItems = JSON.parse(JSON.stringify(items)).sort((itemA: ProductItem, itemB: ProductItem) => {
           if (itemA.discountRate < itemB.discountRate) return 1;
@@ -191,20 +185,6 @@ export default Vue.extend({
         console.log(err);
       }
       loading.hide();
-    },
-    async loadRelatedProductItems() {
-      this.relatedProductItems = (await ProductService.queryItemByCategoryId(
-        this.categoryId.toUpperCase(),
-        6
-      )) as ProductItem[];
-    },
-    async loadAnotherProductItems() {
-      console.log(this.categoryItems, this.categoryId);
-      const category = this.categoryItems.find((item: CategoryItem) => item.SK != this.categoryId.toUpperCase());
-      if (category) {
-        this.anotherCategoryId = category.SK;
-        this.anotherProductItems = (await ProductService.queryItemByCategoryId(category.SK, 6)) as ProductItem[];
-      }
     },
   },
 });

@@ -86,18 +86,6 @@ export default class ProductService {
     return data;
   }
 
-  static async queryItemByCategoryId(category: string, discountRate = 0, limit = 20, page = 1): Promise<ProductItem[]> {
-    if (!category) return [];
-    const url =
-      process.env.VUE_APP_API_BASE_URL +
-      `/${process.env.VUE_APP_ENV}/product?action=queryItemByCategoryId&category=${category}&limit=${limit}&page=${page}&discount_rate=${discountRate}`;
-    const data = await AuthService.api
-      .get(url)
-      .then((response) => response.data)
-      .then((res) => ProductService.parseListProductItem(res.data));
-    return data;
-  }
-
   static async queryItemByTarget({
     category,
     limit = 20,
@@ -107,7 +95,6 @@ export default class ProductService {
     maxPrice,
     minPrice,
     discountRate,
-    isRep = false,
   }: {
     category: string;
     limit: int;
@@ -117,7 +104,6 @@ export default class ProductService {
     maxPrice?: int;
     minPrice?: int;
     discountRate?: int;
-    isRep?: boolean;
   }): Promise<ProductItem[]> {
     if (!category) return [];
     const params = {
@@ -129,7 +115,6 @@ export default class ProductService {
       maxPrice: maxPrice,
       minPrice: minPrice,
       discountRate: discountRate,
-      isRep: isRep,
     };
     const url = process.env.VUE_APP_API_BASE_URL + `/${process.env.VUE_APP_ENV}/product?action=queryItemByTarget`;
     const data = await AuthService.api

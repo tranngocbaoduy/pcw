@@ -70,15 +70,5 @@ export default Vue.extend({
 
 <style lang="scss">
 .product-photo {
-  .domain {
-    background: #1859db !important;
-    border: #1859db 1px solid;
-    color: white;
-    position: absolute;
-    left: 0px;
-    top: 0px;
-    z-index: 100;
-    border-radius: 8px 0px 8px 0px !important;
-  }
 }
 </style>

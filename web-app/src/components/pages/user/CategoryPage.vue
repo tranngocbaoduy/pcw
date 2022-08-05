@@ -10,7 +10,7 @@
         </div>
         <EnhancedFilter class="ma-n2 py-2" />
 
-        <div v-if="filterProductItems && filterProductItems.length != 0" class="mt-3">
+        <div v-if="(filterProductItems && filterProductItems.length != 0) || !isLoading" class="mt-3">
           <v-row no-gutters>
             <v-col
               :key="item['SK']"
@@ -106,11 +106,9 @@ export default Vue.extend({
     quantity: 10,
     page: 1,
     discountRate: 0,
-    loader: {} as any,
     minMaxTuple: [0, 10000000] as number[],
     minMaxTupleDefault: [0, 10000000] as number[],
     productItems: [] as ProductItem[],
-    relatedItems: [] as ProductItem[],
     rowsPerPage: 20,
     priceItems: [] as any[],
   }),
@@ -136,9 +134,7 @@ export default Vue.extend({
       },
     });
   },
-  mounted() {
-    this.updateUrlQueryToData();
-  },
+  mounted() {},
   computed: {
     isMobile(): boolean {
       return this.$store.getters.isMobile;
@@ -198,14 +194,13 @@ export default Vue.extend({
     brandItemsStore(): any {
       return this.$store.getters.brandItemsStore;
     },
-    isCustomePrice(): boolean {
-      return this.minMaxTuple[0] != this.minMaxTupleDefault[0] || this.minMaxTuple[1] != this.minMaxTupleDefault[1];
-    },
   },
 
   watch: {
-    '$route.query'() {
-      this.updateUrlQueryToData();
+    async '$route.query'() {
+      if (!this.isLoading) {
+        await this.updateUrlQueryToData();
+      }
     },
 
     async page() {
@@ -223,25 +218,14 @@ export default Vue.extend({
   methods: {
     async initialize() {
       window.scrollTo({ top: 0, left: 0 });
-      const loading = this.$loading.show();
+      this.isLoading = true;
 
       console.log('Load item ...', this.categoryId);
       this.page = parseInt((this as any).$route.query.page || 1);
       this.$store.commit('setState', { searchString: this.$route.query.name });
       await this.loadBrandItems();
       await this.updateUrlQueryToData();
-      await this.loadProductItemByTarget();
-      // this.productItems = await ProductService.queryItemByCategoryId(this.categoryId.toUpperCase(), 10);
-      this.relatedItems = await ProductService.queryItemByTarget({
-        category: this.categoryId.toUpperCase(),
-        limit: 15,
-        page: 1,
-        agencyItems: this.agencyItems.map((item: any) => item.code),
-        brandItems: ['samsung'],
-        minPrice: this.minMaxTuple[0] * 1000000,
-        maxPrice: this.minMaxTuple[1] * 1000000,
-      });
-      loading.hide();
+      this.isLoading = false;
     },
     async handleGetMoreProduct() {
       this.isLoading = true;
@@ -258,7 +242,6 @@ export default Vue.extend({
         brandItems: brandItems,
         minPrice: this.minMaxTuple[0] * 1000000,
         maxPrice: this.minMaxTuple[1] * 1000000,
-        isRep: this.isCustomePrice ? false : true,
       });
       this.productItems = this.productItems.concat(newItems);
       this.isLoading = false;
@@ -279,6 +262,7 @@ export default Vue.extend({
       }
     },
     async updateUrlQueryToData() {
+      this.isLoading = true;
       const query = { ...this.$route.query };
       const agencySelecting =
         query && query.agencyItems && typeof query.agencyItems == 'string' ? query.agencyItems.split(',') : '';
@@ -313,6 +297,8 @@ export default Vue.extend({
 
       this.page = 1;
       await this.loadProductItemByTarget();
+
+      this.isLoading = false;
     },
 
     async loadProductItemByTarget() {
@@ -329,13 +315,13 @@ export default Vue.extend({
         minPrice: this.minMaxTuple[0] * 1000000,
         maxPrice: this.minMaxTuple[1] * 1000000,
         discountRate: agencyItems.length != 0 || brandItems.length != 0 ? 0 : this.discountRate,
-        isRep: this.isCustomePrice ? false : true,
       });
       console.log('this.productItems', this.productItems);
     },
     getSlugId(item: ProductItem): string {
       if (item.url) {
         const obj = new URL(item.url);
+        console.log(obj.pathname);
         return obj.pathname;
       }
       return '';

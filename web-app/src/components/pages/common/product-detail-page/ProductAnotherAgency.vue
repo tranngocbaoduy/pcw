@@ -16,7 +16,7 @@
         cols="3"
         sm="3"
       >
-        <a :href="getURLAccessTrade(item)" class="custom-link" target="_blank">
+        <a :href="getURLAccessTrade(item)" class="custom-link">
           <ProductRelatedCard :item="item" />
         </a>
       </v-col>
@@ -108,7 +108,9 @@ export default Vue.extend({
   },
   methods: {
     getURLAccessTrade(item: ProductItem): string {
-      return `${process.env.VUE_APP_BASE_ACCESS_TRADE_URL}?url=${item.url}`;
+      const obj = new URL(item.url);
+      return obj.pathname;
+      // return `${process.env.VUE_APP_BASE_ACCESS_TRADE_URL}?url=${item.url}`;
     },
   },
 });

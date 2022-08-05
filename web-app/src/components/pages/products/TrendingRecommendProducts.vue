@@ -112,7 +112,6 @@ export default Vue.extend({
         brandItems: [],
         minPrice: 0,
         maxPrice: 1000000000,
-        isRep: false,
       });
       console.log('this.productItems', this.productItems);
     },

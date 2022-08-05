@@ -80,6 +80,8 @@ export default class CategoryService {
   static code2category(code: string) {
     const categoryDict = {
       AIRCONDITION: 'Air Condition',
+      MOTOR: 'Motor',
+      TABLET: 'Tablet',
       FRIDGE: 'Fridge',
       LAPTOP: 'Laptop',
       PHONE: 'Phone',

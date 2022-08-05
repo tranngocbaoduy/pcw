@@ -2,7 +2,7 @@
   <v-hover v-slot="{ hover }">
     <v-card :loading="loading" style="" class="product rounded-0 py-2 my-0">
       <v-row class="px-2 pb-0 pt-8 ma-0 py-0" style="height: 240px">
-        <span class="domain px-3 font-size-16 font-weight-2 text-right">
+        <span :class="item.domain.toLowerCase()" class="domain px-3 font-size-16 font-weight-2 text-right">
           {{ item.domain }}
         </span>
         <v-img
@@ -127,9 +127,6 @@ export default Vue.extend({
     transition: all 0.2s;
   }
   .domain {
-    background: #1859db !important;
-    border: #1859db 1px solid;
-    color: white;
     position: absolute;
     left: 0px;
     top: 0px;
