@@ -63,67 +63,67 @@ export default Vue.extend({
         {
           name: 'Son Kem Lì',
           quantity: '43.304+ sản phẩm',
-          image: require('@/assets/brand/lenovo/brand.png'),
+          image: require('@/assets/image/brand/lenovo/brand.png'),
         },
         {
           name: 'Áo Thun Form Rộng Ngắn Tay Unisex',
           quantity: '68.689+ sản phẩm',
-          image: require('@/assets/brand/lenovo/brand.png'),
+          image: require('@/assets/image/brand/lenovo/brand.png'),
         },
         {
           name: "Nước Tẩy Trang L'Oreal",
           quantity: '78.479+ sản phẩm',
-          image: require('@/assets/brand/lenovo/brand.png'),
+          image: require('@/assets/image/brand/lenovo/brand.png'),
         },
         {
           name: 'Sữa Rửa Mặt',
           quantity: '53.867+ sản phẩm',
-          image: require('@/assets/brand/lenovo/brand.png'),
+          image: require('@/assets/image/brand/lenovo/brand.png'),
         },
         {
           name: 'Mắt Kính Gọng Tròn',
           quantity: '46.893+ sản phẩm',
-          image: require('@/assets/brand/lenovo/brand.png'),
+          image: require('@/assets/image/brand/lenovo/brand.png'),
         },
         {
           name: 'Ốp Lưng Iphone',
           quantity: '161.005+ sản phẩm',
-          image: require('@/assets/brand/lenovo/brand.png'),
+          image: require('@/assets/image/brand/lenovo/brand.png'),
         },
         {
           name: 'Áo Sơmi Nam Ngắn Tay',
           quantity: '54.942+ sản phẩm',
-          image: require('@/assets/brand/lenovo/brand.png'),
+          image: require('@/assets/image/brand/lenovo/brand.png'),
         },
 
         {
           name: 'Huyết thanh bình thường',
           quantity: '52.206+ sản phẩm',
-          image: require('@/assets/brand/lenovo/brand.png'),
+          image: require('@/assets/image/brand/lenovo/brand.png'),
         },
 
         {
           name: 'Áo Thun Polo Nam Ngắn Tay',
           quantity: '72.371+ sản phẩm',
-          image: require('@/assets/brand/lenovo/brand.png'),
+          image: require('@/assets/image/brand/lenovo/brand.png'),
         },
 
         {
           name: 'Quần Ống Rộng Nữ',
           quantity: '64.052+ sản phẩm',
-          image: require('@/assets/brand/lenovo/brand.png'),
+          image: require('@/assets/image/brand/lenovo/brand.png'),
         },
 
         {
           name: 'Bông Tẩy Trang 3 Lớp Cotton Pads',
           quantity: '113.374+ sản phẩm',
-          image: require('@/assets/brand/lenovo/brand.png'),
+          image: require('@/assets/image/brand/lenovo/brand.png'),
         },
 
         {
           name: 'Top bán chạy',
           quantity: '0+ sản phẩm',
-          image: require('@/assets/brand/lenovo/brand.png'),
+          image: require('@/assets/image/brand/lenovo/brand.png'),
         },
       ];
     },

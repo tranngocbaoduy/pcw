@@ -73,28 +73,23 @@ const routes: Array<RouteConfig> = [
         component: () => import('@/components/pages/user/HomePage.vue').catch(RouterHelper.handleAsyncComponentError),
       },
       {
-        path: ':slugId',
-        name: 'ProductDetailSlugPage',
-        component: () =>
-          import('@/components/pages/user/ProductDetailSlugPage.vue').catch(RouterHelper.handleAsyncComponentError),
-      },
-      {
         path: '/category/:idCate',
         name: 'CategoryPage',
         component: () =>
           import('@/components/pages/user/CategoryPage.vue').catch(RouterHelper.handleAsyncComponentError),
       },
       {
-        path: '/category/:idCate/product/:idProd',
-        name: 'ProductDetailPage',
-        component: () =>
-          import('@/components/pages/user/ProductDetailPage.vue').catch(RouterHelper.handleAsyncComponentError),
-      },
-      {
         path: '/compare',
         name: 'ComparasionPage',
         component: () =>
           import('@/components/pages/user/PriceComparisonPage.vue').catch(RouterHelper.handleAsyncComponentError),
+      },
+
+      {
+        path: ':slugId*',
+        name: 'ProductDetailSlugPage',
+        component: () =>
+          import('@/components/pages/user/ProductDetailSlugPage.vue').catch(RouterHelper.handleAsyncComponentError),
       },
     ],
   },
@@ -120,16 +115,19 @@ const router = new VueRouter({
   routes,
 });
 
-// router.beforeEach((to, from, next) => {
-//   new Promise<RawLocation | undefined>((resolve) => {
-//     resolve(undefined);
-//   }).then((location) => {
-//     console.log('location', location);
-//     if (location) next(location);
-//     else if (to.path === from.path && to.fullPath.length < from.fullPath.length) {
-//       // Do nothing
-//     } else next();
-//   });
-// });
+router.beforeEach((to, from, next) => {
+  console.log(to);
+  new Promise<RawLocation | undefined>((resolve) => {
+    resolve(undefined);
+  }).then((location) => {
+    if (to.fullPath.includes('%2F')) {
+      next(decodeURIComponent(to.fullPath));
+    }
+    if (location) next(location);
+    else if (to.path === from.path && to.fullPath.length < from.fullPath.length) {
+      // Do nothing
+    } else next();
+  });
+});
 
 export default router;

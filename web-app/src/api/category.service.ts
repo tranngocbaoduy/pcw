@@ -1,10 +1,13 @@
 import AuthService from '@/api/auth.service';
 import i18n from '@/i18n';
+import store from '@/store';
 export interface CategoryItem {
   PK: string;
   SK: string;
   name: string;
   translateName: string;
+  href?: string;
+  image?: string;
 }
 
 export interface BrandItem {
@@ -46,8 +49,9 @@ export default class CategoryService {
     return {
       PK: item.PK,
       SK: item.SK,
-      name: CategoryService.upperCaseFirstLetter(item.SK),
-      translateName: CategoryService.upperCaseFirstLetter(item.SK),
+      name: CategoryService.upperCaseFirstLetter(item.NAME),
+      translateName: CategoryService.upperCaseFirstLetter(item.NAME),
+      href: '/category/' + item.SK.toLowerCase(),
     } as CategoryItem;
   }
 
@@ -63,8 +67,8 @@ export default class CategoryService {
     return {
       PK: item.PK,
       SK: item.SK,
-      name: CategoryService.upperCaseFirstLetter(item.SK.split('#')[1]),
-      translateName: CategoryService.upperCaseFirstLetter(item.SK.split('#')[1]),
+      name: CategoryService.upperCaseFirstLetter(item.NAME),
+      translateName: CategoryService.upperCaseFirstLetter(item.NAME),
       selected: false,
     } as BrandItem;
   }
@@ -78,6 +82,8 @@ export default class CategoryService {
   }
 
   static code2category(code: string) {
+    const category = store.getters.categoryItems.find((i: CategoryItem) => i.SK == code);
+    if (category) return category.translateName;
     const categoryDict = {
       AIRCONDITION: 'Air Condition',
       MOTOR: 'Motor',

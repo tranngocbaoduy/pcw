@@ -83,7 +83,7 @@ export default Vue.extend({
 </script>
 
 <style lang="scss">
-@import '@/assets/scss/FontWeight.scss';
+@import '@/resources/scss/FontWeight.scss';
 .footer {
   background-color: #f0f3f5 !important;
 }

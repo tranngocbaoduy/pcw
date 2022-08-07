@@ -202,9 +202,9 @@ export default Vue.extend({
 </script>
 
 <style lang="scss">
-@import '@/assets/scss/Common.scss';
-@import '@/assets/scss/LineHeight.scss';
-@import '@/assets/scss/FontSize.scss';
+@import '@/resources/scss/Common.scss';
+@import '@/resources/scss/LineHeight.scss';
+@import '@/resources/scss/FontSize.scss';
 .product-line-card {
   width: 100%;
   background-color: gray;

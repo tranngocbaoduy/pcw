@@ -1,0 +1,62 @@
+.line-height-14 {
+  line-height: 14px !important;
+  @include for_breakpoint(mobile tablet) {
+    font-size: 12px !important;
+  }
+}
+
+.line-height-16 {
+  line-height: 16px !important;
+  @include for_breakpoint(mobile tablet) {
+    font-size: 14px !important;
+  }
+}
+
+.line-height-18 {
+  line-height: 18px !important;
+  @include for_breakpoint(mobile tablet) {
+    font-size: 16px !important;
+  }
+}
+
+.line-height-20 {
+  line-height: 20px !important;
+  @include for_breakpoint(mobile tablet) {
+    font-size: 18px !important;
+  }
+}
+
+.line-height-22 {
+  line-height: 22px !important;
+  @include for_breakpoint(mobile tablet) {
+    font-size: 20px !important;
+  }
+}
+
+.line-height-24 {
+  line-height: 24px !important;
+  @include for_breakpoint(mobile tablet) {
+    font-size: 22px !important;
+  }
+}
+
+.line-height-26 {
+  line-height: 26px !important;
+  @include for_breakpoint(mobile tablet) {
+    font-size: 24px !important;
+  }
+}
+
+.line-height-28 {
+  line-height: 28px !important;
+  @include for_breakpoint(mobile tablet) {
+    font-size: 26px !important;
+  }
+}
+
+.line-height-30 {
+  line-height: 30px !important;
+  @include for_breakpoint(mobile tablet) {
+    font-size: 28px !important;
+  }
+}

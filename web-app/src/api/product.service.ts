@@ -27,6 +27,14 @@ export interface ProductItem {
   brand: string;
   url: string;
   discountRate: number;
+  shopLocation: string;
+  historicalSold: string;
+  likedCount: string;
+  slugId: string;
+  stock: number;
+  subCategory: string;
+  voucherInfo: {};
+  itemRating: {};
 }
 
 export interface QueryProductItems {
@@ -36,54 +44,22 @@ export interface QueryProductItems {
 }
 
 export default class ProductService {
-  static async queryItemBySlugId({
-    ENCODED_SLUG_ID,
-    isHasChild = false,
-  }: {
-    ENCODED_SLUG_ID: string;
-    isHasChild?: boolean;
-  }) {
+  static async queryItemById({ id, isHasChild = false }: { id: string; isHasChild?: boolean }) {
     const url =
       process.env.VUE_APP_API_BASE_URL +
-      `/${process.env.VUE_APP_ENV}/product?action=queryItemBySlugId&ENCODED_SLUG_ID=${ENCODED_SLUG_ID}&isHasChild=${isHasChild}`;
-    const data = await AuthService.api
-      .get(url)
-      .then((response) => response.data)
-      .then((res) => ({
-        mainItem: ProductService.parseProductItem(res.data.mainItem),
-        childItems: ProductService.parseListProductItem(res.data.childItems),
-      }));
-    return data;
-  }
-
-  static async queryChildItems({
-    PK,
-    RELATIONSHIP_ID,
-  }: {
-    PK: string;
-    RELATIONSHIP_ID: string;
-  }): Promise<ProductItem[]> {
-    if (!PK || !RELATIONSHIP_ID) return [];
-    RELATIONSHIP_ID = RELATIONSHIP_ID.split('#')[RELATIONSHIP_ID.split('#').length - 1];
-    console.log('RELATIONSHIP_ID', RELATIONSHIP_ID);
-    const url =
-      process.env.VUE_APP_API_BASE_URL +
-      `/${process.env.VUE_APP_ENV}/product?action=queryChildItem&PK=${PK}&RELATIONSHIP_ID=${RELATIONSHIP_ID.split(
-        '#'
-      ).join('_')}`;
-    const data = await AuthService.api
-      .get(url)
-      .then((response) => response.data)
-      .then((res) => ProductService.parseListProductItem(res.data))
-      .then((items) =>
-        items
-          .sort((itemA: ProductItem, itemB: ProductItem) => {
-            if (itemA.price >= itemB.price) return 1;
-            else return -1;
-          })
-          .filter((item) => item.price)
-      );
-    return data;
+      `/${process.env.VUE_APP_ENV}/product?action=queryItemById&id=${id}&isHasChild=${isHasChild}`;
+    try {
+      const data = await AuthService.api
+        .get(url)
+        .then((response) => response.data)
+        .then((res) => ({
+          mainItem: ProductService.parseProductItem(res.data.mainItem),
+          childItems: ProductService.parseListProductItem(res.data.childItems),
+        }));
+      return data;
+    } catch (err) {
+      return null;
+    }
   }
 
   static async queryItemByTarget({
@@ -141,9 +117,8 @@ export default class ProductService {
     return {
       PK: item.PK,
       SK: item.SK,
-      brand: item.brand.toUpperCase(),
+      brand: item.brand ? item.brand.toUpperCase() : item.brand,
       id: item.SK.split('#')[item.SK.split('#').length - 1],
-      relationshipID: item.RELATIONSHIP_ID,
       baseEncodedURL: item.base_encoded_url,
       listChildId: item.child ? item.child : [],
       content: item.content,
@@ -157,6 +132,14 @@ export default class ProductService {
       isAPI: item.is_api,
       productCode: item.product_code,
       url: item.url,
+      shopLocation: item.shop_location,
+      slugId: item.slug_id ? item.slug_id : '',
+      stock: item.stock ? parseInt(item.stock) : 0,
+      subCategory: item.sub_category_code ? item.sub_category_code : '',
+      voucherInfo: item.voucher_info ? item.voucher_info : '',
+      historicalSold: item.historical_sold ? item.historical_sold : '',
+      likedCount: item.liked_count ? item.liked_count : '',
+      itemRating: item.item_rating ? item.item_rating : '',
     } as ProductItem;
   }
 
@@ -166,5 +149,28 @@ export default class ProductService {
       items.push(ProductService.parseProductItem(i));
     }
     return items;
+  }
+
+  static getSlugId(item: ProductItem): string {
+    if (item.slugId) {
+      console.log(
+        'item.slugId',
+        item.slugId
+          .split('/')
+          .filter((i) => !!i)
+          .join('/')
+      );
+      console.log('item.slugId', encodeURIComponent(item.slugId));
+      const encodeURI = encodeURIComponent(
+        item.slugId
+          .split('/')
+          .filter((i) => !!i)
+          .join('/')
+          .replace('[', '(')
+          .replace(']', ')')
+      );
+      return '/' + encodeURI.slice(2, encodeURI.length);
+    }
+    return '';
   }
 }

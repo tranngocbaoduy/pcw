@@ -57,6 +57,7 @@ export default Vue.extend({
     quantity: 10,
     page: 1,
     productItems: [] as ProductItem[],
+    randomCategory: {} as CategoryItem,
     randomPathChangeTo: '',
     isLoading: true,
   }),
@@ -88,9 +89,9 @@ export default Vue.extend({
         }
       }
     },
-    categoryItems() {
-      const randomItem = this.categoryItems[Math.floor(Math.random() * this.categoryItems.length)];
-      this.randomPathChangeTo = `/category/${randomItem.SK}`;
+    async categoryItems() {
+      this.randomCategory = this.categoryItems[Math.floor(Math.random() * this.categoryItems.length)];
+      this.randomPathChangeTo = `/category/${this.randomCategory.SK}`;
     },
   },
   methods: {
@@ -105,7 +106,7 @@ export default Vue.extend({
     },
     async loadProductItemByTarget() {
       this.productItems = await ProductService.queryItemByTarget({
-        category: 'TELEVISION',
+        category: '408011' || this.randomCategory.SK,
         limit: this.limit,
         page: this.page,
         agencyItems: [],
@@ -115,13 +116,8 @@ export default Vue.extend({
       });
       console.log('this.productItems', this.productItems);
     },
-
     getSlugId(item: ProductItem): string {
-      if (item.url) {
-        const obj = new URL(item.url);
-        return obj.pathname;
-      }
-      return '';
+      return ProductService.getSlugId(item);
     },
     getIdProduct(item: ProductItem) {
       if (item['SK'].includes('REP')) return item['SK'].split('#').join('_');

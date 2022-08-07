@@ -7,7 +7,7 @@
           max-width="156"
           :height="isMobile ? 36 : 56"
           :width="isMobile ? 102 : 156"
-          :src="require('@/assets/Light.png')"
+          :src="require('@/assets/image/logo/Light.png')"
           alt=""
         >
         </v-img>
@@ -133,12 +133,12 @@ export default Vue.extend({
         {
           code: 'vn',
           name: this.$t('vn'),
-          flag: require('@/assets/flag/vietnam.png'),
+          flag: require('@/assets/image/flag/vietnam.png'),
         },
         {
           code: 'en',
           name: this.$t('en'),
-          flag: require('@/assets/flag/united-kingdom.png'),
+          flag: require('@/assets/image/flag/united-kingdom.png'),
         },
       ];
     },
@@ -286,7 +286,7 @@ export default Vue.extend({
 </script>
 
 <style lang="scss">
-@import '@/assets/scss/Common.scss';
+@import '@/resources/scss/Common.scss';
 .header {
   box-shadow: 1px 6px 12px -10px rgba(0, 0, 0, 0.75) !important;
   -webkit-box-shadow: 1px 6px 12px -10px rgba(0, 0, 0, 0.75) !important;

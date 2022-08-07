@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <router-view :key="$route.fullPath" />
+    <router-view v-if="$route" :key="$route.fullPath" />
   </v-app>
 </template>
 
@@ -46,13 +46,13 @@ export default Vue.extend({
 </script>
 
 <style lang="scss">
-@import '@/assets/scss/Common.scss';
-@import '@/assets/scss/Border.scss';
-@import '@/assets/scss/FontSize.scss';
-@import '@/assets/scss/FontWeight.scss';
-@import '@/assets/scss/LineHeight.scss';
-@import '@/assets/scss/PrimaryColor.scss';
-@import '@/assets/scss/BackgroundColor.scss';
-@import '@/assets/scss/Platform.scss';
+@import '@/resources/scss/Common.scss';
+@import '@/resources/scss/Border.scss';
+@import '@/resources/scss/FontSize.scss';
+@import '@/resources/scss/FontWeight.scss';
+@import '@/resources/scss/LineHeight.scss';
+@import '@/resources/scss/PrimaryColor.scss';
+@import '@/resources/scss/BackgroundColor.scss';
+@import '@/resources/scss/Platform.scss';
 @import './App.scss';
 </style>

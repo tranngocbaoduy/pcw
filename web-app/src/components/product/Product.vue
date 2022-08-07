@@ -11,8 +11,8 @@
           style="width: 191px; height: 191px"
           contain
           :style="hover ? 'z-index:4' : ''"
-          :src="item.listImage[0] || require('../../assets/f201f0a8baee2ef5ee2adef6ac755c72.jpg')"
-          :lazy-src="item.listImage[0] || require('../../assets/f201f0a8baee2ef5ee2adef6ac755c72.jpg')"
+          :src="item.listImage[0] || require('@/assets/banner/no-product.png')"
+          :lazy-src="item.listImage[0] || require('@/assets/banner/no-product.png')"
         >
         </v-img
       ></v-row>
@@ -21,7 +21,8 @@
         <v-row align="center">
           <v-col cols="9 pr-0">
             <div class="font-size-14 line-height-20 title-product">
-              <span class="primary-color-2 font-weight-bold">{{ itemBrand }} </span>- {{ item.name }}
+              <!-- <span class="primary-color-2 font-weight-bold">{{ itemBrand }} </span>-  -->
+              {{ item.name }}
             </div>
           </v-col>
           <v-col cols="3 pr-2 pt-0">
@@ -33,24 +34,27 @@
       </v-card-title>
 
       <v-row class="pa-0 mx-3 mb-0 text-center py-0" align="center" no-gutters>
-        <v-col cols="8" class="ma-0 pa-0 primary-color-4 text-left">
+        <v-col cols="8" class="ma-0 pa-0 primary-color-4 text-left" v-if="item.listPrice != item.price">
           <span class="font-size-12 font-weight-1 old-price line-height-22"> {{ item.listPrice | formatPrice }}đ</span>
           <span class="discount-rate px-1 font-size-14 font-weight-2 text-right"> {{ item.discountRate }}% </span>
         </v-col>
+        <v-col cols="8" v-else class="ma-0 pa-0 primary-color-4 text-left"></v-col>
 
         <v-col cols="4" class="ma-0 pa-0">
-          <div class="font-size-12 font-weight-1 pa-0 ma-0 text-right line-height-20">
-            <span class="font-weight-3 primary-color-3"> {{ `${item.listChildId.length} ${$t('in stores')}` }}</span
+          <div class="font-size-12 font-weight-1 pr-2 pa-0 ma-0 text-right line-height-20">
+            <span class="font-weight-3 primary-color-3" v-if="item.listChildId.length != 1">
+              {{ `${item.listChildId.length} ${$t('in stores')}` }}</span
             ><br />
           </div>
         </v-col>
       </v-row>
       <v-row class="pa-0 mx-3 my-0 text-center py-0" align="center" no-gutters>
-        <v-col cols="7" class="ma-0 pa-0 font-size-16 font-weight-3 text-left primary-color-1 line-height-26">
+        <v-col cols="7" class="ma-0 pa-0 font-size-16 font-weight-3 text-left primary-color-1 line-height-22">
           {{ item.price | formatPrice }}đ
         </v-col>
         <v-col cols="5" class="ma-0 pa-0 text-right">
-          <v-rating
+          <RatingItem :itemRating="item.itemRating" />
+          <!-- <v-rating
             class="product-rate line-height-18 pa-0"
             :value="getRatingAverage"
             color="#FFA200"
@@ -58,7 +62,7 @@
             half-increments
             readonly
             size="13"
-          ></v-rating>
+          ></v-rating> -->
         </v-col>
       </v-row>
 
@@ -70,10 +74,12 @@
 
 <script lang="ts">
 import CategoryService from '@/api/category.service';
+import RatingItem from '@/components/common/rating/RatingItem.vue';
 import Vue from 'vue';
 
 export default Vue.extend({
   props: ['item'],
+  components: { RatingItem },
   data: () => ({
     loading: false,
     selection: 1,
@@ -88,7 +94,6 @@ export default Vue.extend({
       return 5;
     },
     itemBrand(): string {
-      console.log(this.item);
       return CategoryService.upperCaseFirstLetter(this.item.brand);
     },
   },
@@ -112,9 +117,9 @@ export default Vue.extend({
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/scss/Common.scss';
-@import '@/assets/scss/LineHeight.scss';
-@import '@/assets/scss/FontSize.scss';
+@import '@/resources/scss/Common.scss';
+@import '@/resources/scss/LineHeight.scss';
+@import '@/resources/scss/FontSize.scss';
 .product {
   height: 100%;
   border: #cdcdcd 0.1px solid;

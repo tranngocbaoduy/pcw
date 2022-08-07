@@ -1,9 +1,9 @@
 <template>
-  <div class="home">
+  <div class="home bg-primary-color-0">
     <Header @handle-show-menu="handleShowMenu" :isShowMenu="isShowMenu"> </Header>
 
-    <v-container class="body-custom" :class="isMobile ? 'pa-0' : ''" :fluid="isFluid">
-      <router-view :key="$route.fullPath" />
+    <v-container class="body-custom" :class="isMobile ? 'pa-0' : 'px-0'" :fluid="isFluid">
+      <router-view v-if="$route" :key="$route.fullPath" />
     </v-container>
     <v-divider class="divider-custom"></v-divider>
     <Footer></Footer>
@@ -74,7 +74,6 @@ export default Vue.extend({
 </script>
 <style lang="scss">
 .home {
-  background-color: #f3f6f8 !important;
   .divider-custom {
     border: #546e7a 20px solid !important;
   }

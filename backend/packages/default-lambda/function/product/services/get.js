@@ -30,8 +30,8 @@ module.exports = async (event, context) => {
         case "queryItemByCategoryId":
           result = await queryItemByCategoryId(event);
           break;
-        case "queryItemBySlugId":
-          result = await queryItemBySlugId(event);
+        case "queryItemById":
+          result = await queryItemById(event);
           break;
         default:
           result = [];
@@ -116,36 +116,18 @@ async function queryChildItem(event) {
   return await dynamodbHelper.queryItems(params)
 }
 
-async function queryItemBySlugId(event) {
+async function queryItemById(event) {
 
-  let SK = event.queryStringParameters["ENCODED_SLUG_ID"] || null;
+  let ID = event.queryStringParameters["id"] || null;
   let isHasChild = event.queryStringParameters["isHasChild"] || false;
-  if (!SK) return null;
-  let PK = ''
+  if (!ID) return "not ID";
+  const SK = ID.split('.')[0]
+  const GROUP_ID = ID.split('.')[1]
+  if (!GROUP_ID) return "not GROUP";
+  const PK = GROUP_ID.slice(GROUP_ID.length - 6, GROUP_ID.length)
 
   try {
-    const data = JSON.parse(fs.readFileSync('data.json', 'utf8'));
-    PK = data[SK]
-    console.log(data, typeof data);
-    console.log('category ID', PK)
-  } catch (err) {
-    console.error(err);
-  }
-
-  if (!PK) return null;
-  const params = {
-    TableName: process.env.PRODUCT_TABLE_NAME,
-    Key: {
-      PK: PK,
-      SK: SK,
-    }
-  };
-
-  console.log('params', params)
-  try {
-    const mainProduct = await dynamodbHelper.getItem(params);
-    console.log('mainProduct', mainProduct)
-    if (isHasChild && mainProduct) {
+    if (isHasChild && GROUP_ID) {
       const params = {
         TableName: process.env.PRODUCT_TABLE_NAME,
         IndexName: 'GROUP-INDEX',
@@ -156,16 +138,31 @@ async function queryItemBySlugId(event) {
         },
         ExpressionAttributeValues: {
           ":pk": PK,
-          ":groupID": mainProduct['GROUP_ID']
+          ":groupID": GROUP_ID
         },
       };
+      console.log('params', params)
       const childItems = await dynamodbHelper.queryItems(params);
       return {
-        mainItem: mainProduct,
-        childItems: childItems.filter((i) => i.SK != mainProduct.SK),
+        mainItem: childItems.find((i) => i.SK == SK),
+        childItems: childItems.filter((i) => i.SK != SK),
+      }
+    } else {
+      const params = {
+        TableName: process.env.PRODUCT_TABLE_NAME,
+        Key: {
+          PK: PK,
+          SK: SK,
+        }
+      };
+      console.log('params', params)
+      try {
+        return await dynamodbHelper.getItem(params);
+      } catch (err) {
+        console.log('err cant get mainproduct');
       }
     }
-    return mainProduct;
+
   } catch (err) {
     console.log('err', err)
     return null

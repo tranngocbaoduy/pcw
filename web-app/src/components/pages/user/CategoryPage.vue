@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-row class="category-page pt-0 mt-0" no-gutters :class="isMobile ? 'pa-0' : 'pa-2 '">
+    <v-row class="category-page pt-0 mt-0" no-gutters :class="isMobile ? 'pa-0' : 'py-2 '">
       <v-col sm="12" md="12" cols="12" :class="isMobile ? 'py-0' : 'py-3'">
         <div class="mt-2 pa-0">
           <BreadCrumbs :breadcrumbs="breadcrumbs" />
@@ -32,9 +32,8 @@
         <v-row no-gutters class="py-4">
           <v-col cols="12" class="d-flex justify-center align-center">
             <v-progress-circular v-if="isLoading" size="24" color="info" indeterminate></v-progress-circular>
-
             <v-btn
-              v-else
+              v-else-if="!isLoading && isNextProduct"
               class="white--text rounded-lg my-2"
               @click="handleGetMoreProduct"
               color="#1859db"
@@ -70,6 +69,7 @@ export default Vue.extend({
   },
   data: () => ({
     isLoading: false,
+    isNextProduct: true,
     voteItems: [
       { name: '5-stars', rate: 5 },
       { name: '4-stars', rate: 4 },
@@ -229,6 +229,7 @@ export default Vue.extend({
     },
     async handleGetMoreProduct() {
       this.isLoading = true;
+      this.isNextProduct = true;
       this.page += 1;
       const agencyItems = this.agencyItems.filter((item: any) => item.selected).map((item: any) => item.code);
       const brandItems = this.brandItems
@@ -243,6 +244,7 @@ export default Vue.extend({
         minPrice: this.minMaxTuple[0] * 1000000,
         maxPrice: this.minMaxTuple[1] * 1000000,
       });
+      if (newItems && newItems.length == 0) this.isNextProduct = false;
       this.productItems = this.productItems.concat(newItems);
       this.isLoading = false;
     },
@@ -319,12 +321,7 @@ export default Vue.extend({
       console.log('this.productItems', this.productItems);
     },
     getSlugId(item: ProductItem): string {
-      if (item.url) {
-        const obj = new URL(item.url);
-        console.log(obj.pathname);
-        return obj.pathname;
-      }
-      return '';
+      return ProductService.getSlugId(item);
     },
     getIdProduct(item: ProductItem) {
       console.log('item', item);
