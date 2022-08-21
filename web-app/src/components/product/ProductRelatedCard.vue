@@ -50,46 +50,54 @@
           </div>
         </div>
       </div>
-      <div class="mx-3 ml-0 font-size-14 text-right" :style="isMobile ? 'min-width: 50px' : 'min-width: 90px'">
-        <div class="mb-n2">
-          <span class="font-weight-bold">{{
-            item.itemRating.rating_count.reduce((partialSum, a) => partialSum + a, 0) || 0
-          }}</span
-          ><span> review </span>
-        </div>
-        <a :href="getURLAccessTrade()" target="_blank" class="font-size-12 text-underline">Xem ngay</a>
+      <div
+        @click="goToPlatform()"
+        class="ml-0 font-size-14 hover-custom-link text-left"
+        style="text-decoration: underline"
+        :style="isMobile ? 'width: 70px' : 'width: 90px'"
+      >
+        <span> Review: </span>
+        <span class="font-weight-bold">{{
+          item.itemRating.rating_count.reduce((partialSum, a) => partialSum + a, 0) || 0
+        }}</span>
       </div>
 
-      <div class="mx-3 font-size-14 text-right" :style="isMobile ? 'min-width: 50px' : 'min-width: 90px'">
+      <div v-if="!isMobile" class="font-size-14 text-right" :style="isMobile ? 'min-width: 50px' : 'min-width: 90px'">
         <span class="font-weight-bold">{{ item.historicalSold || 0 }}</span> <span> đã bán</span>
       </div>
-      <div class="ma-0 pa-0 primary-color-4 text-left" :style="isMobile ? 'min-width: 30px' : 'width: 40px'">
-        <span class="discount-rate px-1 font-size-14 font-weight-2 text-right" v-if="item.listPrice != item.price">
-          {{ item.discountRate }}%
-        </span>
-      </div>
 
-      <div class="text-right" :style="isMobile ? 'min-width: 60px' : 'min-width: 100px'">
-        <div class="font-size-12 font-weight-1 old-price" v-if="item.listPrice != item.price">
-          {{ item.listPrice | formatPrice }}đ
-        </div>
-        <div class="ma-0 pa-0 font-size-14 font-weight-3 text-right primary-color-1">
-          {{ item.price | formatPrice }}đ
-        </div>
-      </div>
       <div
-        :style="isMobile ? 'width: 45px' : 'width: 80px'"
-        class="ml-4"
+        class="text-left"
+        :style="isMobile ? 'width: 70px' : 'width: 80px'"
         :class="isMobile ? 'font-size-14' : 'font-size-14'"
       >
         Kho: <span class="font-weight-bold">{{ item.stock || 0 }} </span>
       </div>
 
-      <a :href="getURLAccessTrade()" target="_blank">
-        <v-btn class="rounded-lg my-2" icon color="#1859db">
-          <v-icon>mdi-shopping-outline</v-icon>
-        </v-btn>
-      </a>
+      <div class="text-right" :style="isMobile ? 'min-width: 95px' : 'min-width: 120px'">
+        <div
+          class="ma-0 pa-0 font-size-16 font-weight-3 text-right primary-color-1"
+          :class="item.listPrice != item.price ? 'pt-4 mb-n2' : ''"
+        >
+          {{ item.price | formatPrice }}đ
+        </div>
+        <span class="px-2 py-0 discount-rate font-size-12 font-weight-2 text-right" v-if="item.listPrice != item.price">
+          {{ item.discountRate }}%
+        </span>
+      </div>
+
+      <!-- <div
+        class="ma-0 pa-0 primary-color-4 text-left d-flex align-center justify-center"
+        :style="isMobile ? 'min-width: 50px' : 'width: 70px'"
+      >
+        <span class="px-2 py-0 discount-rate font-size-12 font-weight-2 text-right" v-if="item.listPrice != item.price">
+          {{ item.discountRate }}%
+        </span>
+      </div> -->
+
+      <v-btn class="rounded-lg my-2" icon color="#1859db" @click="goToPlatform()">
+        <v-icon>mdi-shopping-outline</v-icon>
+      </v-btn>
     </v-card>
   </v-hover>
 </template>
@@ -137,7 +145,9 @@ export default Vue.extend({
       this.loading = true;
       setTimeout(() => (this.loading = false), 2000);
     },
-
+    goToPlatform() {
+      window.open(this.getURLAccessTrade(), '_blank');
+    },
     getURLAccessTrade(): string {
       return `${process.env.VUE_APP_BASE_ACCESS_TRADE_URL}?url=${this.item.url}`;
     },
@@ -169,6 +179,9 @@ export default Vue.extend({
   .discount-rate {
     color: #ca3e29;
     z-index: 2;
+    border: 1px solid #ca3e29;
+    border-radius: 1px !important;
+    line-height: 14px !important;
   }
 
   .old-price {

@@ -502,11 +502,14 @@ export default Vue.extend({
   box-shadow: 1px 6px 12px -10px rgba(0, 0, 0, 0.75) !important;
   -webkit-box-shadow: 1px 6px 12px -10px rgba(0, 0, 0, 0.75) !important;
   -moz-box-shadow: 1px 6px 12px -10px rgba(0, 0, 0, 0.75) !important;
+
   .discount-rate {
     color: #ca3e29;
     z-index: 2;
+    border: 1px solid #ca3e29;
+    border-radius: 1px !important;
+    line-height: 14px !important;
   }
-
   .old-price {
     text-decoration: line-through !important;
     text-decoration-color: #607d8b !important;

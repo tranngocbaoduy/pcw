@@ -84,9 +84,15 @@
             </v-row>
           </div>
           <v-card-actions class="pa-0">
-            <a :href="getURLAccessTrade()" target="_blank">
-              <v-btn class="white--text rounded-lg my-0" color="#1859db" height="37px" width="100%">{{ 'Mua' }}</v-btn>
-            </a>
+            <v-btn
+              @click="goToPlatform()"
+              class="white--text rounded-lg my-0"
+              color="#1859db"
+              height="37px"
+              width="100%"
+              >{{ 'Mua' }}</v-btn
+            >
+
             <span v-if="mainProduct.stock" class="font-size-12 ml-4"
               >Còn <span class="font-weight-bold">{{ mainProduct.stock }} </span>
             </span>
@@ -142,6 +148,10 @@ export default Vue.extend({
   watch: {},
   methods: {
     async initialize() {},
+
+    goToPlatform() {
+      window.open(this.getURLAccessTrade(), '_blank');
+    },
     getURLAccessTrade(): string {
       return `${process.env.VUE_APP_BASE_ACCESS_TRADE_URL}?url=${this.mainProduct.url}`;
     },

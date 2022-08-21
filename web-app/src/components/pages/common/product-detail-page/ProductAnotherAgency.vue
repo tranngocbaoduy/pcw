@@ -24,13 +24,7 @@ export default Vue.extend({
   }),
   created() {},
 
-  methods: {
-    getURLAccessTrade(item: ProductItem): string {
-      // const obj = new URL(item.url);
-      // return obj.pathname;
-      return `${process.env.VUE_APP_BASE_ACCESS_TRADE_URL}?url=${item.url}`;
-    },
-  },
+  methods: {},
 });
 </script>
 

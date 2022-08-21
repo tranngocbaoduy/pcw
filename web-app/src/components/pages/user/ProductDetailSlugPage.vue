@@ -22,7 +22,7 @@
       >
         <v-icon size="18">mdi-comment</v-icon>
       </v-btn>
-      <v-btn
+      <!-- <v-btn
         @click="transitionToCompare(2)"
         class="elevation-1 my-1 rounded-circle my-0"
         color="#1859db"
@@ -30,16 +30,8 @@
         icon
       >
         <v-icon size="20">mdi-information</v-icon>
-      </v-btn>
-      <v-btn
-        @click="transitionToCompare(-1)"
-        class="elevation-1 my-1 rounded-circle my-0"
-        color="#1859db"
-        style="background-color: white !important"
-        icon
-      >
-        <v-icon size="20">mdi-arrow-up-bold</v-icon>
-      </v-btn>
+      </v-btn> -->
+
       <v-menu
         v-if="isMobile && tabModel == 1"
         :close-on-click="false"
@@ -63,7 +55,7 @@
             <v-tooltip top>
               <template v-slot:activator="{ on: tooltip }">
                 <v-icon :color="isHasFilterBy ? '#1859db' : '#6e6e6e'" v-bind="attrs" v-on="{ ...tooltip }" size="20"
-                  >mdi-filter-outline</v-icon
+                  >mdi-filter</v-icon
                 >
               </template>
               <span>Filter By</span>
@@ -82,48 +74,15 @@
           </v-list-item>
         </v-list>
       </v-menu>
-      <v-menu
-        v-if="isMobile && tabModel == 1"
-        :close-on-click="true"
-        :close-on-content-click="true"
-        bottom
-        left
-        nudge-bottom="40"
-        z-index="2000"
-        content-class="elevation-1 font-size-14"
+      <v-btn
+        @click="transitionToCompare(-1)"
+        class="elevation-1 my-1 rounded-circle my-0"
+        color="#1859db"
+        style="background-color: white !important"
+        icon
       >
-        <template v-slot:activator="{ on, attrs }">
-          <v-btn
-            class="elevation-1 rounded-circle my-2"
-            icon
-            style="background-color: white !important"
-            :color="isHasSortBy ? '#1859db' : '#6e6e6e'"
-            v-bind="attrs"
-            retain-focus-on-click
-            v-on="on"
-          >
-            <v-tooltip top>
-              <template v-slot:activator="{ on: tooltip }">
-                <v-icon :color="isHasSortBy ? '#1859db' : '#6e6e6e'" v-bind="attrs" v-on="{ ...tooltip }" size="20"
-                  >mdi-sort-descending</v-icon
-                >
-              </template>
-              <span>Sort by</span>
-            </v-tooltip>
-          </v-btn>
-        </template>
-
-        <v-list class="pa-0 py-2 ma-0 elevation-0 rounded-0">
-          <v-list-item
-            v-for="(item, index) in sortByProductAnotherAgency"
-            :key="`${index}-filter-product`"
-            class="hover-custom-link pa-0 ma-0 px-2 font-size-14"
-            @click="handleChangeSorter(item)"
-          >
-            {{ item.name }}
-          </v-list-item>
-        </v-list>
-      </v-menu>
+        <v-icon size="20">mdi-arrow-up-bold</v-icon>
+      </v-btn>
     </div>
     <div v-if="mainProduct && Object.keys(mainProduct).length != 0">
       <BreadCrumbs class="mt-4 px-2" :breadcrumbs="breadcrumbs" />
@@ -157,12 +116,11 @@
             </v-tabs>
 
             <v-tabs-items v-model="tabModel">
-              <v-tab-item style="min-height: 500px">
+              <v-tab-item>
                 <DetailRatingItem :itemRating="mainProduct.itemRating" />
               </v-tab-item>
               <v-tab-item>
                 <v-menu
-                  v-if="!isMobile"
                   :close-on-click="false"
                   :close-on-content-click="true"
                   bottom
@@ -173,6 +131,7 @@
                 >
                   <template v-slot:activator="{ on, attrs }">
                     <v-btn
+                      v-if="!isMobile"
                       class="filter-product-another-agency rounded-lg my-2"
                       icon
                       :color="isHasFilterBy ? '#1859db' : '#6e6e6e'"
@@ -182,8 +141,12 @@
                     >
                       <v-tooltip top>
                         <template v-slot:activator="{ on: tooltip }">
-                          <v-icon :color="isHasFilterBy ? '#1859db' : '#6e6e6e'" v-bind="attrs" v-on="{ ...tooltip }"
-                            >mdi-filter-outline</v-icon
+                          <v-icon
+                            :color="isHasFilterBy ? '#1859db' : '#6e6e6e'"
+                            v-bind="attrs"
+                            v-on="{ ...tooltip }"
+                            size="20"
+                            >mdi-filter</v-icon
                           >
                         </template>
                         <span>Filter By</span>
@@ -203,7 +166,6 @@
                   </v-list>
                 </v-menu>
                 <v-menu
-                  v-if="!isMobile"
                   :close-on-click="true"
                   :close-on-content-click="true"
                   bottom
@@ -214,7 +176,8 @@
                 >
                   <template v-slot:activator="{ on, attrs }">
                     <v-btn
-                      class="sort-by-product-another-agency rounded-lg my-2"
+                      class="rounded-lg my-2"
+                      :class="isMobile ? 'sort-by-product-another-agency-mobile' : 'sort-by-product-another-agency'"
                       icon
                       :color="isHasSortBy ? '#1859db' : '#6e6e6e'"
                       v-bind="attrs"
@@ -223,7 +186,11 @@
                     >
                       <v-tooltip top>
                         <template v-slot:activator="{ on: tooltip }">
-                          <v-icon :color="isHasSortBy ? '#1859db' : '#6e6e6e'" v-bind="attrs" v-on="{ ...tooltip }"
+                          <v-icon
+                            :color="isHasSortBy ? '#1859db' : '#6e6e6e'"
+                            v-bind="attrs"
+                            v-on="{ ...tooltip }"
+                            size="20"
                             >mdi-sort-descending</v-icon
                           >
                         </template>
@@ -491,14 +458,20 @@ export default Vue.extend({
 .product-detail-slug-page {
   .filter-product-another-agency {
     position: absolute;
-    right: 20px;
+    right: 68px;
     top: -55px;
+    z-index: 10;
+  }
+  .sort-by-product-another-agency-mobile {
+    position: absolute;
+    right: 10px;
+    top: -65px;
     z-index: 10;
   }
 
   .sort-by-product-another-agency {
     position: absolute;
-    right: 68px;
+    right: 20px;
     top: -55px;
     z-index: 10;
   }

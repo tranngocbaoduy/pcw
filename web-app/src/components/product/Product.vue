@@ -20,7 +20,7 @@
       <v-card-title class="pa-0 mx-3 mt-0 mb-n2" style="">
         <v-row align="center">
           <v-col cols="12 pr-0">
-            <div class="font-size-12 line-height-20 title-product">
+            <div class="font-size-14 line-height-20 title-product">
               <!-- <span class="primary-color-2 font-weight-bold">{{ itemBrand }} </span>-  -->
               {{ item.cleanName }}
             </div>
@@ -35,7 +35,9 @@
 
       <v-row class="pa-0 mx-3 my-0 mb-0 text-center py-0" align="center" no-gutters>
         <v-col cols="8" class="ma-0 pa-0 primary-color-4 text-left" v-if="item.listPrice != item.price">
-          <span class="line-height-22 font-size-10 font-weight-1 old-price"> {{ item.listPrice | formatPrice }}đ</span>
+          <span class="line-height-22 font-size-10 font-weight-1 old-price mr-2">
+            {{ item.listPrice | formatPrice }}đ</span
+          >
           <span class="discount-rate px-1 font-size-12 font-weight-2 text-right"> {{ item.discountRate }}% </span>
         </v-col>
         <v-col cols="8" v-else class="ma-0 pa-0 primary-color-4 text-left"></v-col>
@@ -140,9 +142,13 @@ export default Vue.extend({
     line-height: 24px;
     border-radius: 0px 0px 4px 0px !important;
   }
+
   .discount-rate {
     color: #ca3e29;
     z-index: 2;
+    border: 1px solid #ca3e29;
+    border-radius: 1px !important;
+    line-height: 14px !important;
   }
 
   .old-price {

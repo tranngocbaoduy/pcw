@@ -3,6 +3,7 @@
     <v-card-title class="font-size-22 font-weight-2 mb-2 px-0 pb-0 line-height-30 d-inline-block">
       <span
         :class="domain ? domain.toLowerCase() : ''"
+        style="border-radius: 2px !important"
         class="rounded-0 font-size-16 pa-1 mb-2 mr-3 font-weight-2 text-right elevation-0"
       >
         {{ domain }}
@@ -66,13 +67,16 @@
       </div>
     </div>
     <v-card-actions class="pa-0">
-      <a :href="getURLAccessTrade()" target="_blank">
-        <v-btn class="white--text rounded-lg my-2 text-capitalize" color="#1859db" height="42px" width="100%">{{
-          $t('buyNow')
-        }}</v-btn>
-      </a>
+      <v-btn
+        @click="goToPlatform()"
+        class="white--text rounded-lg my-2 text-capitalize"
+        color="#1859db"
+        height="42px"
+        width="100px"
+        >{{ $t('buyNow') }}</v-btn
+      >
       <span v-if="item.stock" class="font-size-14 ml-4"
-        >Còn <span class="font-weight-bold">{{ item.stock }} </span> sản phẩm</span
+        >Kho: <span class="font-weight-bold">{{ item.stock }} </span> sản phẩm</span
       >
     </v-card-actions>
     <v-card color="white" class="mt-5 rounded-0 px-3" elevation="0">
@@ -84,9 +88,8 @@
         <ul class="line-height-24 font-size-14 font-weight-2 mr-7" :class="isMobile ? ' pa-0' : ''">
           <li class="py-1">
             {{ $t('The cheapest product is on sale at') }}
-            <a :href="getURLAccessTrade()" target="_blank">
-              <span class="primary-color-1">{{ item && item.domain ? item.domain : '' }}</span>
-            </a>
+
+            <span @click="goToPlatform()" class="primary-color-1">{{ item && item.domain ? item.domain : '' }}</span>
           </li>
           <li class="py-1" v-if="largestSaleOffItem.discountRate != 0">
             {{ $t('The store with the most discounts is') }}
@@ -169,9 +172,10 @@ export default Vue.extend({
     },
   },
   methods: {
+    goToPlatform() {
+      window.open(this.getURLAccessTrade(), '_blank');
+    },
     getURLAccessTrade(): string {
-      console.log('this.item', base64url.decode(this.item.url), this.item);
-
       return `${process.env.VUE_APP_BASE_ACCESS_TRADE_URL}?url=${this.item.url}`;
     },
   },
