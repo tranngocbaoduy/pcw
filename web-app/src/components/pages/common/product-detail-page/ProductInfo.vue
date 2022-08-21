@@ -8,25 +8,25 @@
         {{ domain }}
       </span>
       <span class="primary-color-2 font-size-22">{{ item.brand || '' }} </span> -
-      <span class="font-size-22">{{ item.cleanName | reduceText(500) }}</span>
+      <span class="font-size-20">{{ item.cleanName | reduceText(500) }}</span>
     </v-card-title>
     <v-card-text class="font-size-14 font-weight-2 pl-0 pb-4">
       <div class="d-flex justify-start align-center">
         <RatingItem class="hover-custom-link py-2 pr-4" :itemRating="item.itemRating" :isDisplay="true" />
         <v-divider vertical style="width: 10px" class="my-2" />
-        <div class="mx-3">
+        <div :class="isMobile ? 'mx-2' : 'mx-3'">
           <span>Đánh giá: </span>
           <span class="font-weight-3 primary-color-2">{{
             item.itemRating.rating_count.reduce((partialSum, a) => partialSum + a, 0) || 0
           }}</span>
         </div>
         <v-divider vertical style="width: 10px" class="my-2" />
-        <div class="mx-3">
+        <div :class="isMobile ? 'mx-2' : 'mx-3'">
           <span>Đã bán: </span>
           <span class="font-weight-3 primary-color-2">{{ item.historicalSold || 0 }}</span>
         </div>
         <v-divider vertical style="width: 10px" class="my-2" />
-        <div class="mx-3">
+        <div :class="isMobile ? 'mx-2' : 'mx-3'">
           <span>Thích: </span>
           <span class="font-weight-3 primary-color-2">{{ item.likedCount || 0 }}</span>
         </div>
@@ -38,7 +38,7 @@
         <div class="font-size-16 font-weight-1 line-through pr-0 pl-2 mr-3" v-if="item.listPrice != item.price">
           {{ item.listPrice | formatPrice }}đ
         </div>
-        <div class="font-size-30 font-weight-3 mr-7 primary-color-1">{{ item.price | formatPrice }}đ</div>
+        <div class="font-size-28 font-weight-3 mr-7 primary-color-1">{{ item.price | formatPrice }}đ</div>
         <div
           style="border: red 1px solid"
           v-if="item.listPrice != item.price"
@@ -84,7 +84,7 @@
         <ul class="line-height-24 font-size-14 font-weight-2 mr-7" :class="isMobile ? ' pa-0' : ''">
           <li class="py-1">
             {{ $t('The cheapest product is on sale at') }}
-            <a :href="item.url" target="_blank">
+            <a :href="getURLAccessTrade()" target="_blank">
               <span class="primary-color-1">{{ item && item.domain ? item.domain : '' }}</span>
             </a>
           </li>

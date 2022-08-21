@@ -1,6 +1,6 @@
 <template>
   <div class="my-4 detail-item-rating d-flex pa-4 bg-primary-color-6 rounded-sm" :class="isMobile ? 'flex-column' : ''">
-    <div :class="isMobile ? '' : 'ma-auto'">
+    <div class="ma-auto">
       <v-progress-circular :rotate="270" :size="130" :width="15" :value="ratingScoreOnCircle" color="#1859db">
         <span class="font-size-20 font-weight-bold">{{ ratingScore }} </span>
         <span class="primary-color-4 font-size-14 font-weight-bold">/ 5</span>

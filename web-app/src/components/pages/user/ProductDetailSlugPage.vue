@@ -40,6 +40,90 @@
       >
         <v-icon size="20">mdi-arrow-up-bold</v-icon>
       </v-btn>
+      <v-menu
+        v-if="isMobile && tabModel == 1"
+        :close-on-click="false"
+        :close-on-content-click="true"
+        bottom
+        left
+        nudge-bottom="40"
+        z-index="2000"
+        content-class="elevation-1 font-size-12"
+      >
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn
+            class="elevation-1 rounded-circle my-2"
+            icon
+            style="background-color: white !important"
+            :color="isHasFilterBy ? '#1859db' : '#6e6e6e'"
+            v-bind="attrs"
+            retain-focus-on-click
+            v-on="on"
+          >
+            <v-tooltip top>
+              <template v-slot:activator="{ on: tooltip }">
+                <v-icon :color="isHasFilterBy ? '#1859db' : '#6e6e6e'" v-bind="attrs" v-on="{ ...tooltip }" size="20"
+                  >mdi-filter-outline</v-icon
+                >
+              </template>
+              <span>Filter By</span>
+            </v-tooltip>
+          </v-btn>
+        </template>
+
+        <v-list class="pa-0 py-2 ma-0 elevation-0 rounded-0 font-size-12">
+          <v-list-item
+            v-for="(item, index) in filterByProductAnotherAgency"
+            :key="`${index}-filter-product`"
+            class="hover-custom-link pa-0 ma-0 px-2 font-size-12"
+            @click="handleChangeFilter(item)"
+          >
+            <v-checkbox class="font-size-12 py-0 mt-0" hide-details :label="item.name"></v-checkbox>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+      <v-menu
+        v-if="isMobile && tabModel == 1"
+        :close-on-click="true"
+        :close-on-content-click="true"
+        bottom
+        left
+        nudge-bottom="40"
+        z-index="2000"
+        content-class="elevation-1 font-size-14"
+      >
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn
+            class="elevation-1 rounded-circle my-2"
+            icon
+            style="background-color: white !important"
+            :color="isHasSortBy ? '#1859db' : '#6e6e6e'"
+            v-bind="attrs"
+            retain-focus-on-click
+            v-on="on"
+          >
+            <v-tooltip top>
+              <template v-slot:activator="{ on: tooltip }">
+                <v-icon :color="isHasSortBy ? '#1859db' : '#6e6e6e'" v-bind="attrs" v-on="{ ...tooltip }" size="20"
+                  >mdi-sort-descending</v-icon
+                >
+              </template>
+              <span>Sort by</span>
+            </v-tooltip>
+          </v-btn>
+        </template>
+
+        <v-list class="pa-0 py-2 ma-0 elevation-0 rounded-0">
+          <v-list-item
+            v-for="(item, index) in sortByProductAnotherAgency"
+            :key="`${index}-filter-product`"
+            class="hover-custom-link pa-0 ma-0 px-2 font-size-14"
+            @click="handleChangeSorter(item)"
+          >
+            {{ item.name }}
+          </v-list-item>
+        </v-list>
+      </v-menu>
     </div>
     <div v-if="mainProduct && Object.keys(mainProduct).length != 0">
       <BreadCrumbs class="mt-4 px-2" :breadcrumbs="breadcrumbs" />
@@ -67,9 +151,9 @@
         <v-col cols="12">
           <v-card class="elevation-0 rounded-sm" height="100%">
             <v-tabs v-model="tabModel" color="#1859db" left background-color="transparent">
-              <v-tab :class="isMobile ? 'font-size-12' : 'font-size-14'">Đánh giá</v-tab>
-              <v-tab :class="isMobile ? 'font-size-12' : 'font-size-14'">Các cửa hàng ({{ allProduct.length }})</v-tab>
-              <v-tab :class="isMobile ? 'font-size-12' : 'font-size-14'">Thông tin</v-tab>
+              <v-tab :class="isMobile ? 'font-size-14' : 'font-size-14'">Đánh giá</v-tab>
+              <v-tab :class="isMobile ? 'font-size-14' : 'font-size-14'">Các cửa hàng ({{ allProduct.length }})</v-tab>
+              <v-tab :class="isMobile ? 'font-size-14' : 'font-size-14'">Thông tin</v-tab>
             </v-tabs>
 
             <v-tabs-items v-model="tabModel">
@@ -78,6 +162,7 @@
               </v-tab-item>
               <v-tab-item>
                 <v-menu
+                  v-if="!isMobile"
                   :close-on-click="false"
                   :close-on-content-click="true"
                   bottom
@@ -118,6 +203,7 @@
                   </v-list>
                 </v-menu>
                 <v-menu
+                  v-if="!isMobile"
                   :close-on-click="true"
                   :close-on-content-click="true"
                   bottom
@@ -426,9 +512,9 @@ export default Vue.extend({
 
   .transition-span-mobile {
     position: fixed;
-    top: 170px;
+    bottom: 90px;
     z-index: 100;
-    right: 10px;
+    right: 15px;
   }
 }
 </style>

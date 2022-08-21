@@ -1,5 +1,5 @@
 <template>
-  <v-col sm="12" md="12" cols="12" :class="isMobile ? 'py-0' : 'py-3'" class="trending-promotion">
+  <v-col sm="12" md="12" cols="12" :class="isMobile ? 'py-0' : 'py-3'" class="trending-promotion px-0">
     <div class="mt-2 pa-0">
       <v-card-title class="trending-page-name font-size-32 font-weight-3 px-0 mt-2 mx-0">
         {{ $t('trendingPromotion') }}
@@ -51,7 +51,7 @@
                               </div> -->
 
                               <div class="d-flex-col align-center justify-start line-height-18">
-                                <div class="font-size-12 font-weight-2 line-height-20 title-product mb-2">
+                                <div class="font-size-12 font-weight-2 line-height-22 title-product mb-2">
                                   {{ filterPromotionItems[+index + i].cleanName }}
                                 </div>
                                 <span

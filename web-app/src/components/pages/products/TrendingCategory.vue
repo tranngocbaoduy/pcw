@@ -1,5 +1,5 @@
 <template>
-  <v-col sm="12" md="12" cols="12" :class="isMobile ? 'py-0' : 'py-3'" class="trending-category">
+  <v-col sm="12" md="12" cols="12" :class="isMobile ? 'py-0' : 'py-3'" class="trending-category px-0">
     <div class="mt-2 pa-0">
       <v-card-title class="trending-page-name font-size-32 font-weight-3 px-0 mt-2 mx-0">
         {{ $t('trendingCategory') }}

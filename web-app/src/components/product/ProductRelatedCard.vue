@@ -69,13 +69,6 @@
         </span>
       </div>
 
-      <div
-        :style="isMobile ? 'width: 45px' : 'width: 80px'"
-        class="ml-4"
-        :class="isMobile ? 'font-size-14' : 'font-size-14'"
-      >
-        Kho: <span class="font-weight-bold">{{ item.stock || 0 }} </span>
-      </div>
       <div class="text-right" :style="isMobile ? 'min-width: 60px' : 'min-width: 100px'">
         <div class="font-size-12 font-weight-1 old-price" v-if="item.listPrice != item.price">
           {{ item.listPrice | formatPrice }}đ
@@ -83,6 +76,13 @@
         <div class="ma-0 pa-0 font-size-14 font-weight-3 text-right primary-color-1">
           {{ item.price | formatPrice }}đ
         </div>
+      </div>
+      <div
+        :style="isMobile ? 'width: 45px' : 'width: 80px'"
+        class="ml-4"
+        :class="isMobile ? 'font-size-14' : 'font-size-14'"
+      >
+        Kho: <span class="font-weight-bold">{{ item.stock || 0 }} </span>
       </div>
 
       <a :href="getURLAccessTrade()" target="_blank">

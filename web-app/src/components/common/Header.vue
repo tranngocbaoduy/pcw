@@ -17,8 +17,8 @@
       <div style="width: 700px" class="pb-0 pt-4">
         <v-autocomplete
           class="rounded-md elevation-1 mr-4"
-          @blur="isFocus = false"
-          @click="isFocus = true"
+          @blur.prevent.stop="isFocus = false"
+          @click.prevent.stop="isFocus = true"
           style="box-shadow: none !important"
           :style="isFocus ? 'border: #1859db 1px solid;' : 'border: #ddd6d6 0.6px solid;'"
           validate-on-blur
