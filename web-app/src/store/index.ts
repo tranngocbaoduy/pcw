@@ -16,6 +16,8 @@ interface RootState {
   innerWidth: number;
   offsetHeight: number;
   searchFilter?: {};
+  productSearchItems: ProductItem[];
+  searchStringList: string[];
 }
 
 interface ProductItemByCategory {
@@ -204,6 +206,8 @@ const state: RootState = {
       selected: false,
     },
   ],
+  productSearchItems: [],
+  searchStringList: [],
 };
 export default new Vuex.Store({
   state,
@@ -218,6 +222,8 @@ export default new Vuex.Store({
     isMobile: (state) => state.isMobile,
     innerWidth: (state) => state.innerWidth,
     offsetHeight: (state) => state.offsetHeight,
+    productSearchItems: (state) => state.productSearchItems,
+    searchStringList: (state) => state.searchStringList,
   },
   mutations: {
     setState(state, nextState) {

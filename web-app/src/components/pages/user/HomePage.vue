@@ -2,10 +2,10 @@
   <div class="body-user-page pa-2" ref="body-user-page-ref">
     <Carousel />
     <RecommendProducts />
-    <TrendingPromotion />
+    <TrendingPromotion :promotionItems="promotionItems" />
     <!-- <TrendingBrand /> -->
-    <TrendingSearchProducts />
     <TrendingCategory :listItem="trendingCategoryItems" />
+    <!-- <TrendingSearchProducts /> -->
     <!-- <TrendingSearch></TrendingSearch> -->
     <!-- <Feature></Feature> -->
   </div>
@@ -20,6 +20,7 @@ import RecommendProducts from '@/components/pages/products/TrendingRecommendProd
 import TrendingSearchProducts from '@/components/pages/products/TrendingSearchProducts.vue';
 import TrendingCategory from '@/components/pages/products/TrendingCategory.vue';
 import { CategoryItem } from '@/api/category.service';
+import ProductService, { ProductItem } from '@/api/product.service';
 
 export default Vue.extend({
   name: 'Body',
@@ -29,12 +30,13 @@ export default Vue.extend({
     // TrendingBrand,
     TrendingPromotion,
     RecommendProducts,
-    TrendingSearchProducts,
+    // TrendingSearchProducts,
     // TrendingSearch,
     // Feature,
   },
   data: () => ({
     trendingCategoryItems: [] as CategoryItem[],
+    promotionItems: [] as ProductItem[],
   }),
   computed: {
     isMobile(): boolean {
@@ -47,6 +49,7 @@ export default Vue.extend({
   created() {
     window.scrollTo({ top: 0, left: 0 });
     this.loadTrendingCategoryItems();
+    this.loadPromotionItems();
   },
   async mounted() {},
   watch: {
@@ -58,7 +61,22 @@ export default Vue.extend({
     },
   },
   methods: {
-    loadTrendingCategoryItems() {
+    async loadPromotionItems() {
+      this.promotionItems = await ProductService.queryPromotionItems({
+        page: 1,
+        limit: this.isMobile ? 8 : 21,
+        discountRate: 2,
+      });
+
+      this.promotionItems = this.promotionItems.sort((itemA: ProductItem, itemB: ProductItem) => {
+        const valueA = itemA.discountRate || 0;
+        const valueB = itemB.discountRate || 0;
+        // descending
+        if (valueA < valueB) return 1;
+        else return -1;
+      });
+    },
+    async loadTrendingCategoryItems() {
       this.trendingCategoryItems = [];
       for (const i of this.categoryItems) {
         try {

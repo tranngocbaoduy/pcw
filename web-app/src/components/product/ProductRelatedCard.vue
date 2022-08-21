@@ -1,59 +1,101 @@
 <template>
   <v-hover v-slot="{ hover }">
     <v-card
-      :elevation="hover ? 4 : 1"
+      :elevation="hover ? 2 : 0"
       :loading="loading"
-      class="product-related rounded-0 px-2 py-4"
+      class="
+        product-related
+        rounded-0
+        px-2
+        pb-3
+        pt-1
+        my-0
+        d-flex d-flex-row
+        flex-wrap
+        justify-space-around
+        align-center
+      "
+      :class="hover ? 'bg-primary-color-6' : ''"
       v-if="item"
       :style="hover ? 'z-index:4' : ''"
     >
-      <v-card-title class="pa-0 ma-0">
-        <span :class="item.domain.toLowerCase()" class="domain font-size-16 px-4">{{ item.domain }}</span>
-      </v-card-title>
+      <div>
+        <v-img
+          contain
+          transition="fade-transition"
+          :width="isMobile ? 40 : 60"
+          :height="isMobile ? 40 : 60"
+          :src="item.listImage[0]"
+          class="ma-auto"
+        ></v-img>
+      </div>
+      <div class="pa-0 ma-0">
+        <span
+          :class="isMobile ? `domain-mobile ${item.domain.toLowerCase()}` : `domain ${item.domain.toLowerCase()}`"
+          class="font-size-14 px-4"
+          >{{ item.domain }}</span
+        >
+      </div>
 
-      <v-card-title class="pa-0 ma-0 mb-0 pt-7 pb-3" style="line-height: 23px">
-        <v-row align="center" no-gutters>
-          <v-col cols="12">
-            <div class="font-size-14 font-weight-2 title-product">{{ item.name }}</div>
-          </v-col>
-        </v-row>
-      </v-card-title>
-
-      <v-row class="pa-0 mx-0 mb-0 text-center py-0" align="center" no-gutters>
-        <v-col cols="6" class="ma-0 pa-0 primary-color-4 text-left">
-          <span class="font-size-12 font-weight-1 old-price line-height-22"> {{ item.listPrice | formatPrice }}đ</span>
-          <span class="discount-rate px-1 font-size-14 font-weight-2 text-right"> {{ item.discountRate }}% </span>
-        </v-col>
-
-        <v-col cols="6" class="ma-0 pa-0">
-          <div class="font-size-10 font-weight-1 pa-0 ma-0 text-right line-height-20">
-            <v-icon> mdi-heart-outline </v-icon>
-
-            <!-- <span class="line-height-20 font-size-12">{{ $t('freeShip') }}</span> -->
+      <div
+        class="pa-0 ma-0 mb-0 pb-0 pt-4"
+        :style="isMobile ? 'width: 320px' : 'width: 400px'"
+        style="line-height: 23px"
+      >
+        <div class="font-size-14 font-weight-2">{{ item.name }}</div>
+        <div class="d-flex justify-space-between align-center px-0 mx-0">
+          <RatingItem class="hover-custom-link" :itemRating="item.itemRating" />
+          <div class="font-size-14 font-weight-2 pt-1 pl-2">
+            <v-icon small class="px-2 pr-1 pb-1">mdi-map-marker</v-icon>{{ item.shopLocation }}
           </div>
-        </v-col>
-      </v-row>
-      <v-row class="pa-0 mx-0 my-0 text-center py-0" align="center" no-gutters>
-        <v-col cols="6" class="ma-0 pa-0 font-size-16 font-weight-3 text-left primary-color-1 line-height-26">
+        </div>
+      </div>
+      <div class="mx-3 ml-0 font-size-14 text-right" :style="isMobile ? 'min-width: 50px' : 'min-width: 90px'">
+        <div class="mb-n2">
+          <span class="font-weight-bold">{{
+            item.itemRating.rating_count.reduce((partialSum, a) => partialSum + a, 0) || 0
+          }}</span
+          ><span> review </span>
+        </div>
+        <a :href="getURLAccessTrade()" target="_blank" class="font-size-12 text-underline">Xem ngay</a>
+      </div>
+
+      <div class="mx-3 font-size-14 text-right" :style="isMobile ? 'min-width: 50px' : 'min-width: 90px'">
+        <span class="font-weight-bold">{{ item.historicalSold || 0 }}</span> <span> đã bán</span>
+      </div>
+      <div class="ma-0 pa-0 primary-color-4 text-left" :style="isMobile ? 'min-width: 30px' : 'width: 40px'">
+        <span class="discount-rate px-1 font-size-14 font-weight-2 text-right" v-if="item.listPrice != item.price">
+          {{ item.discountRate }}%
+        </span>
+      </div>
+
+      <div
+        :style="isMobile ? 'width: 45px' : 'width: 80px'"
+        class="ml-4"
+        :class="isMobile ? 'font-size-14' : 'font-size-14'"
+      >
+        Kho: <span class="font-weight-bold">{{ item.stock || 0 }} </span>
+      </div>
+      <div class="text-right" :style="isMobile ? 'min-width: 60px' : 'min-width: 100px'">
+        <div class="font-size-12 font-weight-1 old-price" v-if="item.listPrice != item.price">
+          {{ item.listPrice | formatPrice }}đ
+        </div>
+        <div class="ma-0 pa-0 font-size-14 font-weight-3 text-right primary-color-1">
           {{ item.price | formatPrice }}đ
-        </v-col>
-        <v-col cols="6" class="ma-0 pa-0 text-right">
-          <v-rating
-            class="product-rate line-height-18 pa-0"
-            :value="getRatingAverage"
-            color="#FFA200"
-            dense
-            half-increments
-            readonly
-            size="13"
-          ></v-rating>
-        </v-col>
-      </v-row>
+        </div>
+      </div>
+
+      <a :href="getURLAccessTrade()" target="_blank">
+        <v-btn class="rounded-lg my-2" icon color="#1859db">
+          <v-icon>mdi-shopping-outline</v-icon>
+        </v-btn>
+      </a>
     </v-card>
   </v-hover>
 </template>
 
 <script lang="ts">
+import RatingItem from '@/components/common/rating/RatingItem.vue';
 import CategoryService from '@/api/category.service';
 import Vue from 'vue';
 
@@ -63,6 +105,7 @@ export default Vue.extend({
     loading: false,
     selection: 1,
   }),
+  components: { RatingItem },
 
   filters: {
     reduceText: function (text: string, max: number) {
@@ -83,12 +126,20 @@ export default Vue.extend({
       }
       return 5;
     },
+
+    isMobile(): boolean {
+      return this.$store.getters.isMobile;
+    },
   },
 
   methods: {
     reserve() {
       this.loading = true;
       setTimeout(() => (this.loading = false), 2000);
+    },
+
+    getURLAccessTrade(): string {
+      return `${process.env.VUE_APP_BASE_ACCESS_TRADE_URL}?url=${this.item.url}`;
     },
   },
 });
@@ -100,9 +151,20 @@ export default Vue.extend({
   .domain {
     position: absolute;
     left: 0px;
+    bottom: 0px;
+    z-index: 100;
+    height: 24px;
+    line-height: 24px;
+    border-radius: 0px 4px 0px 0px !important;
+  }
+  .domain-mobile {
+    position: absolute;
+    left: 0px;
     top: 0px;
     z-index: 100;
-    border-radius: 0px !important;
+    height: 20px;
+    line-height: 20px;
+    border-radius: 0px 0px 4px 0px !important;
   }
   .discount-rate {
     color: #ca3e29;

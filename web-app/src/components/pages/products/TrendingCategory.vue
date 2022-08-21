@@ -29,7 +29,7 @@
                   class="ma-auto rounded-0"
                   :src="category.image"
                 ></v-img>
-                <div class="text-center font-weight-bold">{{ category.translateName }}</div>
+                <div class="text-center font-weight-bold my-1">{{ categoryName(category.name) }}</div>
               </v-card>
             </router-link>
           </v-hover>
@@ -66,7 +66,11 @@ export default Vue.extend({
   },
 
   watch: {},
-  methods: {},
+  methods: {
+    categoryName(categoryId: string): string {
+      return categoryId ? this.$t(`category.${categoryId}`).toString() : '';
+    },
+  },
 });
 </script>
 

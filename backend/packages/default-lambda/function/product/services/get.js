@@ -1,9 +1,19 @@
 const dynamodbHelper = require("../helper/DynamodbHelper");
-const fs = require('fs');
+const fs = require("fs");
+const Latinise = require("../helper/latin");
+String.prototype.latinise = function () {
+  return this.replace(/[^A-Za-z0-9\[\] ]/g, function (a) {
+    return Latinise.Latinise.latin_map[a] || a;
+  });
+};
+String.prototype.latinize = String.prototype.latinise;
+String.prototype.isLatin = function () {
+  return this == this.latinise();
+};
 
 function checkIsValidDomain(event) {
-  const listDomainValid = ['https://x-pcw.com', 'http://localhost:8080']
-  if (listDomainValid.includes(event.headers.origin)) return true
+  const listDomainValid = ["https://x-pcw.com", "http://localhost:8080", "https://d3kxmkwimuhvhe.cloudfront.net"];
+  if (listDomainValid.includes(event.headers.origin)) return true;
   return false;
 }
 
@@ -18,6 +28,9 @@ module.exports = async (event, context) => {
   } else {
     if (checkIsValidDomain(event)) {
       switch (queryParams["action"]) {
+        case "querySearchItems":
+          result = await querySearchItems(event);
+          break;
         case "queryChildItem":
           result = await queryChildItem(event);
           break;
@@ -87,85 +100,133 @@ async function queryBrandItems(event) {
     KeyConditionExpression: "PK = :pk and begins_with(SK, :sk)",
     ExpressionAttributeValues: {
       ":pk": "BRAND",
-      ":sk": SK
+      ":sk": SK,
     },
   };
   return await dynamodbHelper.queryAllItems(params);
 }
 
-
 async function queryChildItem(event) {
   const PK = event.queryStringParameters["PK"] || null;
   let RELATIONSHIP_ID = event.queryStringParameters["RELATIONSHIP_ID"] || null;
   if (!PK || !RELATIONSHIP_ID) return [];
-  RELATIONSHIP_ID = RELATIONSHIP_ID.split('_').join('#')
+  RELATIONSHIP_ID = RELATIONSHIP_ID.split("_").join("#");
   const params = {
     TableName: process.env.PRODUCT_TABLE_NAME,
-    IndexName: 'RELATIONSHIP-INDEX',
+    IndexName: "RELATIONSHIP-INDEX",
     KeyConditionExpression: "#PK = :pk AND #RELATIONSHIP_ID = :relationshipId",
     ExpressionAttributeNames: {
-      '#PK': 'PK',
-      '#RELATIONSHIP_ID': 'RELATIONSHIP_ID',
+      "#PK": "PK",
+      "#RELATIONSHIP_ID": "RELATIONSHIP_ID",
     },
     ExpressionAttributeValues: {
       ":pk": PK,
-      ":relationshipId": RELATIONSHIP_ID
+      ":relationshipId": RELATIONSHIP_ID,
     },
   };
 
-  return await dynamodbHelper.queryItems(params)
+  return await dynamodbHelper.queryItems(params);
 }
 
-async function queryItemById(event) {
+async function querySearchItems(event) {
+  const searchString = event.queryStringParameters["searchString"] || null;
+  const limit = 20;
+  if (searchString) {
+    const isLatin = searchString.isLatin();
+    const SEARCH_TERM = isLatin ? "#SEARCH_TERM_NOACCENTS" : "#SEARCH_TERM";
 
+    let expressionAttributeNames = {
+      "#PRODUCT_KEY": "PRODUCT_KEY",
+      "#URL": "url",
+      "#BRAND": "brand",
+      "#DOMAIN": "domain",
+      "#NAME": "name",
+      "#IMAGE": "image"
+    };
+    expressionAttributeNames[SEARCH_TERM] = SEARCH_TERM.slice(
+      1,
+      SEARCH_TERM.length
+    );
+
+    let filterExpressionList = [];
+    let expressionAttributeValues = {
+      ":productKey": "PRODUCT",
+    };
+    const strList = searchString.split(" ");
+    for (const index in strList) {
+      let term = strList[index];
+      filterExpressionList.push(`contains(${SEARCH_TERM}, :term${index})`);
+      expressionAttributeValues[`:term${index}`] = term;
+    }
+
+    const params = {
+      TableName: process.env.PRODUCT_TABLE_NAME,
+      IndexName: "SEARCH-INDEX",
+      KeyConditionExpression: "#PRODUCT_KEY = :productKey",
+      FilterExpression: filterExpressionList.join(" and "),
+      ExpressionAttributeNames: expressionAttributeNames,
+      ExpressionAttributeValues: expressionAttributeValues,
+      ProjectionExpression: 'PK, SK, #URL, price, voucher_info, slug_id, #BRAND, #DOMAIN, #NAME, #IMAGE, list_price, discount_rate',
+    };
+    return await dynamodbHelper.queryAllItemsByLimit(params, limit);
+  }
+  return [];
+}
+async function queryItemById(event) {
   let ID = event.queryStringParameters["id"] || null;
   let isHasChild = event.queryStringParameters["isHasChild"] || false;
   if (!ID) return "not ID";
-  const SK = ID.split('.')[0]
-  const GROUP_ID = ID.split('.')[1]
+  const SK = ID.split(".")[0];
+  const GROUP_ID = ID.split(".")[1];
   if (!GROUP_ID) return "not GROUP";
-  const PK = GROUP_ID.slice(GROUP_ID.length - 6, GROUP_ID.length)
+  const PK = GROUP_ID.slice(GROUP_ID.length - 5, GROUP_ID.length);
 
   try {
     if (isHasChild && GROUP_ID) {
       const params = {
         TableName: process.env.PRODUCT_TABLE_NAME,
-        IndexName: 'GROUP-INDEX',
+        IndexName: "GROUP-INDEX",
         KeyConditionExpression: "#PK = :pk AND #GROUP_ID = :groupID",
         ExpressionAttributeNames: {
-          '#PK': 'PK',
-          '#GROUP_ID': 'GROUP_ID',
+          "#PK": "PK",
+          "#GROUP_ID": "GROUP_ID",
         },
         ExpressionAttributeValues: {
           ":pk": PK,
-          ":groupID": GROUP_ID
+          ":groupID": GROUP_ID,
         },
       };
-      console.log('params', params)
+      console.log("params", params);
       const childItems = await dynamodbHelper.queryItems(params);
       return {
-        mainItem: childItems.find((i) => i.SK == SK),
-        childItems: childItems.filter((i) => i.SK != SK),
-      }
+        mainItem: childItems.find((i) => i.SK.includes(SK)),
+        childItems: childItems.filter((i) => !i.SK.includes(SK)),
+      };
     } else {
       const params = {
         TableName: process.env.PRODUCT_TABLE_NAME,
-        Key: {
-          PK: PK,
-          SK: SK,
-        }
+        KeyConditionExpression: "PK = :pk AND begins_with(SK, :sk)",
+        // FilterExpression: "discount_rate >= :discount_rate",
+        ExpressionAttributeValues: {
+          ":pk": PK,
+          ":sk": SK,
+        },
+        Limit: 10,
       };
-      console.log('params', params)
+      console.log("params", params);
       try {
-        return await dynamodbHelper.getItem(params);
+        res = await dynamodbHelper.queryItems(params);
+        if (res.length == 1) {
+          return res[0];
+        }
+        return null;
       } catch (err) {
-        console.log('err cant get mainproduct');
+        console.log("err cant get mainproduct");
       }
     }
-
   } catch (err) {
-    console.log('err', err)
-    return null
+    console.log("err", err);
+    return null;
   }
 }
 
@@ -183,14 +244,17 @@ async function queryItemByCategoryId(event) {
     FilterExpression: "discount_rate >= :discount_rate",
     ExpressionAttributeValues: {
       ":pk": category,
-      ":sk": 'REP',
+      ":sk": "REP",
       ":discount_rate": parseInt(discount_rate),
     },
     Limit: limit,
   };
-  console.log('params', params)
+  console.log("params", params);
 
-  return await dynamodbHelper.queryAllItemsByLimit(params, parseInt(limit) * parseInt(page));
+  return await dynamodbHelper.queryAllItemsByLimit(
+    params,
+    parseInt(limit) * parseInt(page)
+  );
 }
 
 async function listAllItem() {

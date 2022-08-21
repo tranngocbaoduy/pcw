@@ -1,7 +1,6 @@
 import Vue, { VueConstructor } from 'vue';
 import VueRouter, { RawLocation, Route, RouteConfig } from 'vue-router';
 import RouterHelper from './helper';
-import { equals } from 'ramda';
 
 // export function register(Vue: VueConstructor) {
 //   const routerPush = VueRouter.prototype.push;
@@ -26,9 +25,9 @@ import { equals } from 'ramda';
 //     }
 //   };
 
+//   Vue.use(VueRouter);
 // }
 // register(Vue);
-
 Vue.use(VueRouter);
 
 // const superPush = VueRouter.prototype.push;

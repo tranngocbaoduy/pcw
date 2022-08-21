@@ -5,6 +5,8 @@ Parameters:
     Type: String
   EnvName:
     Type: String 
+  StageName:
+    Type: String
 
 Mappings:
   EnvTypeMap:
@@ -157,6 +159,7 @@ Resources:
               - Action: lambda:InvokeFunction
                 Effect: Allow
                 Resource: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-ProductFunction"
+  
   RestApi:
     Type: AWS::ApiGateway::RestApi
     Properties:
@@ -343,3 +346,9 @@ Resources:
                   application/json: '{"statusCode": 200}'
                 passthroughBehavior: "when_no_match"
                 type: "mock"
+
+  RestApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      RestApiId: !Ref RestApi
+      StageName: !Ref StageName

@@ -1,7 +1,14 @@
 <template>
   <div class="product-info" v-if="item">
-    <v-card-title class="font-size-22 font-weight-2 mb-2 px-0 pb-0 line-height-28 d-inline-block">
-      <span class="primary-color-2">{{ item.brand || '' }} </span> - <span>{{ item.name | reduceText(500) }}</span>
+    <v-card-title class="font-size-22 font-weight-2 mb-2 px-0 pb-0 line-height-30 d-inline-block">
+      <span
+        :class="domain ? domain.toLowerCase() : ''"
+        class="rounded-0 font-size-16 pa-1 mb-2 mr-3 font-weight-2 text-right elevation-0"
+      >
+        {{ domain }}
+      </span>
+      <span class="primary-color-2 font-size-22">{{ item.brand || '' }} </span> -
+      <span class="font-size-22">{{ item.cleanName | reduceText(500) }}</span>
     </v-card-title>
     <v-card-text class="font-size-14 font-weight-2 pl-0 pb-4">
       <div class="d-flex justify-start align-center">
@@ -10,42 +17,39 @@
         <div class="mx-3">
           <span>Đánh giá: </span>
           <span class="font-weight-3 primary-color-2">{{
-            item.itemRating.rating_count.reduce((partialSum, a) => partialSum + a, 0) || ''
+            item.itemRating.rating_count.reduce((partialSum, a) => partialSum + a, 0) || 0
           }}</span>
         </div>
         <v-divider vertical style="width: 10px" class="my-2" />
         <div class="mx-3">
           <span>Đã bán: </span>
-          <span class="font-weight-3 primary-color-2">{{ item.historicalSold || '' }}</span>
+          <span class="font-weight-3 primary-color-2">{{ item.historicalSold || 0 }}</span>
         </div>
         <v-divider vertical style="width: 10px" class="my-2" />
         <div class="mx-3">
           <span>Thích: </span>
-          <span class="font-weight-3 primary-color-2">{{ item.likedCount || '' }}</span>
+          <span class="font-weight-3 primary-color-2">{{ item.likedCount || 0 }}</span>
         </div>
       </div>
     </v-card-text>
 
-    <div class="my-0 pl-2 pb-4">
-      <v-row align="center">
-        <div class="font-size-16 font-weight-1 line-through pr-4 pl-2" v-if="item.listPrice != item.price">
+    <div class="my-0 pl-0 pb-4">
+      <v-row align="center" no-gutters>
+        <div class="font-size-16 font-weight-1 line-through pr-0 pl-2 mr-3" v-if="item.listPrice != item.price">
           {{ item.listPrice | formatPrice }}đ
         </div>
         <div class="font-size-30 font-weight-3 mr-7 primary-color-1">{{ item.price | formatPrice }}đ</div>
         <div
           style="border: red 1px solid"
           v-if="item.listPrice != item.price"
-          class="pa-1 rounded-sm rounded-0 font-size-14 font-weight-2 text-right ml-5 red white--text elevation-1 mr-2"
+          class="pa-1 rounded-md font-size-14 font-weight-2 text-right ml-5 red white--text elevation-1 mr-2"
         >
-          {{ item.discountRate }}% giảm
+          {{ item.discountRate || 0 }}% giảm
         </div>
-        <span
-          :class="domain ? domain.toLowerCase() : ''"
-          class="rounded-md font-size-14 pa-1 py-0 font-weight-2 text-right elevation-1"
-        >
-          {{ domain }}
-        </span>
       </v-row>
+    </div>
+    <div class="my-0 px-0 pb-4 py-2" v-if="item.voucherInfo">
+      <div class="font-size-14 voucher-info">{{ item.voucherInfo.label }}</div>
     </div>
     <div class="properties pt-5 px-4" v-show="isShowDetail">
       <div>
@@ -63,17 +67,21 @@
     </div>
     <v-card-actions class="pa-0">
       <a :href="getURLAccessTrade()" target="_blank">
-        <v-btn class="white--text rounded-lg my-2" color="#1859db" height="42px" width="100%">{{ $t('buyNow') }}</v-btn>
+        <v-btn class="white--text rounded-lg my-2 text-capitalize" color="#1859db" height="42px" width="100%">{{
+          $t('buyNow')
+        }}</v-btn>
       </a>
       <span v-if="item.stock" class="font-size-14 ml-4"
         >Còn <span class="font-weight-bold">{{ item.stock }} </span> sản phẩm</span
       >
     </v-card-actions>
     <v-card color="white" class="mt-5 rounded-0 px-3" elevation="0">
-      <v-card-title class="pb-3">{{ $t('note') }}:</v-card-title>
+      <v-card-title class="pb-3 d-flex justify-space-between align-center">
+        <div>{{ $t('note') }}:</div>
+      </v-card-title>
 
       <v-card-text class="font-size-14 font-weight-1">
-        <ul class="font-size-14 font-weight-2 mr-7 line-height-24" :class="isMobile ? ' pa-0' : ''">
+        <ul class="line-height-24 font-size-14 font-weight-2 mr-7" :class="isMobile ? ' pa-0' : ''">
           <li class="py-1">
             {{ $t('The cheapest product is on sale at') }}
             <a :href="item.url" target="_blank">
@@ -115,6 +123,7 @@
 import CategoryService from '@/api/category.service';
 import RatingItem from '@/components/common/rating/RatingItem.vue';
 import Vue from 'vue';
+import base64url from 'base64url';
 
 export default Vue.extend({
   props: ['item', 'averagePrice', 'subProductItems', 'largestSaleOffItem', 'domain'],
@@ -161,6 +170,8 @@ export default Vue.extend({
   },
   methods: {
     getURLAccessTrade(): string {
+      console.log('this.item', base64url.decode(this.item.url), this.item);
+
       return `${process.env.VUE_APP_BASE_ACCESS_TRADE_URL}?url=${this.item.url}`;
     },
   },
@@ -172,6 +183,15 @@ export default Vue.extend({
   .properties {
     height: 224px;
     background-color: #f9f9f9;
+  }
+  .voucher-info {
+    border: 0.5px #ca3e29 solid;
+    background-color: #f9f9f9;
+    color: #ca3e29;
+    border-radius: 2px;
+    padding: 8px;
+    margin: 0;
+    display: inline;
   }
 }
 </style>

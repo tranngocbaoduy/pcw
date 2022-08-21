@@ -92,7 +92,6 @@ try:
 except:
     pass
 
-print('x')
 version = cur_version + '.' + (datetime.datetime.utcnow().replace(microsecond=0).isoformat() + 'Z').replace(':', '_')
 
 if not args['skip_build']:

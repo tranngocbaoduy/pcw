@@ -16,32 +16,7 @@ const updateDocumentTitleMixin = Vue.extend({
         i18n.t(`documentTitles.${this.documentTitle}`).toString() + ' — ' + i18n.t(`documentTitles.default`).toString();
     }
   },
-  methods: {
-    code2category(code: any) {
-      const categoryDict = {
-        AIRCONDITION: 'Air Condition',
-        MOTOR: 'Motor',
-        TABLET: 'Tablet',
-        FRIDGE: 'Fridge',
-        LAPTOP: 'Laptop',
-        PHONE: 'Phone',
-        TELEVISION: 'Television',
-        WASHING: 'Washing',
-      } as any;
-      return categoryDict[code.toUpperCase()];
-    },
-    category2code(category: any) {
-      const categoryDict = {
-        'Air Condition': 'AIRCONDITION',
-        Fridge: 'FRIDGE',
-        Laptop: 'LAPTOP',
-        Phone: 'PHONE',
-        Television: 'TELEVISION',
-        Washing: 'WASHING',
-      } as any;
-      return categoryDict[category];
-    },
-  },
+  methods: {},
 });
 
 Vue.mixin(updateDocumentTitleMixin);

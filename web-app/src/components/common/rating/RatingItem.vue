@@ -6,7 +6,14 @@
     <!-- <span class="primary-color-2 font-weight-bold pr-1 font-size-14" v-if="isDisplay">
       [{{ itemRating.rating_star }}]
     </span> -->
-    <v-rating :value="itemRating.rating_star" color="#FFA200" dense half-increments readonly size="14"></v-rating>
+    <v-rating
+      :value="itemRating.rating_star"
+      :color="'#d0011b'"
+      dense
+      half-increments
+      readonly
+      :size="size ? size : 14"
+    ></v-rating>
   </div>
 </template>
 
@@ -15,7 +22,7 @@ import CategoryService from '@/api/category.service';
 import Vue from 'vue';
 
 export default Vue.extend({
-  props: ['itemRating', 'isDisplay'],
+  props: ['itemRating', 'isDisplay', 'size'],
   data: () => ({}),
   created() {},
   computed: {
@@ -25,8 +32,8 @@ export default Vue.extend({
   },
   methods: {
     trasnsitionToDetailRatingItem() {
-      console.log('trasnsitionToDetailRatingItem');
       (document as any).getElementById('detail-rating-item').scrollIntoView({ behavior: 'smooth' });
+      this.$emit('choose-review');
     },
   },
 });

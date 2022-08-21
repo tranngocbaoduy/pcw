@@ -9,7 +9,7 @@ import './plugins/vee-validate';
 import VueLodash from 'vue-lodash';
 import lodash from 'lodash';
 //register component
-
+import '@/mixin';
 import './plugins/vue-loading-overlay';
 
 (function (original) {

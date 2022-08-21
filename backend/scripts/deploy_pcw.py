@@ -193,6 +193,7 @@ def deploy_template():
         'SesRegion': 'us-east-1',
         'VpcEnabled': 'true' if not args['detach_vpc'] else 'false',
         'Version': __version, 
+        'StageName': 'staging',
         # 'WebACLArn': get_web_acl_arn(),
         # **template_parameter_layers_map,
     } 

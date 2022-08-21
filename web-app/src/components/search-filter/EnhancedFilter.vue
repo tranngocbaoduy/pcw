@@ -141,14 +141,17 @@
         </v-select>
       </div>
       <v-btn
-        class="rounded-sm"
+        class="rounded-md"
         color="#1859db"
-        height="34px"
+        :style="isDisabledRefreshButton ? 'border: 0.5px #6e6e6e solid' : 'border: 1px #1859db solid'"
+        :height="isDisabledRefreshButton ? 32 : 34"
+        width="50"
+        max-width="50"
         outlined
         :disabled="isDisabledRefreshButton"
-        @click="refreshParamsUrl"
+        @click="refreshFilter"
       >
-        <v-icon> mdi-refresh </v-icon>
+        <v-icon size="16"> mdi-refresh </v-icon>
       </v-btn>
       <!--  
       <v-card class="pa-0 mt-4 mb-4" color="#f3f6f8" flat>
@@ -211,10 +214,11 @@ import { ProductSearchItem } from '@/api/product.service';
 import Vue from 'vue';
 
 export default Vue.extend({
+  props: ['agencyItems', 'brandItems', 'priceItems'],
   data: () => ({
-    selectedAgencies: [],
-    selectedBrands: [],
-    selectedPrices: [],
+    selectedAgencies: [] as any[],
+    selectedBrands: [] as any[],
+    selectedPrices: [] as any[],
 
     isLoading: false,
     value: null,
@@ -275,21 +279,6 @@ export default Vue.extend({
         ? this.$store.getters.searchFilter.voteItems
         : [];
     },
-    brandItems(): [] {
-      return Object.keys(this.$store.getters.searchFilter).includes('brandItems')
-        ? this.$store.getters.searchFilter.brandItems
-        : [];
-    },
-    priceItems(): [] {
-      return Object.keys(this.$store.getters.searchFilter).includes('priceItems')
-        ? this.$store.getters.searchFilter.priceItems
-        : [];
-    },
-    agencyItems(): [] {
-      return Object.keys(this.$store.getters.searchFilter).includes('agencyItems')
-        ? this.$store.getters.searchFilter.agencyItems
-        : [];
-    },
     shipItems(): [] {
       return Object.keys(this.$store.getters.searchFilter).includes('shipItems')
         ? this.$store.getters.searchFilter.shipItems
@@ -302,8 +291,11 @@ export default Vue.extend({
   created() {},
   watch: {
     priceItems() {
+      console.log('this.priceItems', this.priceItems, this.selectedPrices);
       if (this.priceItems && this.priceItems.length != 0) {
-        this.updatePriceFromUrl();
+        // this.selectedPrices = this.priceItems.filter((i: any) => i.selected);
+      } else {
+        this.selectedPrices = [] as any[];
       }
     },
     brandItems() {
@@ -312,30 +304,11 @@ export default Vue.extend({
     agencyItems() {
       this.selectedAgencies = this.agencyItems.filter((i: any) => i.selected);
     },
-
-    '$route.query'() {
-      this.updatePriceFromUrl();
-    },
   },
   methods: {
-    updatePriceFromUrl() {
-      const query = { ...this.$route.query };
-      const minPrice = query.minPrice && typeof query.minPrice == 'string' ? parseInt(query.minPrice) : 0;
-      const maxPrice = query.maxPrice && typeof query.maxPrice == 'string' ? parseInt(query.maxPrice) : 1000;
-      if (minPrice !== 0 && maxPrice !== 1000)
-        this.selectedPrices = this.priceItems.filter((item: any) => item.min >= minPrice && item.max <= maxPrice);
-      console.log('this.selectedPrices', minPrice, maxPrice, this.selectedPrices);
-    },
-    refreshParamsUrl() {
-      this.selectedAgencies = [];
-      this.selectedBrands = [];
-      this.selectedPrices = [];
-      const query = { ...this.$route.query };
-      const newQuery = {} as any;
-      for (const field of Object.keys(query)) {
-        newQuery[field] = '';
-      }
-      this.$router.replace({ path: this.$route.path, query: newQuery || {} });
+    refreshFilter() {
+      this.selectedPrices = [] as any[];
+      this.$emit('refresh-filter');
     },
     handleChoosePrice() {
       let minMaxTuple = [0, 1000];
@@ -351,107 +324,31 @@ export default Vue.extend({
             minMaxTuple = [0, 1000];
           }
         }
-        const query = {
-          ...this.$route.query,
-          minPrice: minMaxTuple[0].toString(),
-          maxPrice: minMaxTuple[1].toString(),
-        };
-        console.log('query', query);
-        this.$router.replace({ path: this.$route.path, query: query || {} });
+        this.$emit('change-price', { min: minMaxTuple[0], max: minMaxTuple[1] });
       } else {
-        const query = { ...this.$route.query };
-        delete query['minPrice'];
-        delete query['maxPrice'];
-        this.$router.replace({ path: this.$route.path, query: query || {} });
+        this.$emit('change-price', { min: '', max: '' });
       }
     },
-    handleChangeSelectedAgency() {
-      if (this.selectedAgencies && this.selectedAgencies.length != 0) {
-        const query = {
-          ...this.$route.query,
-          agencyItems: this.selectedAgencies.map((i: any) => i.name).join(','),
-        };
-        this.$router.replace({ path: this.$route.path, query: query || {} });
-      } else {
-        const query = { ...this.$route.query };
-        delete query['agencyItems'];
-        this.$router.replace({ path: this.$route.path, query: query || {} });
-      }
-    },
-    handleChangeSelectedBrand() {
-      if (this.selectedBrands && this.selectedBrands.length != 0) {
-        const query = {
-          ...this.$route.query,
-          brandItems: this.selectedBrands.map((i: any) => i.name).join(','),
-        };
-        this.$router.replace({ path: this.$route.path, query: query || {} });
-      } else {
-        const query = { ...this.$route.query };
-        delete query['brandItems'];
-        this.$router.replace({ path: this.$route.path, query: query || {} });
-      }
-    },
-    async searchProduct(event: any) {
-      this.isLoading = true;
-      if (this.value) {
-        const item = null as any;
-        if (item) {
-          const ele = item.split('#');
-          const categoryId = ele[0];
-          const code = ele[1];
-          this.cacheSearchCode = code;
-          this.$router.replace(`/category/${categoryId}/product/${code}`);
-        }
-      }
-      if (event.code == 'Enter' && this.searchCode) {
-        this.debouncedQuery();
-        this.updateUrlQuery(this.searchCode);
-      }
-      await sleep(200, 200);
-      this.isLoading = false;
-    },
-    searchItem() {
-      if (this.searchCode) {
-        this.value = null;
-        console.log('value', this.searchCode);
-        // const strFound = this.allProductName.find((item: any) => item.name.search(this.searchCode));
-        // this.$store.commit('setState', { searchString: this.searchCode });
-        // if (strFound && (this.$route.name != 'CategoryPage' || this.beforeCategory !== strFound.category)) {
-        //   this.beforeCategory = strFound.category;
-        //   this.$router.replace(`/category/${strFound.category}?name=${this.searchCode}`);
-        // }
-      }
-
-      this.isLoading = false;
-    },
-    updateUrlQuery(query: string) {
+    updateUrlQuery(field: string, query: string) {
       const urlParams = new URLSearchParams(window.location.search);
-      urlParams.set('query', query);
+      urlParams.set(field, query);
       const queryUrl = urlParams.toString();
       history.replaceState({}, '', `${this.$route.path}?${queryUrl}`);
     },
-    setValue(obj: any, path: string, value: any) {
-      const a = path.split('.');
-      let o = obj;
-      while (a.length - 1) {
-        const n: any = a.shift();
-        if (!(n in o)) o[n] = {};
-        o = o[n];
-      }
-      o[a[0]] = value;
+    handleChangeSelectedAgency() {
+      this.$emit('change-agency', this.selectedAgencies);
+      // if (this.selectedAgencies && this.selectedAgencies.length != 0) {
+      //   this.updateUrlQuery('agencyItems', this.selectedAgencies.map((i: any) => i.name).join(','));
+      //   this.$emit('refresh-filter');
+      // } else {
+      //   const query = { ...this.$route.query };
+      //   delete query['agencyItems'];
+      //   this.$router.replace({ path: this.$route.path, query: query || {} });
+      //   this.$emit('refresh-filter');
+      // }
     },
-
-    getValue(obj: any, path: string) {
-      path = path.replace(/\[(\w+)\]/g, '.$1');
-      path = path.replace(/^\./, '');
-      const a = path.split('.');
-      let o = obj;
-      while (a.length) {
-        const n: any = a.shift();
-        if (!(n in o)) return;
-        o = o[n];
-      }
-      return o;
+    handleChangeSelectedBrand() {
+      this.$emit('change-brand', this.selectedBrands);
     },
   },
   filters: {

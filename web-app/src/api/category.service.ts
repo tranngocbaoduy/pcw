@@ -82,8 +82,11 @@ export default class CategoryService {
   }
 
   static code2category(code: string) {
+    if (!code) return '';
+    if (code == 'undefined' || code == undefined) return '';
     const category = store.getters.categoryItems.find((i: CategoryItem) => i.SK == code);
     if (category) return category.translateName;
+    else return '';
     const categoryDict = {
       AIRCONDITION: 'Air Condition',
       MOTOR: 'Motor',
@@ -94,7 +97,6 @@ export default class CategoryService {
       TELEVISION: 'Television',
       WASHING: 'Washing',
     } as any;
-    if (!code) return '';
     return categoryDict[code.toUpperCase()];
   }
 
@@ -106,6 +108,7 @@ export default class CategoryService {
       Phone: 'PHONE',
       Television: 'TELEVISION',
       Washing: 'WASHING',
+      Shoes_man: 'Giày nam',
     } as any;
     return categoryDict[category];
   }

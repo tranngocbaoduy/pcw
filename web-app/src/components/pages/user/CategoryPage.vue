@@ -2,23 +2,30 @@
   <div>
     <v-row class="category-page pt-0 mt-0" no-gutters :class="isMobile ? 'pa-0' : 'py-2 '">
       <v-col sm="12" md="12" cols="12" :class="isMobile ? 'py-0' : 'py-3'">
-        <div class="mt-2 pa-0">
+        <div class="mt-2 pa-0" :class="isMobile ? 'px-2' : 'px-0'">
           <BreadCrumbs :breadcrumbs="breadcrumbs" />
-          <v-card-title class="product-page-name font-size-32 font-weight-3 px-0 mt-2 mx-0">{{
+          <v-card-title class="product-page-name font-size-32 font-weight-3 px-0 mt-0 mx-0">{{
             categoryName
           }}</v-card-title>
         </div>
-        <EnhancedFilter class="ma-n2 py-2" />
-
-        <div v-if="(filterProductItems && filterProductItems.length != 0) || !isLoading" class="mt-3">
+        <EnhancedFilter
+          :brandItems="brandItems"
+          :priceItems="priceItems"
+          :agencyItems="agencyItems"
+          @change-agency="changeAgency"
+          @change-price="changePrice"
+          @change-brand="changeBrand"
+          class="ma-n2 pa-2 mx-0"
+          @refresh-filter="refreshFilter"
+        />
+        <!-- :style="$vuetify.breakpoint.mdAndUp ? ' flex: 1 0 18%;' : ''" -->
+        <div
+          v-if="(filterProductItems && filterProductItems.length != 0) || !isLoading"
+          class="mt-3"
+          :class="isMobile ? 'px-2' : 'px-0'"
+        >
           <v-row no-gutters>
-            <v-col
-              :key="item['SK']"
-              v-for="item in filterProductItems"
-              :style="$vuetify.breakpoint.mdAndUp ? ' flex: 1 0 18%;' : ''"
-              cols="6"
-              sm="3"
-            >
+            <v-col :key="item['SK']" v-for="item in filterProductItems" cols="6" md="2" xl="2" lg="2" sm="3">
               <router-link :to="`${getSlugId(item)}`">
                 <Product :item="item" />
               </router-link>
@@ -101,20 +108,18 @@ export default Vue.extend({
       { name: 'Miễn phí giao hàng', selected: false },
     ],
     noItemImage: require('@/assets/banner/no-product.png'),
-
-    limit: 10,
-    quantity: 10,
+    limit: 18,
+    quantity: 18,
     page: 1,
     discountRate: 0,
     minMaxTuple: [0, 10000000] as number[],
     minMaxTupleDefault: [0, 10000000] as number[],
     productItems: [] as ProductItem[],
-    rowsPerPage: 20,
     priceItems: [] as any[],
   }),
   async created() {
     this.priceItems = [
-      { id: 1, name: `${this.$t('Below')} 2 MIL VND`, selected: false, min: 0, max: 2 },
+      { id: 1, name: `${this.$t('Below')} 2 MIL VND`, selected: false, min: 0.3, max: 2 },
       { id: 2, name: `${this.$t('Range')} 2-4 MIL VND`, selected: false, min: 2, max: 4 },
       { id: 3, name: `${this.$t('Range')} 4-7 MIL VND`, selected: false, min: 4, max: 7 },
       { id: 4, name: `${this.$t('Range')} 7-13 MIL VND`, selected: false, min: 7, max: 13 },
@@ -140,12 +145,14 @@ export default Vue.extend({
       return this.$store.getters.isMobile;
     },
     categoryName(): string {
-      return this.$t(
-        `category.${CategoryService.upperCaseFirstLetter(CategoryService.code2category(this.categoryId))}`
-      ).toString();
+      return CategoryService.upperCaseFirstLetter(CategoryService.code2category(this.categoryId))
+        ? this.$t(
+            `category.${CategoryService.upperCaseFirstLetter(CategoryService.code2category(this.categoryId))}`
+          ).toString()
+        : '';
     },
     categoryId(): string {
-      return this.$route.params['idCate'];
+      return this.$route.params['idCate'] || '';
     },
     categoryItem(): any {
       return this.$store.getters.categoryItems.find((item: any) => item.SK == this.categoryId) || {};
@@ -165,7 +172,7 @@ export default Vue.extend({
           exact: true,
         },
         {
-          text: this.$t(`category.${CategoryService.code2category(this.categoryId)}`),
+          text: this.categoryName,
           to: `/category/${this.$route.params['idCate']}`,
           disabled: true,
           exact: true,
@@ -197,12 +204,6 @@ export default Vue.extend({
   },
 
   watch: {
-    async '$route.query'() {
-      if (!this.isLoading) {
-        await this.updateUrlQueryToData();
-      }
-    },
-
     async page() {
       if (this.page) {
         if (this.$route.query.page == this.page.toString()) {
@@ -243,6 +244,7 @@ export default Vue.extend({
         brandItems: brandItems,
         minPrice: this.minMaxTuple[0] * 1000000,
         maxPrice: this.minMaxTuple[1] * 1000000,
+        isRep: true,
       });
       if (newItems && newItems.length == 0) this.isNextProduct = false;
       this.productItems = this.productItems.concat(newItems);
@@ -263,13 +265,60 @@ export default Vue.extend({
         this.brandItems = this.brandItemsStore[categoryId];
       }
     },
-    async updateUrlQueryToData() {
+    async refreshFilter() {
+      this.agencyItems = this.agencyItems.map((i) => ({
+        ...i,
+        selected: false,
+      }));
+      this.brandItems = this.brandItems.map((i) => ({
+        ...i,
+        selected: false,
+      }));
+      this.minMaxTuple = this.minMaxTupleDefault;
+      await this.loadProductItemByTarget();
+    },
+    async changeAgency(agencyItems: any[]) {
+      agencyItems.map((i) => {
+        const agency = this.agencyItems.find((a) => i.code == a.code);
+        if (agency && agency.selected.toString().length != 0) {
+          agency.selected = !agency.selected;
+        }
+      });
+      await this.loadProductItemByTarget();
+    },
+    async changeBrand(brandItems: any[]) {
+      console.log(brandItems);
+      brandItems.map((i) => {
+        const brand = this.brandItems.find((a) => i.name == a.name);
+        if (brand && brand.selected.toString().length != 0) {
+          brand.selected = !brand.selected;
+        }
+      });
+      await this.loadProductItemByTarget();
+    },
+    async changePrice({ min, max }: { min: number; max: number }) {
+      this.minMaxTuple = [min, max];
+      this.priceItems = this.priceItems.map((item: any) => ({
+        ...item,
+        selected:
+          min != this.minMaxTupleDefault[0] && max != this.minMaxTupleDefault[1]
+            ? item.min >= min && item.max <= max
+            : false,
+      }));
+      await this.loadProductItemByTarget();
+    },
+    async updateUrlQueryToData(isRefresh?: false) {
       this.isLoading = true;
       const query = { ...this.$route.query };
+      console.log('updateUrlQueryToData', query);
       const agencySelecting =
-        query && query.agencyItems && typeof query.agencyItems == 'string' ? query.agencyItems.split(',') : '';
+        !isRefresh && query && query.agencyItems && typeof query.agencyItems == 'string'
+          ? query.agencyItems.split(',')
+          : '';
       const brandSelecting =
-        query && query.brandItems && typeof query.brandItems == 'string' ? query.brandItems.split(',') : '';
+        !isRefresh && query && query.brandItems && typeof query.brandItems == 'string'
+          ? query.brandItems.split(',')
+          : '';
       this.agencyItems = this.agencyItems.map((item: any) => ({
         ...item,
         selected: agencySelecting.includes(item.name),
@@ -277,24 +326,6 @@ export default Vue.extend({
       this.brandItems = this.brandItems.map((item: any) => ({
         ...item,
         selected: brandSelecting.includes(item.name),
-      }));
-      const min =
-        query && query.minPrice && typeof query.minPrice == 'string'
-          ? parseInt(query.minPrice)
-          : this.minMaxTupleDefault[0];
-      const max =
-        query && query.maxPrice && typeof query.maxPrice == 'string'
-          ? parseInt(query.maxPrice)
-          : this.minMaxTupleDefault[1];
-
-      this.minMaxTuple = min || max ? [min, max] : this.minMaxTuple;
-      console.log('this.minMaxTuple', this.minMaxTuple);
-      this.priceItems = this.priceItems.map((item: any) => ({
-        ...item,
-        selected:
-          min != this.minMaxTupleDefault[0] && max != this.minMaxTupleDefault[1]
-            ? item.min >= min && item.max <= max
-            : false,
       }));
 
       this.page = 1;
@@ -317,6 +348,7 @@ export default Vue.extend({
         minPrice: this.minMaxTuple[0] * 1000000,
         maxPrice: this.minMaxTuple[1] * 1000000,
         discountRate: agencyItems.length != 0 || brandItems.length != 0 ? 0 : this.discountRate,
+        isRep: true,
       });
       console.log('this.productItems', this.productItems);
     },

@@ -3,11 +3,11 @@
     <Header @handle-show-menu="handleShowMenu" :isShowMenu="isShowMenu"> </Header>
 
     <v-container class="body-custom" :class="isMobile ? 'pa-0' : 'px-0'" :fluid="isFluid">
-      <router-view v-if="$route" :key="$route.fullPath" />
+      <router-view />
     </v-container>
     <v-divider class="divider-custom"></v-divider>
     <Footer></Footer>
-    <NavigationMobile v-if="isMobile"></NavigationMobile>
+    <!-- <NavigationMobile v-if="isMobile"></NavigationMobile> -->
   </div>
 </template>
 
@@ -25,7 +25,7 @@ export default Vue.extend({
   }),
   components: {
     Header,
-    NavigationMobile,
+    // NavigationMobile,
     Footer,
   },
   computed: {

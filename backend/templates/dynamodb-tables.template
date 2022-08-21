@@ -27,12 +27,22 @@ Resources:
           AttributeType: S
         - AttributeName: RBGI
           AttributeType: S
+        - AttributeName: PRODUCT_KEY
+          AttributeType: S
       GlobalSecondaryIndexes:
         - IndexName: GROUP-INDEX
           KeySchema:
             - AttributeName: PK
               KeyType: HASH
             - AttributeName: GROUP_ID
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: SEARCH-INDEX
+          KeySchema:
+            - AttributeName: PRODUCT_KEY
+              KeyType: HASH
+            - AttributeName: SK
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
