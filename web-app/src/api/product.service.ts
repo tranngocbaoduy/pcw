@@ -14,6 +14,7 @@ export interface ProductItem {
   relationshipID: string;
   listChildId: string[];
   listImage: string[];
+  agency: string;
   content: string;
   createdDate?: string;
   domain: string;
@@ -36,6 +37,8 @@ export interface ProductItem {
   voucherInfo: {};
   itemRating: {};
   countReview: number;
+  shopItem: {};
+  shopUrl: string;
 }
 
 export interface QueryProductItems {
@@ -141,9 +144,11 @@ export default class ProductService {
   }
 
   public static nameDomainShop = {
-    'tiki.vn': 'Tiki',
+    tiki: 'Tiki',
     'dienmayxanh.com': 'Điện Máy Xanh',
-    'shopee.vn': 'Shopee-Mall',
+    shopee: 'Shopee',
+    mall: 'Mall',
+    lazmall: 'LazMall',
   } as any;
 
   static properText(text: string) {
@@ -151,6 +156,16 @@ export default class ProductService {
       .split(' ')
       .map((t: string) => t.charAt(0).toUpperCase() + t.slice(1, t.length).toLowerCase())
       .join('');
+  }
+  static getshopUrl(agency: string, shopItem: any): string {
+    if (shopItem && shopItem.shop_name && shopItem.shop_id) {
+      if (agency == 'mall' || agency == 'shopee') {
+        return 'https://shopee.vn/shop/' + shopItem.shop_id;
+      } else if (agency == 'tiki') {
+        return 'https://tiki.vn/cua-hang/' + shopItem.shop_url;
+      }
+    }
+    return '';
   }
 
   static removeTextInSplash(text: string) {
@@ -186,15 +201,18 @@ export default class ProductService {
       listChildId: item.child ? item.child : [],
       content: item.content,
       createdDate: item.created_date,
-      domain: ProductService.nameDomainShop[item.domain],
+      domain: ProductService.nameDomainShop[item.agency],
       listImage: item.image,
+      agency: item.agency,
       name: item.name,
       cleanName: this.handleRemoveSub(item.name),
       price: item.price > 200000000000 ? parseInt(item.price) / 100000 : parseInt(item.price),
       listPrice: item.list_price > 200000000000 ? parseInt(item.list_price) / 100000 : parseInt(item.list_price),
       discountRate: Math.round(100 - (parseInt(item.price) / parseInt(item.list_price)) * 100),
       isAPI: item.is_api,
-      url: item.url,
+      shopItem: item.shop_item ? item.shop_item : {},
+      shopUrl: item.shop_item ? ProductService.getshopUrl(item.agency, item.shop_item) : '',
+      url: ProductService.handleProcessUrlAccessTrade(item.url),
       shopLocation: item.shop_location,
       slugId: item.slug_id ? item.slug_id : '',
       stock: item.stock ? parseInt(item.stock) : 0,
@@ -203,12 +221,26 @@ export default class ProductService {
       historicalSold: item.historical_sold ? item.historical_sold : '',
       likedCount: item.liked_count ? item.liked_count : '',
       itemRating: item.item_rating ? item.item_rating : '',
-      countReview: item.item_rating
-        ? item.item_rating.rating_count.reduce((partialSum: number, a: number) => partialSum + a, 0)
-        : 0,
+      countReview: item.item_rating ? item.item_rating.rating_count[0] : 0,
     } as ProductItem;
   }
 
+  static handleProcessUrlAccessTrade(url: string) {
+    const urlObj = new URL(url);
+    const preHandle = urlObj.pathname
+      .split('/')
+      .filter((i) => !!i)
+      .join('/')
+      .replace('%', '')
+      .replace('[', '(')
+      .replace(']', ')');
+    const encodeURIItem = encodeURIComponent(preHandle);
+    return (
+      urlObj.origin +
+      '/' +
+      (encodeURIItem.slice(0, 2) == '%2F' ? encodeURIItem.slice(2, encodeURIItem.length) : encodeURIItem)
+    );
+  }
   static parseListProductItem(data: any[]): ProductItem[] {
     const items = [] as ProductItem[];
     for (const i of data) {

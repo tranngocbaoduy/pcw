@@ -84,9 +84,9 @@ async function queryItemByTarget(event) {
   agencyFilterExpressionValues = [];
   agencyFilterExpressionNames = {};
   for (const agencyIndex in agencyItems) {
-    agencyFilterExpressionValues.push(`begins_with(#DOMAIN, :domain${agencyIndex})`);
-    agencyValues[`:domain${agencyIndex}`] = agencyItems[agencyIndex];
-    agencyFilterExpressionNames['#DOMAIN'] = 'domain'
+    agencyFilterExpressionValues.push(`begins_with(#AGENCY, :agency${agencyIndex})`);
+    agencyValues[`:agency${agencyIndex}`] = agencyItems[agencyIndex];
+    agencyFilterExpressionNames['#AGENCY'] = 'agency'
   }
 
   brandValues = {};
@@ -115,6 +115,7 @@ async function queryItemByTarget(event) {
       "#PK": "PK",
       "#URL": "url",
       "#NAME": "name",
+      "#AGENCY": "agency",
       "#DOMAIN": "domain",
       "#BRAND": "brand",
       "#IMAGE": "image",
@@ -122,7 +123,7 @@ async function queryItemByTarget(event) {
       ...agencyFilterExpressionNames,
       ...brandFilterExpressionNames
     },
-    ProjectionExpression: 'PK, SK, #URL, price, voucher_info, slug_id, liked_count, #BRAND, #DOMAIN, #NAME, shop_location, #IMAGE, list_price, item_rating, #STOCK, historical_sold, discount_rate, child',
+    ProjectionExpression: 'PK, SK, #URL, price, voucher_info, slug_id, liked_count, #BRAND, #AGENCY,#DOMAIN, #NAME, shop_location, #IMAGE, list_price, item_rating, #STOCK, historical_sold, discount_rate, child, shop_item',
     ExpressionAttributeValues: {
       ":pk": PK,
       ":minPrice": minPrice,
@@ -157,12 +158,13 @@ async function queryPromotionItems(event) {
       "#PRODUCT_KEY": "PRODUCT_KEY",
       "#URL": "url",
       "#NAME": "name",
+      "#AGENCY": "agency",
       "#DOMAIN": "domain",
       "#BRAND": "brand",
       "#IMAGE": "image",
       "#STOCK": "stock",
     },
-    ProjectionExpression: 'PK, SK, #URL, price, voucher_info, slug_id, liked_count, #BRAND, #DOMAIN, #NAME, shop_location, #IMAGE, list_price, #STOCK, discount_rate, child',
+    ProjectionExpression: 'PK, SK, #URL, price, voucher_info, slug_id, liked_count, #BRAND, #AGENCY, #DOMAIN, #NAME, shop_location, #IMAGE, list_price, #STOCK, discount_rate, child, shop_item',
     ExpressionAttributeValues: {
       ":productKey": 'PRODUCT',
       ":discountRate": discountRate,

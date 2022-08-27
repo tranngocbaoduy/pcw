@@ -166,7 +166,7 @@ async function querySearchItems(event) {
       FilterExpression: filterExpressionList.join(" and "),
       ExpressionAttributeNames: expressionAttributeNames,
       ExpressionAttributeValues: expressionAttributeValues,
-      ProjectionExpression: 'PK, SK, #URL, price, voucher_info, slug_id, #BRAND, #DOMAIN, #NAME, #IMAGE, list_price, discount_rate',
+      ProjectionExpression: 'PK, SK, #URL, price, voucher_info, slug_id, #BRAND, #DOMAIN, #NAME, #IMAGE, list_price, discount_rate, agency',
     };
     return await dynamodbHelper.queryAllItemsByLimit(params, limit);
   }

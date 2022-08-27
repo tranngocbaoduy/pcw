@@ -368,7 +368,7 @@ export default Vue.extend({
   position: fixed;
   left: 0;
   top: 0;
-  width: 100vw !important;
+  min-width: 100vw !important;
   z-index: 1000;
   box-shadow: 1px 6px 12px -10px rgba(0, 0, 0, 0.75) !important;
   -webkit-box-shadow: 1px 6px 12px -10px rgba(0, 0, 0, 0.75) !important;

@@ -1,6 +1,20 @@
 <template>
   <div>
     <v-row class="category-page pt-0 mt-0" no-gutters :class="isMobile ? 'pa-0' : 'py-2 '">
+      <div
+        class="d-flex flex-column justify-center align-end"
+        :class="isMobile ? 'transition-span-mobile' : 'transition-span'"
+      >
+        <v-btn
+          @click="transitionToTopPage()"
+          class="elevation-1 my-1 rounded-circle my-0"
+          color="#1859db"
+          style="background-color: white !important"
+          icon
+        >
+          <v-icon size="20">mdi-arrow-up-bold</v-icon>
+        </v-btn>
+      </div>
       <v-col sm="12" md="12" cols="12" :class="isMobile ? 'py-0' : 'py-3'">
         <div class="mt-2 pa-0" :class="isMobile ? 'px-2' : 'px-0'">
           <BreadCrumbs :breadcrumbs="breadcrumbs" />
@@ -9,6 +23,7 @@
           }}</v-card-title>
         </div>
         <EnhancedFilter
+          v-if="!isMobile"
           :brandItems="brandItems"
           :priceItems="priceItems"
           :agencyItems="agencyItems"
@@ -94,8 +109,10 @@ export default Vue.extend({
     ],
     agencyItems: [
       { name: 'Tiki', selected: false, code: 'tiki' },
-      { name: 'Điện máy xanh', selected: false, code: 'dienmayxanh' },
+      // { name: 'Điện máy xanh', selected: false, code: 'dienmayxanh' },
       { name: 'Shopee', selected: false, code: 'shopee' },
+      { name: 'Shopee Mall', selected: false, code: 'mall' },
+      { name: 'Lazada Mall', selected: false, code: 'lazmall' },
       // { name: 'Lazada', selected: false },
       // { name: 'Sendo', selected: false },
       // { name: 'Nguyễn Kim', selected: false },
@@ -126,6 +143,8 @@ export default Vue.extend({
       { id: 5, name: `${this.$t('Above')} 13 MIL VND`, selected: false, min: 13, max: 999 },
     ];
     this.page = 1;
+    this.limit = this.isMobile ? 6 : 18;
+    this.quantity = this.isMobile ? 6 : 18;
     await this.initialize();
     this.$store.commit('setState', { searchString: '' });
     this.$store.commit('setState', {
@@ -181,16 +200,13 @@ export default Vue.extend({
     },
 
     filterProductItems() {
-      const agencySelecting = this.agencyItems
-        .filter((item: any) => item.selected)
-        .map((item: any) => CategoryService.upperCaseFirstLetter(item.name));
+      const agencySelecting = this.agencyItems.filter((item: any) => item.selected).map((item: any) => item.code);
       const brandSelecting = this.brandItems
         .filter((item: any) => item.selected)
         .map((item: any) => CategoryService.upperCaseFirstLetter(item.name));
       return this.productItems.filter(
         (item: ProductItem) =>
-          (agencySelecting.length == 0 ||
-            (agencySelecting && agencySelecting.includes(CategoryService.upperCaseFirstLetter(item.domain)))) &&
+          (agencySelecting.length == 0 || (agencySelecting && agencySelecting.includes(item.agency))) &&
           (brandSelecting.length == 0 ||
             (brandSelecting && brandSelecting.includes(CategoryService.upperCaseFirstLetter(item.brand)))) &&
           item.price > this.minMaxTuple[0] * 1000000 &&
@@ -367,6 +383,9 @@ export default Vue.extend({
       }
       return '';
     },
+    transitionToTopPage() {
+      window.scrollTo({ top: -100, left: 0, behavior: 'smooth' });
+    },
   },
 });
 </script>
@@ -400,12 +419,18 @@ export default Vue.extend({
     height: 48px;
   }
 
-  // @media (min-width: 1264px) and (max-width: 1903px) {
-  //   .flex.lg5-custom {
-  //     width: 20%;
-  //     max-width: 20%;
-  //     flex-basis: 20%;
-  //   }
-  // }
+  .transition-span {
+    position: fixed;
+    bottom: 30px;
+    z-index: 100;
+    right: 35px;
+  }
+
+  .transition-span-mobile {
+    position: fixed;
+    bottom: 90px;
+    z-index: 100;
+    right: 15px;
+  }
 }
 </style>

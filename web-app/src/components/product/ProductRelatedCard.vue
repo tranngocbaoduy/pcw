@@ -3,23 +3,12 @@
     <v-card
       :elevation="hover ? 2 : 0"
       :loading="loading"
-      class="
-        product-related
-        rounded-0
-        px-2
-        pb-3
-        pt-1
-        my-0
-        d-flex d-flex-row
-        flex-wrap
-        justify-space-around
-        align-center
-      "
-      :class="hover ? 'bg-primary-color-6' : ''"
+      class="product-related rounded-0 px-2 pb-3 pt-1 my-0 d-flex d-flex-row flex-wrap align-center"
+      :class="(hover ? 'bg-primary-color-6' : '') + ' ' + (isMobile ? 'justify-space-around' : 'justify-space-around')"
       v-if="item"
       :style="hover ? 'z-index:4' : ''"
     >
-      <div>
+      <!-- <div>
         <v-img
           contain
           transition="fade-transition"
@@ -28,53 +17,62 @@
           :src="item.listImage[0]"
           class="ma-auto"
         ></v-img>
-      </div>
-      <div class="pa-0 ma-0">
-        <span
-          :class="isMobile ? `domain-mobile ${item.domain.toLowerCase()}` : `domain ${item.domain.toLowerCase()}`"
-          class="font-size-14 px-4"
-          >{{ item.domain }}</span
-        >
-      </div>
-
+      </div> -->
       <div
-        class="pa-0 ma-0 mb-0 pb-0 pt-4"
-        :style="isMobile ? 'width: 320px' : 'width: 400px'"
+        class="pa-0 ma-0 mb-0 pb-0 pt-4 d-flex justify-start align-center"
+        :style="isMobile ? `width: ${innerWidth}px` : 'min-width: 600px; width: 600px'"
         style="line-height: 23px"
       >
-        <div class="font-size-14 font-weight-2">{{ item.name }}</div>
-        <div class="d-flex justify-space-between align-center px-0 mx-0">
-          <RatingItem class="hover-custom-link" :itemRating="item.itemRating" />
-          <div class="font-size-14 font-weight-2 pt-1 pl-2">
-            <v-icon small class="px-2 pr-1 pb-1">mdi-map-marker</v-icon>{{ item.shopLocation }}
+        <v-img
+          contain
+          transition="fade-transition"
+          :width="isMobile ? 70 : 80"
+          :height="isMobile ? 70 : 80"
+          :max-width="isMobile ? 70 : 80"
+          :max-height="isMobile ? 70 : 80"
+          :src="item.listImage[0]"
+          class="mx-4"
+        ></v-img>
+
+        <div style="flex: 1">
+          <div class="font-size-14 font-weight-2">{{ item.name }}</div>
+          <div class="d-flex justify-space-between align-center px-0 mx-0">
+            <RatingItem class="hover-custom-link" :itemRating="item.itemRating" />
+
+            <div class="font-size-14 font-weight-2 pt-1 pl-2">
+              <v-icon small class="px-2 pr-1 pb-1">mdi-map-marker</v-icon>{{ item.shopLocation }}
+            </div>
+          </div>
+          <div class="font-size-12 font-weight-2 primary-color-5" @click="goToStore()">
+            <v-icon class="font-size-20 mb-1 mr-1 primary-color-5">mdi-storefront-outline</v-icon>
+            {{ item.shopItem.shop_name }}
           </div>
         </div>
       </div>
+
       <div
         @click="goToPlatform()"
-        class="ml-0 font-size-14 hover-custom-link text-left"
-        style="text-decoration: underline"
-        :style="isMobile ? 'width: 70px' : 'width: 90px'"
+        class="font-size-14 hover-custom-link text-center"
+        style="text-decoration: underline; flex: 1"
+        :style="isMobile ? 'width: 80px;' : 'width: 90px; padding-left:28px'"
       >
         <span> Review: </span>
-        <span class="font-weight-bold">{{
-          item.itemRating.rating_count.reduce((partialSum, a) => partialSum + a, 0) || 0
-        }}</span>
+        <span class="font-weight-bold">{{ item.countReview || 0 }}</span>
       </div>
 
-      <div v-if="!isMobile" class="font-size-14 text-right" :style="isMobile ? 'min-width: 50px' : 'min-width: 90px'">
+      <!-- <div v-if="!isMobile" class="font-size-14 text-right" :style="isMobile ? 'min-width: 50px' : 'min-width: 90px'">
         <span class="font-weight-bold">{{ item.historicalSold || 0 }}</span> <span> đã bán</span>
-      </div>
-
+      </div> -->
+      <!-- 
       <div
         class="text-left"
         :style="isMobile ? 'width: 70px' : 'width: 80px'"
         :class="isMobile ? 'font-size-14' : 'font-size-14'"
       >
         Kho: <span class="font-weight-bold">{{ item.stock || 0 }} </span>
-      </div>
+      </div> -->
 
-      <div class="text-right" :style="isMobile ? 'min-width: 95px' : 'min-width: 120px'">
+      <div style="flex: 1" class="text-right" :style="isMobile ? 'min-width: 95px' : 'min-width: 120px'">
         <div
           class="ma-0 pa-0 font-size-16 font-weight-3 text-right primary-color-1"
           :class="item.listPrice != item.price ? 'pt-4 mb-n2' : ''"
@@ -94,10 +92,27 @@
           {{ item.discountRate }}%
         </span>
       </div> -->
+      <div style="flex: 1" :class="isMobile ? 'text-right' : 'text-center'">
+        <v-btn class="rounded-lg my-2" icon color="#1859db" @click="goToPlatform()">
+          <v-icon>mdi-shopping-outline</v-icon>
+        </v-btn>
+      </div>
 
-      <v-btn class="rounded-lg my-2" icon color="#1859db" @click="goToPlatform()">
-        <v-icon>mdi-shopping-outline</v-icon>
-      </v-btn>
+      <div class="pa-0 ma-0 absolute">
+        <span
+          :class="[
+            isMobile
+              ? `domain-sub-left-mobile ${item.domain.toLowerCase()}`
+              : `domain-sub-left ${item.domain.toLowerCase()}`,
+          ]"
+          class="font-size-14 px-4"
+        ></span>
+        <span
+          :class="[isMobile ? `domain-mobile ${item.domain.toLowerCase()}` : `domain ${item.domain.toLowerCase()}`]"
+          class="font-size-14 px-4"
+          >{{ item.domain }}</span
+        >
+      </div>
     </v-card>
   </v-hover>
 </template>
@@ -128,6 +143,9 @@ export default Vue.extend({
     },
   },
   computed: {
+    innerWidth(): number {
+      return this.$store.getters.innerWidth;
+    },
     getRatingAverage(): number {
       if (this.item && this.item.ratingAverage) {
         return parseInt(this.item.ratingAverage.split('/')[0]) || 0;
@@ -151,6 +169,9 @@ export default Vue.extend({
     getURLAccessTrade(): string {
       return `${process.env.VUE_APP_BASE_ACCESS_TRADE_URL}?url=${this.item.url}`;
     },
+    goToStore(): void {
+      window.open(this.item.shopUrl, '_blank');
+    },
   },
 });
 </script>
@@ -160,21 +181,35 @@ export default Vue.extend({
   height: 100%;
   .domain {
     position: absolute;
-    left: 0px;
-    bottom: 0px;
+    right: 0px;
+    top: 3px;
     z-index: 100;
     height: 24px;
     line-height: 24px;
-    border-radius: 0px 4px 0px 0px !important;
+    border-radius: 0px 0px 0px 4px !important;
+  }
+  .domain-sub-left {
+    position: absolute;
+    right: 0px;
+    top: 0px;
+    z-index: 100;
+    border-radius: 4px 0px 4px 2px !important;
   }
   .domain-mobile {
     position: absolute;
-    left: 0px;
-    top: 0px;
+    right: 0px;
+    top: 3px;
     z-index: 100;
     height: 20px;
     line-height: 20px;
-    border-radius: 0px 0px 4px 0px !important;
+    border-radius: 0px 0px 0px 4px !important;
+  }
+  .domain-sub-left-mobile {
+    position: absolute;
+    right: 0px;
+    top: 0px;
+    z-index: 100;
+    border-radius: 4px 0px 4px 2px !important;
   }
   .discount-rate {
     color: #ca3e29;

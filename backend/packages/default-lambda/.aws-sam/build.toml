@@ -5,6 +5,7 @@
 codeuri = "/Users/genkisystem/Desktop/da2/da2/backend/packages/default-lambda/hello-world"
 runtime = "nodejs12.x"
 architecture = "x86_64"
+handler = ""
 manifest_hash = ""
 packagetype = "Zip"
 functions = ["HelloWorldFunction"]

@@ -2,9 +2,22 @@
   <v-hover v-slot="{ hover }">
     <v-card :loading="loading" style="" class="product rounded-0 py-2 my-0">
       <v-row class="px-2 pb-0 pt-8 ma-0 py-0" style="height: 220px">
-        <span :class="item.domain.toLowerCase()" class="domain px-3 font-size-14 font-weight-2 text-right">
-          {{ item.domain }}
-        </span>
+        <span
+          :class="[
+            isMobile
+              ? `domain-sub-left-mobile ${item.domain.toLowerCase()} `
+              : `domain-sub-left ${item.domain.toLowerCase()} `,
+          ]"
+          class="font-size-14 px-4"
+        ></span>
+        <span
+          :class="[
+            isMobile ? `domain-mobile ${item.domain.toLowerCase()}` : `domain ${item.domain.toLowerCase()}`,
+            hover ? 'top-1px' : '',
+          ]"
+          class="font-size-14 px-4"
+          >{{ item.domain }}</span
+        >
         <v-img
           :class="hover ? 'mt-0' : 'mt-2'"
           class="product-img text-center"
@@ -92,6 +105,9 @@ export default Vue.extend({
     },
   }),
   computed: {
+    isMobile(): boolean {
+      return this.$store.getters.isMobile;
+    },
     getRatingAverage(): number {
       return 5;
     },
@@ -133,16 +149,41 @@ export default Vue.extend({
     -o-transition: all 0.2s;
     transition: all 0.2s;
   }
+  .top-1px {
+    top: 1px !important;
+  }
   .domain {
     position: absolute;
-    left: 0px;
-    top: 0px;
-    z-index: 2;
+    right: 0px;
+    top: 3px;
+    z-index: 100;
     height: 24px;
     line-height: 24px;
-    border-radius: 0px 0px 4px 0px !important;
+    border-radius: 0px 0px 0px 4px !important;
   }
-
+  .domain-sub-left {
+    position: absolute;
+    right: 0px;
+    top: 0px;
+    z-index: 100;
+    border-radius: 4px 0px 4px 2px !important;
+  }
+  .domain-mobile {
+    position: absolute;
+    right: 0px;
+    top: 3px;
+    z-index: 100;
+    height: 20px;
+    line-height: 20px;
+    border-radius: 0px 0px 0px 4px !important;
+  }
+  .domain-sub-left-mobile {
+    position: absolute;
+    right: 0px;
+    top: 0px;
+    z-index: 100;
+    border-radius: 4px 0px 4px 2px !important;
+  }
   .discount-rate {
     color: #ca3e29;
     z-index: 2;

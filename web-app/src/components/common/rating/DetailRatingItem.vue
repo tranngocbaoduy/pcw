@@ -9,12 +9,16 @@
     <div class="d-flex-column pa-2">
       <p class="font-weight-bold font-size-18 mb-2 font-color-customer">Đánh giá sản phẩm:</p>
       <div class="d-flex flex-row-reverse justify-start align-center font-size-14">
-        <div v-for="(i, index) in numberRatingItems" :key="`${i}-star-${index}`" class="mr-2">
+        <div
+          v-for="(i, index) in numberRatingItems.slice(1, numberRatingItems.length)"
+          :key="`${i}-star-${index}`"
+          class="mr-2"
+        >
           <div
             style="border: 0.5px #bbbbbb solid !important"
             class="white rounded-sm d-flex-block pa-2 block primary-color-3"
           >
-            {{ index }} sao <span class="font-weight-bold primary-color-5"> ({{ i }})</span>
+            {{ index + 1 }} sao <span class="font-weight-bold primary-color-5"> ({{ i + 1 }})</span>
           </div>
         </div>
       </div>

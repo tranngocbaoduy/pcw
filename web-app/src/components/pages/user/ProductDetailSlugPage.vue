@@ -5,16 +5,16 @@
       :class="isMobile ? 'transition-span-mobile' : 'transition-span'"
     >
       <v-btn
-        @click="transitionToCompare(1)"
+        @click="transitionToCompare(0)"
         class="elevation-1 my-1 rounded-circle my-0"
         color="#1859db"
         style="background-color: white !important"
         icon
       >
-        <v-icon size="20">mdi-store</v-icon>
+        <v-icon size="20">mdi-store-search</v-icon>
       </v-btn>
       <v-btn
-        @click="transitionToCompare(0)"
+        @click="transitionToCompare(1)"
         class="elevation-1 my-1 rounded-circle my-0"
         color="#1859db"
         style="background-color: white !important"
@@ -33,7 +33,7 @@
       </v-btn> -->
 
       <v-menu
-        v-if="isMobile && tabModel == 1"
+        v-if="isMobile && tabModel == 0"
         :close-on-click="false"
         :close-on-content-click="true"
         bottom
@@ -63,7 +63,7 @@
           </v-btn>
         </template>
 
-        <v-list class="pa-0 py-2 ma-0 elevation-0 rounded-0 font-size-12">
+        <v-list class="pa-0 py-0 ma-0 elevation-0 rounded-0 font-size-12">
           <v-list-item
             v-for="(item, index) in filterByProductAnotherAgency"
             :key="`${index}-filter-product`"
@@ -97,6 +97,7 @@
             :subProductItems="subProductItems"
             :largestSaleOffItem="largestSaleOffItem"
             :domain="mainProduct.domain"
+            :cheapestItem="cheapestItem"
           />
         </v-col>
         <v-col sm="12" md="12" cols="12" class="px-4">
@@ -110,15 +111,12 @@
         <v-col cols="12">
           <v-card class="elevation-0 rounded-sm" height="100%">
             <v-tabs v-model="tabModel" color="#1859db" left background-color="transparent">
-              <v-tab :class="isMobile ? 'font-size-14' : 'font-size-14'">Đánh giá</v-tab>
               <v-tab :class="isMobile ? 'font-size-14' : 'font-size-14'">Các cửa hàng ({{ allProduct.length }})</v-tab>
+              <v-tab :class="isMobile ? 'font-size-14' : 'font-size-14'">Đánh giá</v-tab>
               <v-tab :class="isMobile ? 'font-size-14' : 'font-size-14'">Thông tin</v-tab>
             </v-tabs>
 
             <v-tabs-items v-model="tabModel">
-              <v-tab-item>
-                <DetailRatingItem :itemRating="mainProduct.itemRating" />
-              </v-tab-item>
               <v-tab-item>
                 <v-menu
                   :close-on-click="false"
@@ -172,7 +170,7 @@
                   left
                   nudge-bottom="40"
                   z-index="2000"
-                  content-class="elevation-1 font-size-14"
+                  content-class="elevation-1 font-size-12"
                 >
                   <template v-slot:activator="{ on, attrs }">
                     <v-btn
@@ -203,10 +201,10 @@
                     <v-list-item
                       v-for="(item, index) in sortByProductAnotherAgency"
                       :key="`${index}-filter-product`"
-                      class="hover-custom-link pa-0 ma-0 px-2 font-size-14"
+                      class="hover-custom-link pa-0 ma-0 px-2 font-size-12"
                       @click="handleChangeSorter(item)"
                     >
-                      {{ item.name }}
+                      <span class="font-size-12">{{ item.name }}</span>
                     </v-list-item>
                   </v-list>
                 </v-menu>
@@ -216,6 +214,9 @@
                   :relatedItems="filterProductItems"
                   :shopName="$t('anotherAgency')"
                 />
+              </v-tab-item>
+              <v-tab-item>
+                <DetailRatingItem :itemRating="mainProduct.itemRating" />
               </v-tab-item>
               <v-tab-item style="min-height: 500px"></v-tab-item>
             </v-tabs-items> </v-card
@@ -259,6 +260,7 @@ export default Vue.extend({
     mainProduct: {} as ProductItem,
     allProduct: [] as ProductItem[],
     largestSaleOffItem: {} as ProductItem,
+    cheapestItem: {} as ProductItem,
     listPhotoItems: [] as any[],
     averagePrice: 0 as number,
     anotherCategoryId: '' as string,
@@ -266,6 +268,7 @@ export default Vue.extend({
     encodedSlugId: '',
     filterByProductAnotherAgency: [
       { id: 'discount', name: 'Giảm giá', isSelected: false },
+      { id: 'review', name: 'Đánh giá', isSelected: false },
       // { id: 'location', name: 'Địa điểm', isSelected: false },
     ],
     sortByProductAnotherAgency: [
@@ -287,7 +290,7 @@ export default Vue.extend({
       let productItems = this.allProduct;
       for (const i of this.filterByProductAnotherAgency) {
         if (i.id == 'discount' && i.isSelected) productItems = productItems.filter((item) => !!item.discountRate);
-        if (i.id == 'location' && i.isSelected) productItems = productItems.filter((item) => !!item.shopLocation);
+        if (i.id == 'review' && i.isSelected) productItems = productItems.filter((item) => !!item.countReview);
       }
       console.log('productItems', productItems, this.filterByProductAnotherAgency);
       return productItems;
@@ -338,7 +341,10 @@ export default Vue.extend({
     window.scrollTo({ top: 0, left: 0 });
     await this.initialize();
     this.allProduct = [this.mainProduct, ...this.subProductItems];
+    console.log('this.allProduct', this.allProduct);
+
     this.handleChangeSorter(this.sortByProductAnotherAgency.find((i) => i.isSelected));
+    this.cheapestItem = JSON.parse(JSON.stringify(this.allProduct[0]));
   },
   watch: {
     async slugId() {
@@ -447,6 +453,7 @@ export default Vue.extend({
         }
       } catch (err) {
         console.log(err);
+        this.$router.replace('/');
       }
       loading.hide();
     },
@@ -480,7 +487,7 @@ export default Vue.extend({
     position: fixed;
     top: 170px;
     z-index: 100;
-    right: 65px;
+    right: 55px;
   }
 
   .transition-span-mobile {
@@ -488,6 +495,9 @@ export default Vue.extend({
     bottom: 90px;
     z-index: 100;
     right: 15px;
+  }
+  .v-label {
+    font-size: 12px !important;
   }
 }
 </style>

@@ -36,14 +36,13 @@
 
     <div class="my-0 pl-0 pb-4">
       <v-row align="center" no-gutters>
-        <div class="font-size-16 font-weight-1 line-through pr-0 pl-2 mr-3" v-if="item.listPrice != item.price">
+        <div class="font-size-16 font-weight-1 line-through pr-0 pl-1 mr-3" v-if="item.listPrice != item.price">
           {{ item.listPrice | formatPrice }}đ
         </div>
-        <div class="font-size-28 font-weight-3 mr-7 primary-color-1">{{ item.price | formatPrice }}đ</div>
+        <div class="font-size-28 font-weight-3 mr-2 primary-color-1">{{ item.price | formatPrice }}đ</div>
         <div
-          style="border: red 1px solid"
           v-if="item.listPrice != item.price"
-          class="pa-1 rounded-md font-size-14 font-weight-2 text-right ml-5 red white--text elevation-1 mr-2"
+          class="pa-1 rounded-md font-size-14 font-weight-2 text-right ml-5 elevation-0 mr-2 discount-rate"
         >
           {{ item.discountRate || 0 }}% giảm
         </div>
@@ -81,7 +80,7 @@
     </v-card-actions>
     <v-card color="white" class="mt-5 rounded-0 px-3" elevation="0">
       <v-card-title class="pb-3 d-flex justify-space-between align-center">
-        <div>{{ $t('note') }}:</div>
+        <div class="hover-custom-link">{{ $t('note') }}:</div>
       </v-card-title>
 
       <v-card-text class="font-size-14 font-weight-1">
@@ -89,15 +88,18 @@
           <li class="py-1">
             {{ $t('The cheapest product is on sale at') }}
 
-            <span @click="goToPlatform()" class="primary-color-1">{{ item && item.domain ? item.domain : '' }}</span>
+            <span @click="goToPlatform(cheapestItem)" class="primary-color-1 hover-custom-link">{{
+              cheapestItem && cheapestItem.domain ? cheapestItem.domain : ''
+            }}</span>
           </li>
           <li class="py-1" v-if="largestSaleOffItem.discountRate != 0">
             {{ $t('The store with the most discounts is') }}
-            <a :href="largestSaleOffItem.url" target="_blank">
+            <span @click="goToPlatform(largestSaleOffItem)" class="primary-color-1 hover-custom-link">
               <span class="primary-color-1">{{ largestSaleOffItem.domain }}</span>
-            </a>
+            </span>
             {{ $t('up to') }}
-            <span class="primary-color-2"> {{ largestSaleOffItem.discountRate }}% </span>-
+            <span class="primary-color-2 discount-rate px-1"> {{ largestSaleOffItem.discountRate }}% </span>
+            <span class="px-1">{{ ' với giá ưu đãi' }}</span>
             <span class="primary-color-1"> {{ largestSaleOffItem.price | formatPrice }}đ</span>
           </li>
           <li class="py-1">
@@ -127,9 +129,10 @@ import CategoryService from '@/api/category.service';
 import RatingItem from '@/components/common/rating/RatingItem.vue';
 import Vue from 'vue';
 import base64url from 'base64url';
+import { ProductItem } from '@/api/product.service';
 
 export default Vue.extend({
-  props: ['item', 'averagePrice', 'subProductItems', 'largestSaleOffItem', 'domain'],
+  props: ['item', 'averagePrice', 'subProductItems', 'largestSaleOffItem', 'domain', 'cheapestItem'],
   components: { RatingItem },
   data: () => ({
     isShowDetail: false,
@@ -172,11 +175,11 @@ export default Vue.extend({
     },
   },
   methods: {
-    goToPlatform() {
-      window.open(this.getURLAccessTrade(), '_blank');
+    goToPlatform(item: ProductItem) {
+      window.open(this.getURLAccessTrade(item), '_blank');
     },
-    getURLAccessTrade(): string {
-      return `${process.env.VUE_APP_BASE_ACCESS_TRADE_URL}?url=${this.item.url}`;
+    getURLAccessTrade(item?: any): string {
+      return `${process.env.VUE_APP_BASE_ACCESS_TRADE_URL}?url=${item && item.url ? item.url : this.item.url}`;
     },
   },
 });
@@ -196,6 +199,14 @@ export default Vue.extend({
     padding: 8px;
     margin: 0;
     display: inline;
+  }
+
+  .discount-rate {
+    color: #ca3e29;
+    z-index: 2;
+    border: 1px solid #ca3e29;
+    border-radius: 1px !important;
+    line-height: 14px !important;
   }
 }
 </style>

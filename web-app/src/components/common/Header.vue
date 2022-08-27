@@ -169,45 +169,47 @@
               <span v-text="item.code"></span>
             </v-chip>
           </template> -->
-          <template v-slot:item="{ item }">
-            <router-link :to="`${getSlugId(item)}`">
-              <v-hover v-slot="{ hover }">
-                <v-list-item :class="hover ? ' bg-primary-color-0' : ''" style="padding: 0px !important">
-                  <v-avatar tile size="32">
-                    <img :src="item.listImage[0]" :alt="`small-image-${item.name}`" />
-                  </v-avatar>
-                  <v-list-item-title
-                    class="px-3 font-size-12 d-flex-col align-center justify-start"
-                    style="max-width: 600px"
+          <template v-slot:item="{ item }" @click.prevent.stop>
+            <v-hover v-slot="{ hover }">
+              <v-list-item
+                @click="goToItem(item)"
+                :class="hover ? ' bg-primary-color-0' : ''"
+                style="padding: 0px !important"
+              >
+                <v-avatar tile size="32">
+                  <img :src="item.listImage[0]" :alt="`small-image-${item.name}`" />
+                </v-avatar>
+                <v-list-item-title
+                  class="px-3 font-size-12 d-flex-col align-center justify-start"
+                  style="max-width: 600px"
+                >
+                  <div
+                    class="line-height-14"
+                    style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 600px"
                   >
-                    <div
-                      class="line-height-14"
-                      style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 600px"
+                    {{ item.cleanName }}
+                  </div>
+                  <div class="d-flex align-center justify-start line-height-18">
+                    <span
+                      class="mr-3 line-height-22 font-size-12 font-weight-1 old-price"
+                      v-if="item.listPrice != item.price"
                     >
-                      {{ item.cleanName }}
-                    </div>
-                    <div class="d-flex align-center justify-start line-height-18">
-                      <span
-                        class="mr-3 line-height-22 font-size-12 font-weight-1 old-price"
-                        v-if="item.listPrice != item.price"
-                      >
-                        {{ item.listPrice | formatPrice }}đ
-                      </span>
-                      <span class="mr-3 font-weight-bold font-size-12">{{ item.price | formatPrice }} </span>
-                      <span
-                        class="discount-rate px-1 font-size-12 font-weight-2 text-right"
-                        v-if="item.listPrice != item.price"
-                      >
-                        {{ item.discountRate }}%
-                      </span>
-                    </div>
-                  </v-list-item-title>
-                </v-list-item>
-              </v-hover>
-            </router-link>
+                      {{ item.listPrice | formatPrice }}đ
+                    </span>
+                    <span class="mr-3 font-weight-bold font-size-12">{{ item.price | formatPrice }} </span>
+                    <span
+                      class="discount-rate px-1 font-size-12 font-weight-2 text-right"
+                      v-if="item.listPrice != item.price"
+                    >
+                      {{ item.discountRate }}%
+                    </span>
+                  </div>
+                </v-list-item-title>
+              </v-list-item>
+            </v-hover>
           </template>
         </v-autocomplete>
-        <div class="some-category-hot font-size-12 py-1" style="height: 35px">
+        <div class="some-category-hot font-size-12 pb-1 my-1" style="height: 35px">
           <div class="d-inline" v-for="i in listCategoryName.slice(0, 4)" :key="`${i.SK}-some-category-hot`">
             <v-hover v-slot="{ hover }">
               <router-link
@@ -439,7 +441,9 @@ export default Vue.extend({
     categoryName(categoryId: string): string {
       return categoryId ? this.$t(`category.${categoryId}`).toString() : '';
     },
-
+    goToItem(item: ProductItem) {
+      this.$router.push(this.getSlugId(item));
+    },
     getSlugId(item: ProductItem): string {
       return ProductService.getSlugId(item);
     },
