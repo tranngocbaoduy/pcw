@@ -1,8 +1,8 @@
 <template>
   <div class="product-related">
     <v-row no-gutters class="my-4">
-      <v-col class="pa-0 ma-0" v-for="item in relatedItems" :key="item.url" cols="12">
-        <ProductRelatedCard :item="item" />
+      <v-col class="pa-0 ma-0" v-for="(item, index) in relatedItems" :key="item.url" cols="12">
+        <ProductRelatedCard :item="item" :class="isMobile && index % 2 == 0 ? 'bg-primary-color-6' : ''" />
       </v-col>
     </v-row>
   </div>
@@ -23,7 +23,11 @@ export default Vue.extend({
     sortItems: [] as ProductItem[],
   }),
   created() {},
-
+  computed: {
+    isMobile(): boolean {
+      return this.$store.getters.isMobile;
+    },
+  },
   methods: {},
 });
 </script>

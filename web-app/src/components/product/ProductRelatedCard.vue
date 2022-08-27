@@ -37,23 +37,32 @@
         <div style="flex: 1">
           <div class="font-size-14 font-weight-2">{{ item.name }}</div>
           <div class="d-flex justify-space-between align-center px-0 mx-0">
-            <RatingItem class="hover-custom-link" :itemRating="item.itemRating" />
+            <!-- <RatingItem class="hover-custom-link" :itemRating="item.itemRating" /> -->
+            <div class="font-size-12 font-weight-2 primary-color-4">
+              <v-icon
+                @click="goToStore()"
+                v-if="item.shopItem.shop_is_official == 1"
+                class="store font-size-20 mb-1 mr-1 primary-color-4"
+                >mdi-store-check-outline</v-icon
+              >
+              <v-icon @click="goToStore()" v-else class="store font-size-20 mb-1 mr-1 primary-color-4"
+                >mdi-store-outline</v-icon
+              >
 
+              <span @click="goToStore()" class="store" style="text-decoration: underline">{{
+                item.shopItem.shop_name
+              }}</span>
+            </div>
             <div class="font-size-14 font-weight-2 pt-1 pl-2">
               <v-icon small class="px-2 pr-1 pb-1">mdi-map-marker</v-icon>{{ item.shopLocation }}
             </div>
-          </div>
-          <div class="font-size-12 font-weight-2 primary-color-5" @click="goToStore()">
-            <v-icon class="font-size-20 mb-1 mr-1 primary-color-5">mdi-storefront-outline</v-icon>
-            {{ item.shopItem.shop_name }}
           </div>
         </div>
       </div>
 
       <div
-        @click="goToPlatform()"
-        class="font-size-14 hover-custom-link text-center"
-        style="text-decoration: underline; flex: 1"
+        class="font-size-14 text-center"
+        style="flex: 1"
         :style="isMobile ? 'width: 80px;' : 'width: 90px; padding-left:28px'"
       >
         <span> Review: </span>
@@ -128,7 +137,9 @@ export default Vue.extend({
     loading: false,
     selection: 1,
   }),
-  components: { RatingItem },
+  components: {
+    // RatingItem
+  },
 
   filters: {
     reduceText: function (text: string, max: number) {
@@ -218,6 +229,13 @@ export default Vue.extend({
     border-radius: 1px !important;
     line-height: 14px !important;
   }
+  .trusted {
+    color: #ff2200;
+    z-index: 2;
+    border: 1px solid #ca3e29;
+    border-radius: 1px !important;
+    line-height: 14px !important;
+  }
 
   .old-price {
     text-decoration: line-through !important;
@@ -230,6 +248,9 @@ export default Vue.extend({
     overflow: hidden; /* prevents extra lines from being visible */
     // text-overflow: ellipsis;
     // white-space: nowrap;
+  }
+  .store:hover {
+    cursor: pointer;
   }
 }
 </style>

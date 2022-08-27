@@ -493,7 +493,7 @@ export default Vue.extend({
   .transition-span-mobile {
     position: fixed;
     bottom: 90px;
-    z-index: 100;
+    z-index: 300;
     right: 15px;
   }
   .v-label {
