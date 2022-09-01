@@ -51,7 +51,10 @@
                               </div> -->
 
                               <div class="d-flex-col align-center justify-start line-height-18">
-                                <div class="font-size-12 font-weight-2 line-height-22 title-product mb-2">
+                                <div
+                                  style="height: 50px"
+                                  class="font-size-12 font-weight-2 line-height-22 title-product mb-2"
+                                >
                                   {{ filterPromotionItems[+index + i].cleanName }}
                                 </div>
                                 <span

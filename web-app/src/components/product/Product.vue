@@ -16,7 +16,7 @@
             hover ? 'top-1px' : '',
           ]"
           class="font-size-14 px-4"
-          >{{ item.domain }}</span
+          >{{ item.agencyDisplay }}</span
         >
         <v-img
           :class="hover ? 'mt-0' : 'mt-2'"
@@ -156,7 +156,7 @@ export default Vue.extend({
     position: absolute;
     right: 0px;
     top: 3px;
-    z-index: 100;
+    z-index: 2;
     height: 24px;
     line-height: 24px;
     border-radius: 0px 0px 0px 4px !important;
@@ -165,14 +165,14 @@ export default Vue.extend({
     position: absolute;
     right: 0px;
     top: 0px;
-    z-index: 100;
+    z-index: 2;
     border-radius: 4px 0px 4px 2px !important;
   }
   .domain-mobile {
     position: absolute;
     right: 0px;
     top: 3px;
-    z-index: 100;
+    z-index: 2;
     height: 20px;
     line-height: 20px;
     border-radius: 0px 0px 0px 4px !important;
@@ -181,7 +181,7 @@ export default Vue.extend({
     position: absolute;
     right: 0px;
     top: 0px;
-    z-index: 100;
+    z-index: 2;
     border-radius: 4px 0px 4px 2px !important;
   }
   .discount-rate {

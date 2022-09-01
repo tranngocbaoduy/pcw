@@ -160,6 +160,24 @@ Resources:
                 Effect: Allow
                 Resource: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-ProductFunction"
   
+  # RestApiDeployment:
+  #   Type: AWS::ApiGateway::Deployment
+  #   Properties:
+  #     RestApiId: !Ref RestApi
+  #     StageName: !Ref StageName
+  # ApiGatewayDomainName:
+  #   Type: AWS::ApiGateway::DomainName
+  #   Condition: IsNotDev
+  #   Properties:
+  #     DomainName: !If
+  #       - IsDev
+  #       - !Ref 'AWS::NoValue'
+  #       - !FindInMap [EnvTypeMap, !Ref EnvType, ApiDomainName]
+  #     CertificateArn: !If
+  #       - IsDev
+  #       - !Ref 'AWS::NoValue'
+  #       - !FindInMap [EnvTypeMap, !Ref EnvType, AcmCertificateArn]
+        
   RestApi:
     Type: AWS::ApiGateway::RestApi
     Properties:

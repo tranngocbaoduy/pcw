@@ -21,8 +21,7 @@ const CORS_HEADERS = {
 };
 
 exports.lambdaHandler = async (event, context) => {
-  console.log(event);
-  console.log(context);
+  context.callbackWaitsForEmptyEventLoop = false
   let response = {};
   try {
     if (event.httpMethod == "GET") {

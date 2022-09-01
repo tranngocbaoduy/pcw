@@ -72,6 +72,11 @@ const routes: Array<RouteConfig> = [
         component: () => import('@/components/pages/user/HomePage.vue').catch(RouterHelper.handleAsyncComponentError),
       },
       {
+        path: '/home',
+        name: 'HomePage',
+        component: () => import('@/components/pages/user/HomePage.vue').catch(RouterHelper.handleAsyncComponentError),
+      },
+      {
         path: '/category/:idCate',
         name: 'CategoryPage',
         component: () =>

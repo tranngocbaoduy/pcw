@@ -1,77 +1,71 @@
 <template>
-  <div class="elevation-0 header">
-    <v-toolbar class="py-3 toolbar-header" min-width="100%" :min-height="isMobile ? '80px' : '90px'">
-      <router-link class="custom-link pa-2" :to="`/`">
-        <v-img
-          max-height="56"
-          max-width="156"
-          :height="isMobile ? 36 : 56"
-          :width="isMobile ? 102 : 156"
-          :src="require('@/assets/image/logo/Light.png')"
-          alt=""
+  <v-card
+    :height="innerHeight"
+    width="100vw"
+    class="elevation-0 bg-primary-color-0 d-flex flex-column justify-start align-center"
+  >
+    <div style="width: 100%; height: 15%"></div>
+    <router-link class="custom-link pa-2" :to="`/home`">
+      <v-img :height="130" :width="270" contain :src="require('@/assets/image/logo/Light.png')" alt=""> </v-img>
+    </router-link>
+    <div style="width: 95%" class="pb-0 pt-4">
+      <v-autocomplete
+        class="rounded-md elevation-1"
+        @blur.prevent.stop="isFocus = false"
+        @click.prevent.stop="isFocus = true"
+        style="box-shadow: none !important"
+        :style="isFocus ? 'border: #1859db 1px solid;' : 'border: #ddd6d6 0.6px solid;'"
+        validate-on-blur
+        :items="productSearchItems"
+        hide-details
+        flat
+        background-color="white"
+        :placeholder="placeholder"
+        color="#ECEFF1"
+        solo
+        allow-overflow
+        item-text="cleanName"
+        v-model="valueText"
+        :no-data-text="$t('Let search somthing!')"
+        :filter="filterItems"
+        :menu-props="{
+          closeOnClick: false,
+          closeOnContentClick: false,
+          disableKeys: true,
+          openOnClick: false,
+          maxHeight: '40%',
+          minWidth: widthMenu,
+          maxWidth: widthMenu,
+          nudgeBottom: isMobile ? 12 : 2,
+          offsetY: true,
+          elevation: 0,
+          offsetOverflow: true,
+          transition: false,
+          overflowY: true,
+        }"
+        :disable-lookup="true"
+        @keyup="searchProduct"
+        :search-input.sync="searchCode"
+        @input="searchCode = null"
+      >
         >
-        </v-img>
-      </router-link>
-      <v-spacer></v-spacer>
-
-      <div style="width: 700px" class="pb-0 pt-4">
-        <v-autocomplete
-          class="rounded-md elevation-1 mr-4"
-          @blur.prevent.stop="isFocus = false"
-          @click.prevent.stop="isFocus = true"
-          style="box-shadow: none !important"
-          :style="isFocus ? 'border: #1859db 1px solid;' : 'border: #ddd6d6 0.6px solid;'"
-          validate-on-blur
-          :items="productSearchItems"
-          hide-details
-          flat
-          background-color="white"
-          :placeholder="placeholder"
-          color="#ECEFF1"
-          solo
-          allow-overflow
-          item-text="cleanName"
-          v-model="valueText"
-          :no-data-text="$t('Let search somthing!')"
-          :filter="filterItems"
-          :menu-props="{
-            closeOnClick: false,
-            closeOnContentClick: false,
-            disableKeys: true,
-            openOnClick: false,
-            maxHeight: 700,
-            minWidth: widthMenu,
-            maxWidth: widthMenu,
-            nudgeBottom: isMobile ? 12 : 2,
-            offsetY: true,
-            elevation: 0,
-            offsetOverflow: true,
-            transition: false,
-            overflowY: true,
-          }"
-          :disable-lookup="true"
-          @keyup="searchProduct"
-          :search-input.sync="searchCode"
-          @input="searchCode = null"
-        >
-          >
-          <template v-slot:append>
-            <v-fade-transition hide-on-leave>
-              <v-progress-circular v-if="isLoading" size="24" color="info" indeterminate></v-progress-circular>
-              <v-btn
-                color="transparent"
-                v-else
-                width="48"
-                height="32"
-                style="color: white"
-                @click="searchProduct"
-                class="border-radius-0 elevation-0 mr-n6"
-              >
-                <v-icon color="#1859db" size="24">mdi-magnify</v-icon>
-              </v-btn>
-            </v-fade-transition>
-          </template>
-          <!-- <template v-slot:no-data>
+        <template v-slot:append>
+          <v-fade-transition hide-on-leave>
+            <v-progress-circular v-if="isLoading" size="24" color="info" indeterminate></v-progress-circular>
+            <v-btn
+              color="transparent"
+              v-else
+              width="48"
+              height="32"
+              style="color: white"
+              @click="searchProduct"
+              class="border-radius-0 elevation-0 mr-n6"
+            >
+              <v-icon color="#1859db" size="24">mdi-magnify</v-icon>
+            </v-btn>
+          </v-fade-transition>
+        </template>
+        <!-- <template v-slot:no-data>
             <v-list-item>
               <div class="d-flex-col align-center justify-center">
                 <v-card elevation="0" class="rounded-0 pa-0" width="680">
@@ -129,136 +123,103 @@
               </div>
             </v-list-item>
           </template> -->
-          <template v-slot:prepend-item>
-            <v-list-item>
-              <div class="d-flex-col align-center justify-center">
-                <v-card elevation="0" class="rounded-0 pa-0" :width="widthMenu">
-                  <v-card-title class="pa-1 font-weight-bold font-size-18">Danh mục</v-card-title>
-                  <v-card-text class="pa-1 font-size-12">
-                    <v-chip-group
-                      active-class="primary--text"
-                      column
-                      @click="
-                        () => {
-                          this.selectedCategory = [];
-                        }
-                      "
-                      v-model="selectedCategory"
+        <template v-slot:prepend-item>
+          <v-list-item>
+            <div class="d-flex-col align-center justify-center">
+              <v-card elevation="0" class="rounded-0 pa-0" :width="widthMenu">
+                <v-card-title class="pa-1 font-weight-bold font-size-18">Danh mục</v-card-title>
+                <v-card-text class="pa-1 font-size-12">
+                  <v-chip-group
+                    active-class="primary--text"
+                    column
+                    @click="
+                      () => {
+                        this.selectedCategory = [];
+                      }
+                    "
+                    v-model="selectedCategory"
+                  >
+                    <v-chip
+                      :draggable="false"
+                      small
+                      class="font-size-12 font-color-customer font-weight-bold bg-primary-color-0"
+                      v-for="category in listCategoryName"
+                      :key="`${category.name}-category-on-search`"
+                      :to="`/category/${category.SK}`"
                     >
-                      <v-chip
-                        :draggable="false"
-                        small
-                        class="font-size-12 font-color-customer font-weight-bold bg-primary-color-0"
-                        v-for="category in listCategoryName"
-                        :key="`${category.name}-category-on-search`"
-                        :to="`/category/${category.SK}`"
-                      >
-                        {{ categoryName(category.name) }}
-                      </v-chip>
-                    </v-chip-group>
-                  </v-card-text>
-                </v-card>
-                <v-card elevation="0" class="rounded-0 pa-0" v-if="productSearchItems && productSearchItems.length > 0">
-                  <v-card-title class="pa-1 font-weight-bold font-size-18">Sản phẩm gợi ý</v-card-title>
-                </v-card>
-              </div>
-            </v-list-item>
-          </template>
-          <!-- <template v-slot:selection="{ attr, on, item, selected }">
+                      {{ categoryName(category.name) }}
+                    </v-chip>
+                  </v-chip-group>
+                </v-card-text>
+              </v-card>
+              <v-card elevation="0" class="rounded-0 pa-0" v-if="productSearchItems && productSearchItems.length > 0">
+                <v-card-title class="pa-1 font-weight-bold font-size-18">Sản phẩm gợi ý</v-card-title>
+              </v-card>
+            </div>
+          </v-list-item>
+        </template>
+        <!-- <template v-slot:selection="{ attr, on, item, selected }">
             <v-chip v-bind="attr" :input-value="selected" color="blue-grey" class="white--text" v-on="on">
               <v-icon left> mdi-bitcoin </v-icon>
               dsa
               <span v-text="item.code"></span>
             </v-chip>
           </template> -->
-          <template v-slot:item="{ item }" @click.prevent.stop>
-            <v-hover v-slot="{ hover }">
-              <v-list-item
-                @click="goToItem(item)"
-                :class="hover ? ' bg-primary-color-0' : ''"
-                style="padding: 0px !important"
+        <template v-slot:item="{ item }" @click.prevent.stop>
+          <v-hover v-slot="{ hover }">
+            <v-list-item
+              @click="goToItem(item)"
+              :class="hover ? ' bg-primary-color-0' : ''"
+              style="padding: 0px !important"
+            >
+              <v-avatar tile size="32">
+                <img :src="item.listImage[0]" :alt="`small-image-${item.name}`" />
+              </v-avatar>
+              <v-list-item-title
+                class="px-3 font-size-12 d-flex-col align-center justify-start"
+                style="max-width: 600px"
               >
-                <v-avatar tile size="32">
-                  <img :src="item.listImage[0]" :alt="`small-image-${item.name}`" />
-                </v-avatar>
-                <v-list-item-title
-                  class="px-3 font-size-12 d-flex-col align-center justify-start"
-                  style="max-width: 600px"
+                <div
+                  class="line-height-14"
+                  style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 600px"
                 >
-                  <div
-                    class="line-height-14"
-                    style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 600px"
+                  {{ item.cleanName }}
+                </div>
+                <div class="d-flex align-center justify-start line-height-18">
+                  <span
+                    class="mr-3 line-height-22 font-size-12 font-weight-1 old-price"
+                    v-if="item.listPrice != item.price"
                   >
-                    {{ item.cleanName }}
-                  </div>
-                  <div class="d-flex align-center justify-start line-height-18">
-                    <span
-                      class="mr-3 line-height-22 font-size-12 font-weight-1 old-price"
-                      v-if="item.listPrice != item.price"
-                    >
-                      {{ item.listPrice | formatPrice }}đ
-                    </span>
-                    <span class="mr-3 font-weight-bold font-size-12">{{ item.price | formatPrice }} </span>
-                    <span
-                      class="discount-rate px-1 font-size-12 font-weight-2 text-right"
-                      v-if="item.listPrice != item.price"
-                    >
-                      {{ item.discountRate }}%
-                    </span>
-                  </div>
-                </v-list-item-title>
-              </v-list-item>
-            </v-hover>
-          </template>
-        </v-autocomplete>
-        <div class="some-category-hot font-size-12 pb-1 my-1" style="height: 35px">
-          <div class="d-inline" v-for="i in listCategoryName.slice(0, 4)" :key="`${i.SK}-some-category-hot`">
-            <v-hover v-slot="{ hover }">
-              <router-link
-                :to="`/category/${i.SK}`"
-                class="pr-4 primary-color-1"
-                :class="hover ? 'font-weight-bold' : 'font-weight-normal'"
-              >
-                {{ categoryName(i.name) }}
-              </router-link>
-            </v-hover>
-          </div>
+                    {{ item.listPrice | formatPrice }}đ
+                  </span>
+                  <span class="mr-3 font-weight-bold font-size-12">{{ item.price | formatPrice }} </span>
+                  <span
+                    class="discount-rate px-1 font-size-12 font-weight-2 text-right"
+                    v-if="item.listPrice != item.price"
+                  >
+                    {{ item.discountRate }}%
+                  </span>
+                </div>
+              </v-list-item-title>
+            </v-list-item>
+          </v-hover>
+        </template>
+      </v-autocomplete>
+      <div class="some-category-hot font-size-12 pb-1 my-1" style="height: 35px">
+        <div class="d-inline" v-for="i in listCategoryName.slice(0, 4)" :key="`${i.SK}-some-category-hot`">
+          <v-hover v-slot="{ hover }">
+            <router-link
+              :to="`/category/${i.SK}`"
+              class="pr-4 primary-color-1"
+              :class="hover ? 'font-weight-bold' : 'font-weight-normal'"
+            >
+              {{ categoryName(i.name) }}
+            </router-link>
+          </v-hover>
         </div>
       </div>
-      <v-spacer v-if="!isMobile"></v-spacer>
-
-      <!-- <v-menu v-if="!isMobile" :close-on-click="true" bottom right nudge-bottom="40" z-index="2000">
-        <template v-slot:activator="{ on, attrs }">
-          <v-btn color="white" tile elevation="0" light v-bind="attrs" retain-focus-on-click v-on="on">
-            <v-avatar size="24">
-              <img :src="localeLanguage.flag" :alt="localeLanguage.name" />
-            </v-avatar>
-            <span class="px-2"> {{ `${localeLanguage.code.toUpperCase()}` }}</span>
-          </v-btn>
-        </template>
-
-        <v-list>
-          <v-list-item
-            v-for="(item, index) in localeLanguageItems"
-            :key="index"
-            @click="handleChangeLanguage(item)"
-            class="hover-custom-link"
-          >
-            <v-avatar size="24">
-              <img :src="item.flag" :alt="item.name" />
-            </v-avatar>
-            <v-list-item-title class="px-3">{{ item.name }}</v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-menu> -->
-      <!-- <v-btn icon>
-        <v-icon size="24">mdi-apps</v-icon>
-      </v-btn>
-      <v-btn icon>
-        <v-icon size="24">mdi-dots-vertical</v-icon>
-      </v-btn> -->
-    </v-toolbar>
-  </div>
+    </div>
+  </v-card>
 </template>
 
 <script lang="ts">
@@ -267,8 +228,7 @@ async function sleep(min: number, max: number) {
 }
 import Vue from 'vue';
 import i18n from '@/i18n';
-import ProductService, { ProductItem, ProductSearchItem } from '@/api/product.service';
-import CategoryService from '@/api/category.service';
+import ProductService, { ProductItem } from '@/api/product.service';
 import AuthService from '@/api/auth.service';
 
 export default Vue.extend({
@@ -291,8 +251,8 @@ export default Vue.extend({
   }),
   computed: {
     widthMenu(): number {
-      const width = this.isMobile ? innerWidth : 680;
-      return Math.min(width, 680);
+      const width = this.isMobile ? innerWidth : 400;
+      return Math.min(width, 400);
     },
     productSearchItemsComputed() {
       return this.productSearchItems && this.productSearchItems.length == 0
@@ -301,6 +261,9 @@ export default Vue.extend({
     },
     innerWidth(): number {
       return this.$store.getters.innerWidth;
+    },
+    innerHeight(): number {
+      return this.$store.getters.innerHeight;
     },
     localeLanguageItems() {
       return [

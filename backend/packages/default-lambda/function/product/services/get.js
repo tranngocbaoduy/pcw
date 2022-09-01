@@ -1,5 +1,4 @@
 const dynamodbHelper = require("../helper/DynamodbHelper");
-const fs = require("fs");
 const Latinise = require("../helper/latin");
 String.prototype.latinise = function () {
   return this.replace(/[^A-Za-z0-9\[\] ]/g, function (a) {
@@ -12,7 +11,7 @@ String.prototype.isLatin = function () {
 };
 
 function checkIsValidDomain(event) {
-  const listDomainValid = ["https://x-pcw.com", "http://localhost:8080", "https://d3kxmkwimuhvhe.cloudfront.net"];
+  const listDomainValid = ["https://x-pcw.store", "http://localhost:8080", "https://d3kxmkwimuhvhe.cloudfront.net"];
   if (listDomainValid.includes(event.headers.origin)) return true;
   return false;
 }
@@ -22,7 +21,7 @@ module.exports = async (event, context) => {
 
   let result = null;
   let res = null;
-
+  console.log('queryParams["action"]', queryParams["action"])
   if (!queryParams) {
     throw new Error("There's no query parameter");
   } else {
@@ -166,7 +165,7 @@ async function querySearchItems(event) {
       FilterExpression: filterExpressionList.join(" and "),
       ExpressionAttributeNames: expressionAttributeNames,
       ExpressionAttributeValues: expressionAttributeValues,
-      ProjectionExpression: 'PK, SK, #URL, price, voucher_info, slug_id, #BRAND, #DOMAIN, #NAME, #IMAGE, list_price, discount_rate, agency',
+      ProjectionExpression: 'PK, SK, #URL, price, voucher_info, slug_id, #BRAND, #DOMAIN, #NAME, #IMAGE, list_price, discount_rate, agency, description',
     };
     return await dynamodbHelper.queryAllItemsByLimit(params, limit);
   }
@@ -198,8 +197,17 @@ async function queryItemById(event) {
       };
       console.log("params", params);
       const childItems = await dynamodbHelper.queryItems(params);
+      const contentChildItems = childItems
+        .map((i) => i.description)
+        .sort((a, b) => {
+          if (a && b && a.join('').length >= b.join('').length) return -1;
+          return 1
+        })
+      const mainItem = childItems.find((i) => i.SK.includes(SK));
+      if (contentChildItems && contentChildItems.length >= 1)
+        mainItem.description = contentChildItems[0]
       return {
-        mainItem: childItems.find((i) => i.SK.includes(SK)),
+        mainItem: mainItem,
         childItems: childItems.filter((i) => !i.SK.includes(SK)),
       };
     } else {

@@ -100,12 +100,6 @@
             :cheapestItem="cheapestItem"
           />
         </v-col>
-        <v-col sm="12" md="12" cols="12" class="px-4">
-          <v-card color="white" class="mt-5 rounded-0 px-3" elevation="0" v-if="mainProduct.content">
-            <v-card-title class="pb-3">{{ $t('content') }}:</v-card-title>
-            <v-card-text>{{ mainProduct.content }} </v-card-text>
-          </v-card>
-        </v-col>
       </v-row>
       <v-row no-gutters id="detail-rating-item">
         <v-col cols="12">
@@ -113,7 +107,11 @@
             <v-tabs v-model="tabModel" color="#1859db" left background-color="transparent">
               <v-tab :class="isMobile ? 'font-size-14' : 'font-size-14'">Các cửa hàng ({{ allProduct.length }})</v-tab>
               <v-tab :class="isMobile ? 'font-size-14' : 'font-size-14'">Đánh giá</v-tab>
-              <v-tab :class="isMobile ? 'font-size-14' : 'font-size-14'">Thông tin</v-tab>
+              <v-tab
+                :class="isMobile ? 'font-size-14' : 'font-size-14'"
+                v-if="mainProduct && mainProduct.description && mainProduct.description.length != 0"
+                >Thông tin</v-tab
+              >
             </v-tabs>
 
             <v-tabs-items v-model="tabModel">
@@ -218,7 +216,12 @@
               <v-tab-item>
                 <DetailRatingItem :itemRating="mainProduct.itemRating" />
               </v-tab-item>
-              <v-tab-item style="min-height: 500px"></v-tab-item>
+              <v-tab-item
+                class="pa-4"
+                v-if="mainProduct && mainProduct.description && mainProduct.description.length != 0"
+                v-html="mainProduct && mainProduct.description ? mainProduct.description : ''"
+              >
+              </v-tab-item>
             </v-tabs-items> </v-card
         ></v-col>
       </v-row>
@@ -269,11 +272,10 @@ export default Vue.extend({
     filterByProductAnotherAgency: [
       { id: 'discount', name: 'Giảm giá', isSelected: false },
       { id: 'review', name: 'Đánh giá', isSelected: false },
-      // { id: 'location', name: 'Địa điểm', isSelected: false },
+      { id: 'trusted', name: 'Store uy tín', isSelected: false },
     ],
     sortByProductAnotherAgency: [
-      { id: 'discountRate', name: 'Phần trăm', isSelected: false },
-      // { id: 'location', name: 'Địa điểm', isSelected: false },
+      { id: 'discountRate', name: 'Giảm giá', isSelected: false },
       { id: 'price', name: 'Giá', isSelected: true },
       { id: 'countReview', name: 'Đánh giá', isSelected: false },
       { id: 'stock', name: 'Tồn kho', isSelected: false },
@@ -291,6 +293,8 @@ export default Vue.extend({
       for (const i of this.filterByProductAnotherAgency) {
         if (i.id == 'discount' && i.isSelected) productItems = productItems.filter((item) => !!item.discountRate);
         if (i.id == 'review' && i.isSelected) productItems = productItems.filter((item) => !!item.countReview);
+        if (i.id == 'trusted' && i.isSelected)
+          productItems = productItems.filter((item) => !!item.shopItem && (item as any).shopItem.shop_is_official == 1);
       }
       console.log('productItems', productItems, this.filterByProductAnotherAgency);
       return productItems;

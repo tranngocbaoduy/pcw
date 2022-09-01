@@ -72,11 +72,11 @@
         color="#1859db"
         height="42px"
         width="100px"
-        >{{ $t('buyNow') }}</v-btn
-      >
-      <span v-if="item.stock" class="font-size-14 ml-4"
-        >Kho: <span class="font-weight-bold">{{ item.stock }} </span> sản phẩm</span
-      >
+        >{{ $t('buyNow') }}
+      </v-btn>
+      <span v-if="item.stock" class="font-size-14 ml-4">
+        Kho: <span class="font-weight-bold">{{ item.stock }} </span> sản phẩm
+      </span>
     </v-card-actions>
     <v-card color="white" class="mt-5 rounded-0 px-3" elevation="0">
       <v-card-title class="pb-3 d-flex justify-space-between align-center">
@@ -103,9 +103,6 @@
             <span class="primary-color-1"> {{ largestSaleOffItem.price | formatPrice }}đ</span>
           </li>
           <li class="py-1">
-            {{ $t('Sold in stores') }}: <span class="primary-color-1"> {{ subProductItems.length + 1 }} </span>
-          </li>
-          <li class="py-1">
             {{ $t('Average product price') }}
             <span class="primary-color-1">
               {{ averagePrice | formatPrice }}đ ~
@@ -115,7 +112,7 @@
               >
               <v-icon v-else class="mb-1 mr-0 font-size-16 font-weight-bold" color="green">mdi-arrow-up</v-icon>
               {{ percentDiffPrice ? `${percentDiffPrice}%` : '0' }}
-              <span class="primary-color-2"> {{ reviewDiffPrice }}</span>
+              <!-- <span class="primary-color-2"> {{ reviewDiffPrice }}</span> -->
             </span>
           </li>
         </ul>

@@ -33,7 +33,11 @@ export default Vue.extend({
       if (this.isMobile != isMobile) {
         this.$store.dispatch('setIsMobile', { isMobile: isMobile });
       }
-      this.$store.dispatch('setBoxDistance', { innerWidth: window.innerWidth, offsetHeight: window.pageYOffset });
+      this.$store.dispatch('setBoxDistance', {
+        innerWidth: window.innerWidth,
+        innerHeight: window.innerHeight,
+        offsetHeight: window.pageYOffset,
+      });
       // console.log(isMobile, window.innerWidth, window.pageYOffset);
     },
   },

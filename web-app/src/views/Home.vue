@@ -1,19 +1,16 @@
 <template>
   <div class="home bg-primary-color-0">
-    <Header @handle-show-menu="handleShowMenu" :isShowMenu="isShowMenu"> </Header>
-
+    <Header @handle-show-menu="handleShowMenu" :isShowMenu="isShowMenu" v-if="!isMobileAndHomePage" />
     <v-container class="body-custom" :class="isMobile ? 'pa-0' : 'px-0'" :fluid="isFluid">
       <router-view />
     </v-container>
-    <v-divider class="divider-custom"></v-divider>
-    <Footer></Footer>
-    <!-- <NavigationMobile v-if="isMobile"></NavigationMobile> -->
+    <v-divider v-if="!isMobileAndHomePage" class="divider-custom"></v-divider>
+    <Footer v-if="!isMobileAndHomePage" />
   </div>
 </template>
 
 <script lang="ts">
 import Vue from 'vue';
-import NavigationMobile from '@/components/common/NavigationMobile.vue';
 import Header from '@/components/common/Header.vue';
 import Footer from '@/components/common/Footer.vue';
 import CategoryService from '@/api/category.service';
@@ -45,6 +42,9 @@ export default Vue.extend({
       if (this.$vuetify.breakpoint.md) return true;
       if (this.$vuetify.breakpoint.sm) return true;
       return true;
+    },
+    isMobileAndHomePage(): boolean {
+      return this.isMobile && this.$route.path == '/';
     },
   },
   async created() {

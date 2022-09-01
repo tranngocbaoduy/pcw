@@ -1,5 +1,5 @@
 <template>
-  <div class="body-user-page pa-2" ref="body-user-page-ref">
+  <div class="body-user-page pa-2" ref="body-user-page-ref" v-if="!isMobileAndHomePage">
     <Carousel />
     <RecommendProducts />
     <TrendingPromotion :promotionItems="promotionItems" />
@@ -9,15 +9,17 @@
     <!-- <TrendingSearch></TrendingSearch> -->
     <!-- <Feature></Feature> -->
   </div>
+  <div class="body-user-page-mobile pa-0" ref="body-user-page-ref" v-else>
+    <SearchBar />
+  </div>
 </template>
 
 <script lang="ts">
 import Vue from 'vue';
 import Carousel from '@/components/common/CarouselCustom.vue';
-import TrendingBrand from '@/components/pages/products/TrendingBrand.vue';
+import SearchBar from '@/components/common/SearchBar.vue';
 import TrendingPromotion from '@/components/pages/products/TrendingPromotion.vue';
 import RecommendProducts from '@/components/pages/products/TrendingRecommendProducts.vue';
-import TrendingSearchProducts from '@/components/pages/products/TrendingSearchProducts.vue';
 import TrendingCategory from '@/components/pages/products/TrendingCategory.vue';
 import { CategoryItem } from '@/api/category.service';
 import ProductService, { ProductItem } from '@/api/product.service';
@@ -25,6 +27,7 @@ import ProductService, { ProductItem } from '@/api/product.service';
 export default Vue.extend({
   name: 'Body',
   components: {
+    SearchBar,
     Carousel,
     TrendingCategory,
     // TrendingBrand,
@@ -44,6 +47,10 @@ export default Vue.extend({
     },
     categoryItems(): CategoryItem[] {
       return this.$store.getters.categoryItems || [];
+    },
+
+    isMobileAndHomePage(): boolean {
+      return this.isMobile && this.$route.path == '/';
     },
   },
   created() {
@@ -117,5 +124,11 @@ export default Vue.extend({
 
 <style lang="scss">
 .body-user-page {
+}
+.body-user-page-mobile {
+  overflow: hidden !important;
+  position: relative !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 </style>

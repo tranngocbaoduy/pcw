@@ -1,5 +1,6 @@
 import AuthService from '@/api/auth.service';
 import { int } from 'aws-sdk/clients/datapipeline';
+import base64url from 'base64url';
 
 export interface ProductSearchItem {
   PK: string;
@@ -15,6 +16,7 @@ export interface ProductItem {
   listChildId: string[];
   listImage: string[];
   agency: string;
+  agencyDisplay: string;
   content: string;
   createdDate?: string;
   domain: string;
@@ -39,6 +41,7 @@ export interface ProductItem {
   countReview: number;
   shopItem: {};
   shopUrl: string;
+  description: [];
 }
 
 export interface QueryProductItems {
@@ -66,7 +69,24 @@ export default class ProductService {
     }
   }
 
-  static async querySearchItems({ searchString }: { searchString: string }) {
+  static async querySearchItemsByUrl({ searchUrl }: { searchUrl: string }): Promise<ProductItem[]> {
+    const url = process.env.VUE_APP_API_BASE_URL + `/${process.env.VUE_APP_ENV}/product?action=searchItemsByUrl`;
+    const objURL = new URL(searchUrl);
+    const params = {
+      baseEncodedUrl: base64url.encode(objURL.origin + objURL.pathname),
+    };
+
+    try {
+      const data = await AuthService.api
+        .post(url, params)
+        .then((response) => ProductService.parseListProductItem(response.data.data));
+      return data;
+    } catch (err) {
+      return [];
+    }
+  }
+
+  static async querySearchItems({ searchString }: { searchString: string }): Promise<ProductItem[]> {
     const url =
       process.env.VUE_APP_API_BASE_URL +
       `/${process.env.VUE_APP_ENV}/product?action=querySearchItems&searchString=${searchString}`;
@@ -204,6 +224,7 @@ export default class ProductService {
       domain: ProductService.nameDomainShop[item.agency],
       listImage: item.image,
       agency: item.agency,
+      agencyDisplay: ProductService.handleAgency(item.agency),
       name: item.name,
       cleanName: this.handleRemoveSub(item.name),
       price: item.price > 200000000000 ? parseInt(item.price) / 100000 : parseInt(item.price),
@@ -222,9 +243,31 @@ export default class ProductService {
       likedCount: item.liked_count ? item.liked_count : '',
       itemRating: item.item_rating ? item.item_rating : '',
       countReview: item.item_rating ? item.item_rating.rating_count[0] : 0,
+      description: item.description ? ProductService.handleDescription(item.description) : [],
     } as ProductItem;
   }
 
+  static handleAgency(agency: string): string {
+    if (agency == 'mall') return 'Shopee Mall';
+    if (agency == 'lazmall') return 'Lazada Mall';
+    if (agency == 'shopee') return 'Shopee';
+    if (agency == 'tiki') return 'Tiki';
+    return agency;
+  }
+
+  static handleDescription(description: string[]): string {
+    const newDescription = [];
+    if (description && description.length == 1) {
+      if (description[0].includes('\n')) return description[0].split('\n').join('<br />');
+      else return description[0];
+    } else {
+      for (const text of description) {
+        if (text.includes('\n')) newDescription.push(text.split('\n').join('<br />'));
+        else newDescription.push(text);
+      }
+      return newDescription.join('<br />');
+    }
+  }
   static handleProcessUrlAccessTrade(url: string) {
     const urlObj = new URL(url);
     const preHandle = urlObj.pathname

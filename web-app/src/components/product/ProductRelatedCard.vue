@@ -41,7 +41,7 @@
             <div class="font-size-12 font-weight-2 primary-color-4">
               <v-icon
                 @click="goToStore()"
-                v-if="item.shopItem.shop_is_official == 1"
+                v-if="item.shopItem.store_level && item.shopItem.store_level == 'TRUSTED_STORE'"
                 class="store font-size-20 mb-1 mr-1 primary-color-4"
                 >mdi-store-check-outline</v-icon
               >
@@ -53,7 +53,7 @@
                 item.shopItem.shop_name
               }}</span>
             </div>
-            <div class="font-size-14 font-weight-2 pt-1 pl-2">
+            <div class="font-size-14 font-weight-2 pt-1 pl-2" v-if="item.shopLocation !== item.shopItem.shop_name">
               <v-icon small class="px-2 pr-1 pb-1">mdi-map-marker</v-icon>{{ item.shopLocation }}
             </div>
           </div>
@@ -119,7 +119,7 @@
         <span
           :class="[isMobile ? `domain-mobile ${item.domain.toLowerCase()}` : `domain ${item.domain.toLowerCase()}`]"
           class="font-size-14 px-4"
-          >{{ item.domain }}</span
+          >{{ item.agencyDisplay }}</span
         >
       </div>
     </v-card>
@@ -181,7 +181,7 @@ export default Vue.extend({
       return `${process.env.VUE_APP_BASE_ACCESS_TRADE_URL}?url=${this.item.url}`;
     },
     goToStore(): void {
-      window.open(this.item.shopUrl, '_blank');
+      if (this.item.shopUrl) window.open(this.item.shopUrl, '_blank');
     },
   },
 });
@@ -208,16 +208,16 @@ export default Vue.extend({
   }
   .domain-mobile {
     position: absolute;
-    right: 0px;
+    left: 0px;
     top: 3px;
     z-index: 100;
     height: 20px;
     line-height: 20px;
-    border-radius: 0px 0px 0px 4px !important;
+    border-radius: 0px 0px 4px 0px !important;
   }
   .domain-sub-left-mobile {
     position: absolute;
-    right: 0px;
+    left: 0px;
     top: 0px;
     z-index: 100;
     border-radius: 4px 0px 4px 2px !important;
