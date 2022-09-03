@@ -1,12 +1,33 @@
 ---
 AWSTemplateFormatVersion: 2010-09-09
 Parameters:
+  UserTableName:
+    Type: String
   ProductTableName:
     Type: String
   CategoryTableName:
     Type: String
 
 Resources:
+  UserTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: !Ref UserTableName
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
   ProductTable:
     Type: AWS::DynamoDB::Table
     DeletionPolicy: Retain
@@ -78,6 +99,14 @@ Resources:
         PointInTimeRecoveryEnabled: true
 
 Outputs:
+  UserTableName:
+    Value: !Ref ProductTable
+    Export:
+      Name: !Sub "${AWS::StackName}-UserTableName"
+  UserTableArn:
+    Value: !GetAtt UserTable.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-UserTableArn"
   ProductTableName:
     Value: !Ref ProductTable
     Export:

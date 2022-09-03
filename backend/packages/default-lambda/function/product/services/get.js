@@ -12,7 +12,7 @@ String.prototype.isLatin = function () {
 
 function checkIsValidDomain(event) {
   const listDomainValid = ["https://x-pcw.store", "http://localhost:8080", "https://d3kxmkwimuhvhe.cloudfront.net"];
-  if (listDomainValid.includes(event.headers.origin)) return true;
+  if (event.headers && Object.keys(event.headers).includes('origin') && listDomainValid.includes(event.headers.origin)) return true;
   return false;
 }
 

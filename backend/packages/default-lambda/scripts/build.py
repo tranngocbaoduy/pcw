@@ -26,35 +26,23 @@ helper = LambdaHelper(root_dir=root_dir,args=args)
 # handle setting environment for upload
 helper.use_env( args['env_name'] if args['env_name'] else 'dev') 
 
-build_dir = root_dir + '/.aws-sam/build'
+build_dir_func = helper.get_build_dir_func()
 
-# LambdaHelper.run_command(' '.join([
-#     sys.executable,
-#     root_dir + '/scripts/use_env.py {}'.format(args['env_name'])
-# ]))
-
+if (os.path.exists(build_dir_func)):
+    shutil.rmtree(build_dir_func)
+ 
 LambdaHelper.run_command(' '.join([
     'sam',
     'build',
     '--template',
     root_dir + '/template.yaml',
     '--build-dir',
-    build_dir,
+    build_dir_func,
     '--use-container' if args['use_container'] else ''
-]))
+])) 
 
-# LambdaHelper.run_command(' '.join([
-#     sys.executable,
-#     root_dir + '/scripts/use_env.py dev'
-# ]))
-
-build_dir_func = helper.get_build_dir_func()
-
-print(build_dir_func)
-if (os.path.exists(build_dir_func)):
-    shutil.rmtree(build_dir_func)
-# handle copy function to build/function
-helper.copy_function_to(build_dir_func)
+print("[build_dir_func] => ",build_dir_func)
+# handle copy function to build/function 
 
 # # make archive function
 

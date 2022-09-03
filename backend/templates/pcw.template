@@ -5,13 +5,22 @@ Parameters:
     Type: String
   EnvName:
     Type: String 
+  EnvType:
+    Type: String
+    AllowedPattern: '^[a-z]+$'
   StageName:
     Type: String
 
 Mappings:
   EnvTypeMap:
-    dev:
-      firstVar: "123"
+    dev: 
+      GoogleClientId: "224016471679-frhk37rqje4qj9ocn4nl3mjgqv1ha1hk.apps.googleusercontent.com"
+      GoogleClientSecret: "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"
+      GoogleClientRedirectURL: "https://x-pcw.store/login"
+    prod: 
+      GoogleClientId: "224016471679-frhk37rqje4qj9ocn4nl3mjgqv1ha1hk.apps.googleusercontent.com"
+      GoogleClientSecret: "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" 
+      GoogleClientRedirectURL: "https://x-pcw.store/login"
 
 Resources:
   DefaultAccessRole:
@@ -72,10 +81,10 @@ Resources:
       Code:
         S3Bucket: !Sub "${AWS::StackName}-source-bucket"
         S3Key: !Sub "packages/${Version}/STSFunction.zip"
-      Handler: sts/app.lambdaHandler
-      Runtime: nodejs12.x
+      Handler: app.lambdaHandler
+      Runtime: nodejs16.x
       Role: !GetAtt STSFunctionRole.Arn
-      MemorySize: 256
+      MemorySize: 128
       Timeout: 900
       Environment:
         Variables:
@@ -122,16 +131,15 @@ Resources:
       Code:
         S3Bucket: !Sub "${AWS::StackName}-source-bucket"
         S3Key: !Sub "packages/${Version}/ProductFunction.zip"
-      Handler: pages/app.lambdaHandler
-      Runtime: nodejs12.x
+      Handler: app.lambdaHandler
+      Runtime: nodejs16.x
       Role: !GetAtt DefaultFunctionRole.Arn
-      MemorySize: 256
+      MemorySize: 128
       Timeout: 900
       Environment:
         Variables:
           PRODUCT_TABLE_NAME: !Sub "${AWS::StackName}-PRODUCT"
-          CATEGORY_TABLE_NAME: !Sub "${AWS::StackName}-CATEGORY"
-          PAGES_TABLE_NAME: !Sub "${AWS::StackName}-PAGES"
+          CATEGORY_TABLE_NAME: !Sub "${AWS::StackName}-CATEGORY" 
           ENV_NAME: !Ref EnvName
           COGNITO_REGION: !Ref AWS::Region
           API_REGION: !Ref AWS::Region
@@ -139,7 +147,34 @@ Resources:
           DEFAULT_ROLE_ARN: !GetAtt DefaultAccessRole.Arn
           REST_API_ID: !Ref RestApi
           LOG_LEVEL: debug
-  RestApiProductRole:
+  OAuthFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-OAuthFunction"
+      Code:
+        S3Bucket: !Sub "${AWS::StackName}-source-bucket"
+        S3Key: !Sub "packages/${Version}/OAuthFunction.zip"
+      Handler: app.lambdaHandler
+      Runtime: nodejs16.x
+      Role: !GetAtt DefaultFunctionRole.Arn
+      MemorySize: 128
+      Timeout: 900
+      Environment:
+        Variables:
+          USER_TABLE_NAME: !Sub "${AWS::StackName}-USER"
+          PRODUCT_TABLE_NAME: !Sub "${AWS::StackName}-PRODUCT"
+          CATEGORY_TABLE_NAME: !Sub "${AWS::StackName}-CATEGORY" 
+          ENV_NAME: !Ref EnvName
+          COGNITO_REGION: !Ref AWS::Region
+          API_REGION: !Ref AWS::Region
+          AWS_ACCOUNT_ID: !Ref AWS::AccountId
+          DEFAULT_ROLE_ARN: !GetAtt DefaultAccessRole.Arn
+          REST_API_ID: !Ref RestApi
+          LOG_LEVEL: debug
+          GOOGLE_CLIENT_ID: !FindInMap [EnvTypeMap, !Ref EnvType, GoogleClientId]
+          GOOGLE_CLIENT_SECRET: !FindInMap [EnvTypeMap, !Ref EnvType, GoogleClientSecret]
+          GOOGLE_CLIENT_REDIRECT_URL: !FindInMap [EnvTypeMap, !Ref EnvType, GoogleClientRedirectURL]
+  RestApiClientRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -152,31 +187,16 @@ Resources:
               Service:
                 - apigateway.amazonaws.com
       Policies:
-        - PolicyName: !Sub "${AWS::StackName}-RestApiProductRolePolicy"
+        - PolicyName: !Sub "${AWS::StackName}-RestApiClientRolePolicy"
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
               - Action: lambda:InvokeFunction
                 Effect: Allow
                 Resource: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-ProductFunction"
-  
-  # RestApiDeployment:
-  #   Type: AWS::ApiGateway::Deployment
-  #   Properties:
-  #     RestApiId: !Ref RestApi
-  #     StageName: !Ref StageName
-  # ApiGatewayDomainName:
-  #   Type: AWS::ApiGateway::DomainName
-  #   Condition: IsNotDev
-  #   Properties:
-  #     DomainName: !If
-  #       - IsDev
-  #       - !Ref 'AWS::NoValue'
-  #       - !FindInMap [EnvTypeMap, !Ref EnvType, ApiDomainName]
-  #     CertificateArn: !If
-  #       - IsDev
-  #       - !Ref 'AWS::NoValue'
-  #       - !FindInMap [EnvTypeMap, !Ref EnvType, AcmCertificateArn]
+              - Action: lambda:InvokeFunction
+                Effect: Allow
+                Resource: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-OAuthFunction"
         
   RestApi:
     Type: AWS::ApiGateway::RestApi
@@ -193,7 +213,7 @@ Resources:
               x-amazon-apigateway-auth:
                 type: NONE
               x-amazon-apigateway-integration:
-                credentials: !GetAtt RestApiProductRole.Arn
+                credentials: !GetAtt RestApiClientRole.Arn
                 uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-ProductFunction/invocations"
                 httpMethod: "POST"
                 type: "aws_proxy"
@@ -201,7 +221,7 @@ Resources:
               x-amazon-apigateway-auth:
                 type: NONE
               x-amazon-apigateway-integration:
-                credentials: !GetAtt RestApiProductRole.Arn
+                credentials: !GetAtt RestApiClientRole.Arn
                 uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-ProductFunction/invocations"
                 httpMethod: "POST"
                 type: "aws_proxy"
@@ -245,7 +265,7 @@ Resources:
               x-amazon-apigateway-auth:
                 type: NONE
               x-amazon-apigateway-integration:
-                credentials: !GetAtt RestApiProductRole.Arn
+                credentials: !GetAtt RestApiClientRole.Arn
                 uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-ProductFunction/invocations"
                 httpMethod: "POST"
                 type: "aws_proxy"
@@ -253,8 +273,60 @@ Resources:
               x-amazon-apigateway-auth:
                 type: NONE
               x-amazon-apigateway-integration:
-                credentials: !GetAtt RestApiProductRole.Arn
+                credentials: !GetAtt RestApiClientRole.Arn
                 uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-ProductFunction/invocations"
+                httpMethod: "POST"
+                type: "aws_proxy"
+            options:
+              responses:
+                "200":
+                  description: "200 response"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      schema:
+                        type: "string"
+                    Access-Control-Allow-Methods:
+                      schema:
+                        type: "string"
+                    Access-Control-Allow-Headers:
+                      schema:
+                        type: "string"
+                  content:
+                    application/json:
+                      schema:
+                        $ref: "#/components/schemas/Empty"
+              x-amazon-apigateway-integration:
+                responses:
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Methods: "'OPTIONS,GET,POST'"
+                      method.response.header.Access-Control-Allow-Headers: "'*'"
+                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                    responseTemplates:
+                      application/json: |
+                        #if ($input.params('Access-Control-Request-Headers') != '')
+                          #set($context.responseOverride.header['Access-Control-Allow-Headers'] = "$input.params('Access-Control-Request-Headers')")
+                        #end
+                requestTemplates:
+                  application/json: '{"statusCode": 200}'
+                passthroughBehavior: "when_no_match"
+                type: "mock"
+          /oauth:
+            get:
+              x-amazon-apigateway-auth:
+                type: NONE
+              x-amazon-apigateway-integration:
+                credentials: !GetAtt RestApiClientRole.Arn
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-OAuthFunction/invocations"
+                httpMethod: "POST"
+                type: "aws_proxy"
+            post:
+              x-amazon-apigateway-auth:
+                type: NONE
+              x-amazon-apigateway-integration:
+                credentials: !GetAtt RestApiClientRole.Arn
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-OAuthFunction/invocations"
                 httpMethod: "POST"
                 type: "aws_proxy"
             options:
