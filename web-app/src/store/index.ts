@@ -2,6 +2,7 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 import { CognitoUser } from '@aws-amplify/auth';
 import { ProductItem } from '@/api/product.service';
+import GoogleAuthService, { UserGoogleInfo } from '@/api/google-auth.service';
 
 Vue.use(Vuex);
 
@@ -19,6 +20,8 @@ interface RootState {
   searchFilter?: {};
   productSearchItems: ProductItem[];
   searchStringList: string[];
+  userGoogleInfo: UserGoogleInfo;
+  isAuthenticated: boolean;
 }
 
 interface ProductItemByCategory {
@@ -210,7 +213,10 @@ const state: RootState = {
   ],
   productSearchItems: [],
   searchStringList: [],
+  userGoogleInfo: {} as UserGoogleInfo,
+  isAuthenticated: false,
 };
+
 export default new Vuex.Store({
   state,
   getters: {
@@ -227,6 +233,8 @@ export default new Vuex.Store({
     offsetHeight: (state) => state.offsetHeight,
     productSearchItems: (state) => state.productSearchItems,
     searchStringList: (state) => state.searchStringList,
+    userGoogleInfo: (state) => state.userGoogleInfo,
+    isAuthenticated: (state) => state.isAuthenticated,
   },
   mutations: {
     setState(state, nextState) {
@@ -245,6 +253,13 @@ export default new Vuex.Store({
     },
     setBoxDistance({ commit }, { innerWidth, offsetHeight }) {
       commit('setState', { innerWidth: innerWidth, innerHeight: innerHeight, offsetHeight: offsetHeight });
+    },
+    login({ commit }, { data }) {
+      console.log('userGoogleInfo', data);
+      commit('setState', { userGoogleInfo: data as UserGoogleInfo, isAuthenticated: true });
+    },
+    logout({ commit }) {
+      commit('setState', { userGoogleInfo: {}, isAuthenticated: false });
     },
   },
   modules: {},

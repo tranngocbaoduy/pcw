@@ -1,5 +1,5 @@
 <template>
-  <div class="home bg-primary-color-0">
+  <div class="home bg-primary-color-0" :style="isMobileAndHomePage ? `height:${innerHeight} !important` : ''">
     <Header @handle-show-menu="handleShowMenu" :isShowMenu="isShowMenu" v-if="!isMobileAndHomePage" />
     <v-container class="body-custom" :class="isMobile ? 'pa-0' : 'px-0'" :fluid="isFluid">
       <router-view />
@@ -35,7 +35,9 @@ export default Vue.extend({
     getCategoryItems(): any {
       return this.$store.getters.categoryItems;
     },
-
+    innerHeight(): number {
+      return this.$store.getters.innerHeight;
+    },
     isFluid(): boolean {
       if (this.$vuetify.breakpoint.xl) return false;
       if (this.$vuetify.breakpoint.lg) return false;
@@ -58,13 +60,11 @@ export default Vue.extend({
       if (!this.getCategoryItems || this.getCategoryItems.length == 0) {
         do {
           categoryItems = await CategoryService.queryAllCategory();
-          console.log('categoryItems', categoryItems);
           this.$store.dispatch('setCategory', { categoryItems: await CategoryService.queryAllCategory() });
           await setTimeout(() => {}, 2000);
           retryCount += 1;
         } while (!categoryItems && retryCount < 3);
       }
-      console.log('this.$store.getters.categoryItems', this.$store.getters.categoryItems);
     },
     handleShowMenu() {
       this.isShowMenu = !this.isShowMenu;

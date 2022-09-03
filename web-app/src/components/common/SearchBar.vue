@@ -36,7 +36,7 @@
           maxHeight: '40%',
           minWidth: widthMenu,
           maxWidth: widthMenu,
-          nudgeBottom: isMobile ? 12 : 2,
+          nudgeBottom: isMobile ? 36 : 2,
           offsetY: true,
           elevation: 0,
           offsetOverflow: true,
@@ -426,7 +426,7 @@ export default Vue.extend({
     },
   },
   created() {
-    console.log('Header component created');
+    console.log('Header component created', this.innerHeight);
     this.localeLanguage = this.localeLanguageItems[0] as any;
     this.placeholder = 'Siêu sale thỏa thích ...' || this.$t('search').toString();
     this.productSearchItems = this.$store.getters.productSearchItems || [];

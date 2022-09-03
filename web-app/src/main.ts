@@ -5,7 +5,6 @@ import store from './store';
 import vuetify from './plugins/vuetify';
 import i18n from './i18n';
 import './plugins/vee-validate';
-
 import VueLodash from 'vue-lodash';
 import lodash from 'lodash';
 //register component

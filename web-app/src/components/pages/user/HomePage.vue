@@ -62,7 +62,6 @@ export default Vue.extend({
   watch: {
     async categoryItems() {
       if (this.categoryItems && this.categoryItems.length) {
-        console.log('loadTrendingCategoryItems');
         this.loadTrendingCategoryItems();
       }
     },
@@ -89,11 +88,11 @@ export default Vue.extend({
         try {
           i.image = require('@/assets/image/category/' + i.name.toLowerCase() + '.jpeg');
         } catch (err) {
-          console.log('not jpeg');
+          // console.log('not jpeg');
           try {
             i.image = require('@/assets/image/category/' + i.name.toLowerCase() + '.png');
           } catch (err) {
-            console.log('err');
+            // console.log('err');
           }
         }
         this.trendingCategoryItems.push(JSON.parse(JSON.stringify(i)));

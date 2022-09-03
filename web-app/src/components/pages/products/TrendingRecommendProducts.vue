@@ -57,12 +57,12 @@ export default Vue.extend({
     randomPathChangeTo: '',
     isLoading: true,
   }),
-  async created() {
+  async created() {},
+  async mounted() {
     this.page = 1;
     await this.initialize();
     this.isLoading = false;
   },
-  mounted() {},
   computed: {
     categoryItems(): CategoryItem[] {
       return this.$store.getters.categoryItems || [];
@@ -96,23 +96,29 @@ export default Vue.extend({
       window.scrollTo({ top: 0, left: 0 });
       this.page = parseInt((this as any).$route.query.page || 1);
       this.$store.commit('setState', { searchString: this.$route.query.name });
-      if (this.productItems.length == 0) await this.loadProductItemByTarget();
+      console.log('LOADING', this.productItems);
+      if (this.productItems.length == 0) {
+        this.randomCategory = this.categoryItems[Math.floor(Math.random() * this.categoryItems.length)];
+        await this.loadProductItemByTarget();
+      }
     },
     handleChangeToCategory() {
       if (this.randomPathChangeTo) this.$router.push(this.randomPathChangeTo);
     },
     async loadProductItemByTarget() {
-      this.productItems = await ProductService.queryItemByTarget({
-        category: '15692' || this.randomCategory.SK,
-        limit: this.isMobile ? 6 : this.limit,
-        page: this.page,
-        agencyItems: [],
-        brandItems: [],
-        minPrice: 0,
-        maxPrice: 1000000000,
-        isRep: true,
-      });
-      console.log('this.productItems', this.productItems);
+      if (this.randomCategory) {
+        this.productItems = await ProductService.queryItemByTarget({
+          category: this.randomCategory.SK,
+          limit: this.isMobile ? 6 : this.limit,
+          page: this.page,
+          agencyItems: [],
+          brandItems: [],
+          minPrice: 0,
+          maxPrice: 1000000000,
+          isRep: true,
+        });
+        console.log('this.productItems', this.productItems);
+      }
     },
     getSlugId(item: ProductItem): string {
       return ProductService.getSlugId(item);

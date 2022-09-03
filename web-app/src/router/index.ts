@@ -1,3 +1,5 @@
+import GoogleAuthService, { UserGoogleInfo } from '@/api/google-auth.service';
+import store from '@/store';
 import Vue, { VueConstructor } from 'vue';
 import VueRouter, { RawLocation, Route, RouteConfig } from 'vue-router';
 import RouterHelper from './helper';
@@ -68,13 +70,19 @@ const routes: Array<RouteConfig> = [
     children: [
       {
         path: '',
-        name: 'HomePage',
+        name: '',
         component: () => import('@/components/pages/user/HomePage.vue').catch(RouterHelper.handleAsyncComponentError),
       },
       {
         path: '/home',
         name: 'HomePage',
         component: () => import('@/components/pages/user/HomePage.vue').catch(RouterHelper.handleAsyncComponentError),
+      },
+      {
+        path: '/login',
+        name: 'LoginPage',
+        component: () =>
+          import('@/components/pages/user/LoginAccount.vue').catch(RouterHelper.handleAsyncComponentError),
       },
       {
         path: '/category/:idCate',
@@ -88,7 +96,6 @@ const routes: Array<RouteConfig> = [
         component: () =>
           import('@/components/pages/user/PriceComparisonPage.vue').catch(RouterHelper.handleAsyncComponentError),
       },
-
       {
         path: ':slugId*',
         name: 'ProductDetailSlugPage',
@@ -102,6 +109,7 @@ const routes: Array<RouteConfig> = [
     name: 'sys',
     component: () => import('@/views/SysHome.vue').catch(RouterHelper.handleAsyncComponentError),
   },
+
   {
     path: '/about',
     name: 'About',
@@ -122,9 +130,27 @@ const router = new VueRouter({
 router.beforeEach((to, from, next) => {
   console.log(to);
   new Promise<RawLocation | undefined>((resolve) => {
+    if (!store.getters.isAuthenticated) {
+      let userGoogleInfo: any = localStorage.getItem('google-auth');
+      if (userGoogleInfo) {
+        userGoogleInfo = JSON.parse(userGoogleInfo);
+        if (userGoogleInfo && userGoogleInfo.id) {
+          GoogleAuthService.getUserInfo(userGoogleInfo.id).then(async (data: UserGoogleInfo) => {
+            store.dispatch('login', { data });
+            console.log('[INITIALIZED] =>', data);
+          });
+        } else {
+          localStorage.setItem('google-auth', '');
+          localStorage.removeItem('google-auth');
+          store.dispatch('logout');
+        }
+      }
+    } else {
+      console.log('[INITIALIZED] =>', store.getters.userGoogleInfo);
+    }
     resolve(undefined);
   }).then((location) => {
-    if (to.fullPath.includes('%2F')) {
+    if (!to.fullPath.includes('/login') && to.fullPath.includes('%2F')) {
       next(decodeURIComponent(to.fullPath));
     }
     if (location) next(location);

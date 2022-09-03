@@ -42,7 +42,7 @@
             maxHeight: 700,
             minWidth: widthMenu,
             maxWidth: widthMenu,
-            nudgeBottom: isMobile ? 12 : 2,
+            nudgeBottom: 38,
             offsetY: true,
             elevation: 0,
             offsetOverflow: true,
@@ -227,36 +227,46 @@
       </div>
       <v-spacer v-if="!isMobile"></v-spacer>
 
-      <!-- <v-menu v-if="!isMobile" :close-on-click="true" bottom right nudge-bottom="40" z-index="2000">
-        <template v-slot:activator="{ on, attrs }">
-          <v-btn color="white" tile elevation="0" light v-bind="attrs" retain-focus-on-click v-on="on">
-            <v-avatar size="24">
-              <img :src="localeLanguage.flag" :alt="localeLanguage.name" />
-            </v-avatar>
-            <span class="px-2"> {{ `${localeLanguage.code.toUpperCase()}` }}</span>
-          </v-btn>
-        </template>
+      <div class="pr-2">
+        <v-btn icon v-if="isAuthenticated && !isMobile && isHasNotify">
+          <v-icon size="20">mdi-bell-badge-outline</v-icon>
+        </v-btn>
+        <v-btn icon v-if="isAuthenticated && !isMobile && !isHasNotify">
+          <v-icon size="20">mdi-bell-outline</v-icon>
+        </v-btn>
 
-        <v-list>
-          <v-list-item
-            v-for="(item, index) in localeLanguageItems"
-            :key="index"
-            @click="handleChangeLanguage(item)"
-            class="hover-custom-link"
-          >
-            <v-avatar size="24">
-              <img :src="item.flag" :alt="item.name" />
-            </v-avatar>
-            <v-list-item-title class="px-3">{{ item.name }}</v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-menu> -->
-      <!-- <v-btn icon>
-        <v-icon size="24">mdi-apps</v-icon>
-      </v-btn>
-      <v-btn icon>
-        <v-icon size="24">mdi-dots-vertical</v-icon>
-      </v-btn> -->
+        <v-menu :close-on-click="true" bottom right nudge-bottom="50" z-index="2000">
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              v-if="isAuthenticated && userGoogleInfo"
+              icon
+              color="white"
+              tile
+              elevation="0"
+              light
+              v-bind="attrs"
+              retain-focus-on-click
+              v-on="on"
+            >
+              <v-avatar size="28">
+                <img :src="userGoogleInfo.picture" :alt="userGoogleInfo.name" />
+              </v-avatar>
+
+              <!-- <span class="px-2"> {{ `${localeLanguage.code.toUpperCase()}` }}</span> -->
+            </v-btn>
+            <v-btn icon v-else @click="login">
+              <v-icon size="22">mdi-account</v-icon>
+            </v-btn>
+          </template>
+
+          <v-list>
+            <v-list-item class="hover-custom-link" @click="logout">
+              <v-icon size="20">mdi-logout-variant</v-icon>
+              <v-list-item-title class="px-3">Sign out</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </div>
     </v-toolbar>
   </div>
 </template>
@@ -267,8 +277,8 @@ async function sleep(min: number, max: number) {
 }
 import Vue from 'vue';
 import i18n from '@/i18n';
-import ProductService, { ProductItem, ProductSearchItem } from '@/api/product.service';
-import CategoryService from '@/api/category.service';
+import ProductService, { ProductItem } from '@/api/product.service';
+import GoogleAuthService, { UserGoogleInfo } from '@/api/google-auth.service';
 import AuthService from '@/api/auth.service';
 
 export default Vue.extend({
@@ -288,8 +298,15 @@ export default Vue.extend({
     productSearchItems: [] as ProductItem[],
     placeholder: '',
     searchStringList: [] as string[],
+    isHasNotify: false,
   }),
   computed: {
+    isAuthenticated(): boolean {
+      return this.$store.getters.isAuthenticated;
+    },
+    userGoogleInfo(): UserGoogleInfo {
+      return this.$store.getters.userGoogleInfo ? this.$store.getters.userGoogleInfo : null;
+    },
     widthMenu(): number {
       const width = this.isMobile ? innerWidth : 680;
       return Math.min(width, 680);
@@ -353,6 +370,13 @@ export default Vue.extend({
     },
   },
   methods: {
+    async login() {
+      this.$router.push('/login');
+    },
+    async logout() {
+      await GoogleAuthService.logout();
+      if (this.$route.path != '/') this.$router.push('/');
+    },
     filterItems(item: ProductItem, queryText: string, itemText: any): boolean {
       // if (item.SK.includes(queryText.split(' ').join('_'))) return true;
       // if (item.SK.includes(queryText)) return true;
@@ -373,6 +397,7 @@ export default Vue.extend({
       if (this.localeLanguage != i18n.locale) i18n.locale = (this as any).localeLanguage.code as string;
     },
     async searchProduct(event: any) {
+      console.log('this.searchCode', this.searchCode);
       if (this.valueText) {
         const item = null as any;
         if (item) {
@@ -462,7 +487,7 @@ export default Vue.extend({
       return ProductService.getSlugId(item);
     },
   },
-  created() {
+  async created() {
     console.log('Header component created');
     this.localeLanguage = this.localeLanguageItems[0] as any;
     this.placeholder = 'Siêu sale thỏa thích ...' || this.$t('search').toString();
