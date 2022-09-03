@@ -1,7 +1,7 @@
 import GoogleAuthService, { UserGoogleInfo } from '@/api/google-auth.service';
 import store from '@/store';
-import Vue, { VueConstructor } from 'vue';
-import VueRouter, { RawLocation, Route, RouteConfig } from 'vue-router';
+import Vue from 'vue';
+import VueRouter, { RawLocation, RouteConfig } from 'vue-router';
 import RouterHelper from './helper';
 
 // export function register(Vue: VueConstructor) {

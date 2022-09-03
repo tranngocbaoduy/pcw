@@ -104,7 +104,8 @@ export default Vue.extend({
         {
           name: 'Loa máy tính',
           qty: 120,
-          img: 'https://cdn.nguyenkimmall.com/images/thumbnails/696/522/detailed/298/10023358-loa-vi-tinh-microlab-m-108-1.jpg',
+          img:
+            'https://cdn.nguyenkimmall.com/images/thumbnails/696/522/detailed/298/10023358-loa-vi-tinh-microlab-m-108-1.jpg',
         },
         {
           name: 'Tủ lạnh, tủ đông',
@@ -114,7 +115,8 @@ export default Vue.extend({
         {
           name: 'Loa máy tính',
           qty: 120,
-          img: 'https://cdn.nguyenkimmall.com/images/thumbnails/696/522/detailed/298/10023358-loa-vi-tinh-microlab-m-108-1.jpg',
+          img:
+            'https://cdn.nguyenkimmall.com/images/thumbnails/696/522/detailed/298/10023358-loa-vi-tinh-microlab-m-108-1.jpg',
         },
       ],
     };

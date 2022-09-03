@@ -377,7 +377,7 @@ export default Vue.extend({
       await GoogleAuthService.logout();
       if (this.$route.path != '/') this.$router.push('/');
     },
-    filterItems(item: ProductItem, queryText: string, itemText: any): boolean {
+    filterItems(item: ProductItem, queryText: string): boolean {
       // if (item.SK.includes(queryText.split(' ').join('_'))) return true;
       // if (item.SK.includes(queryText)) return true;
       const a = item.SK.toLowerCase().trim().split(' ');
@@ -396,7 +396,7 @@ export default Vue.extend({
       this.localeLanguage = item;
       if (this.localeLanguage != i18n.locale) i18n.locale = (this as any).localeLanguage.code as string;
     },
-    async searchProduct(event: any) {
+    async searchProduct() {
       console.log('this.searchCode', this.searchCode);
       if (this.valueText) {
         const item = null as any;

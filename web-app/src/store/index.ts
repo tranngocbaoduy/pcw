@@ -2,7 +2,7 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 import { CognitoUser } from '@aws-amplify/auth';
 import { ProductItem } from '@/api/product.service';
-import GoogleAuthService, { UserGoogleInfo } from '@/api/google-auth.service';
+import { UserGoogleInfo } from '@/api/google-auth.service';
 
 Vue.use(Vuex);
 

@@ -61,17 +61,7 @@
               <div
                 style="border: red 1px solid"
                 v-if="mainProduct.listPrice != mainProduct.price"
-                class="
-                  pa-1
-                  rounded-sm rounded-0
-                  font-size-12 font-weight-2
-                  text-right
-                  ml-5
-                  red
-                  white--text
-                  elevation-1
-                  mr-2
-                "
+                class="pa-1 rounded-sm rounded-0 font-size-12 font-weight-2 text-right ml-5 red white--text elevation-1 mr-2"
               >
                 {{ mainProduct.discountRate }}% giảm
               </div>

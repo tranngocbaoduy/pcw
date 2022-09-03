@@ -18,7 +18,6 @@
 </template>
 
 <script lang="ts">
-import CategoryService from '@/api/category.service';
 import Vue from 'vue';
 
 export default Vue.extend({

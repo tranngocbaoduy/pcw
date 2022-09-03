@@ -72,8 +72,20 @@ export default class ProductService {
   static async querySearchItemsByUrl({ searchUrl }: { searchUrl: string }): Promise<ProductItem[]> {
     const url = process.env.VUE_APP_API_BASE_URL + `/${process.env.VUE_APP_ENV}/product?action=searchItemsByUrl`;
     const objURL = new URL(searchUrl);
+    searchUrl = objURL.origin + objURL.pathname;
+    if (searchUrl.includes('shopee.vn')) {
+      let searchUrlSplit = '' as any;
+      if (searchUrl.includes('shopee.vn/product/')) {
+        searchUrlSplit = objURL.pathname.split('/');
+      } else {
+        searchUrlSplit = objURL.pathname.split('.');
+      }
+      searchUrl = `${searchUrlSplit[searchUrlSplit.length - 2]}.${searchUrlSplit[searchUrlSplit.length - 1]}`;
+    } else {
+      searchUrl = base64url.encode(searchUrl);
+    }
     const params = {
-      baseEncodedUrl: base64url.encode(objURL.origin + objURL.pathname),
+      baseEncodedUrl: searchUrl,
     };
 
     try {

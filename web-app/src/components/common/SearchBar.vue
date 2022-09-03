@@ -8,8 +8,15 @@
     <router-link class="custom-link pa-2" :to="`/home`">
       <v-img :height="130" :width="270" contain :src="require('@/assets/image/logo/Light.png')" alt=""> </v-img>
     </router-link>
+    <div class="d-flex align-center justify-center font-size-16">
+      <div @click="isSelectedQR = false" class="hover-custom-link">Text</div>
+      <span class="px-2">/</span>
+      <div @click="isSelectedQR = true" class="hover-custom-link">QR Code</div>
+    </div>
     <div style="width: 95%" class="pb-0 pt-4">
+      <SearchQRBar v-if="isSelectedQR" />
       <v-autocomplete
+        v-else
         class="rounded-md elevation-1"
         @blur.prevent.stop="isFocus = false"
         @click.prevent.stop="isFocus = true"
@@ -230,11 +237,11 @@ import Vue from 'vue';
 import i18n from '@/i18n';
 import ProductService, { ProductItem } from '@/api/product.service';
 import AuthService from '@/api/auth.service';
-
+import SearchQRBar from '@/components/common/SearchQRBar.vue';
 export default Vue.extend({
   name: 'Header',
   props: ['isShowMenu'],
-  // components: { AccountMenu },
+  components: { SearchQRBar },
   data: () => ({
     selectedCategory: [],
     isLoading: false,
@@ -248,6 +255,7 @@ export default Vue.extend({
     productSearchItems: [] as ProductItem[],
     placeholder: '',
     searchStringList: [] as string[],
+    isSelectedQR: false,
   }),
   computed: {
     widthMenu(): number {
@@ -316,7 +324,7 @@ export default Vue.extend({
     },
   },
   methods: {
-    filterItems(item: ProductItem, queryText: string, itemText: any): boolean {
+    filterItems(item: ProductItem, queryText: string): boolean {
       // if (item.SK.includes(queryText.split(' ').join('_'))) return true;
       // if (item.SK.includes(queryText)) return true;
       const a = item.SK.toLowerCase().trim().split(' ');
@@ -335,7 +343,7 @@ export default Vue.extend({
       this.localeLanguage = item;
       if (this.localeLanguage != i18n.locale) i18n.locale = (this as any).localeLanguage.code as string;
     },
-    async searchProduct(event: any) {
+    async searchProduct() {
       if (this.valueText) {
         const item = null as any;
         if (item) {

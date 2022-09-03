@@ -7,10 +7,6 @@
 <script lang="ts">
 import Vue from 'vue';
 
-async function sleep(min: number, max: number) {
-  return new Promise((res) => setTimeout(res, Math.floor(Math.random() * (max - min + 1)) + min));
-}
-
 export default Vue.extend({
   name: 'App',
   data: () => ({}),

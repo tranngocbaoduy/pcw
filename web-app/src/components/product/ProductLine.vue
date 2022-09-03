@@ -86,16 +86,7 @@
                             >
                               <v-col
                                 cols="9"
-                                class="
-                                  ma-0
-                                  pa-0
-                                  primary-color-4
-                                  text-left
-                                  font-weight-1
-                                  line-height-18
-                                  old-price
-                                  font-size-14
-                                "
+                                class="ma-0 pa-0 primary-color-4 text-left font-weight-1 line-height-18 old-price font-size-14"
                                 >{{ item.listPrice | formatPrice }}đ
                               </v-col>
                             </v-row>

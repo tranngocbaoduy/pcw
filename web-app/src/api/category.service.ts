@@ -1,5 +1,4 @@
 import AuthService from '@/api/auth.service';
-import i18n from '@/i18n';
 import store from '@/store';
 export interface CategoryItem {
   PK: string;

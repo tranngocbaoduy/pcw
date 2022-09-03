@@ -207,9 +207,6 @@
 </template>
 
 <script lang="ts">
-async function sleep(min: number, max: number) {
-  return new Promise((res) => setTimeout(res, Math.floor(Math.random() * (max - min + 1)) + min));
-}
 import { ProductSearchItem } from '@/api/product.service';
 import Vue from 'vue';
 

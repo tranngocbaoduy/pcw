@@ -150,7 +150,6 @@
 import Vue from 'vue';
 import BreadCrumbs from '@/components/common/BreadCrumbs.vue';
 import PriceComparisonCard from '@/components/product/PriceComparisonCard.vue';
-import ProductService from '@/api/product.service';
 
 export default Vue.extend({
   name: 'Body',

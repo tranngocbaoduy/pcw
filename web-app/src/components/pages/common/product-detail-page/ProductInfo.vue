@@ -125,7 +125,6 @@
 import CategoryService from '@/api/category.service';
 import RatingItem from '@/components/common/rating/RatingItem.vue';
 import Vue from 'vue';
-import base64url from 'base64url';
 import { ProductItem } from '@/api/product.service';
 
 export default Vue.extend({

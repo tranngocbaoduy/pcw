@@ -236,7 +236,6 @@
 import Vue from 'vue';
 import BreadCrumbs from '@/components/common/BreadCrumbs.vue';
 import ProductPhoto from '@/components/pages/common/product-detail-page/ProductPhoto.vue';
-import ProductPhotoMobile from '@/components/pages/common/product-detail-page/ProductPhotoMobile.vue';
 import ProductInfo from '@/components/pages/common/product-detail-page/ProductInfo.vue';
 import ProductAnotherAgency from '@/components/pages/common/product-detail-page/ProductAnotherAgency.vue';
 import CategoryService from '@/api/category.service';

@@ -55,13 +55,14 @@ async function authorizationCode(event) {
   // Google's OAuth 2.0 endpoint for requesting an access token
   const body = JSON.parse(event.body);
   const code = body["code"];
+  const redirect_uri = body["redirectURI"];
   const oauth2Endpoint = 'https://oauth2.googleapis.com/token';
 
   const params = {
     code: code,
     client_id: process.env.GOOGLE_CLIENT_ID,
     client_secret: process.env.GOOGLE_CLIENT_SECRET,
-    redirect_uri: process.env.GOOGLE_CLIENT_REDIRECT_URL,
+    redirect_uri: redirect_uri || process.env.GOOGLE_CLIENT_REDIRECT_URL,
     grant_type: 'authorization_code',
   };
 

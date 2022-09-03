@@ -127,7 +127,6 @@
 </template>
 
 <script lang="ts">
-import RatingItem from '@/components/common/rating/RatingItem.vue';
 import CategoryService from '@/api/category.service';
 import Vue from 'vue';
 

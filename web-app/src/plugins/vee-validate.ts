@@ -1,6 +1,6 @@
 import Vue from 'vue';
-import { configure, ValidationObserver, ValidationProvider, extend, setInteractionMode } from 'vee-validate';
-import { required, email, max, min, confirmed, min_value, max_value } from 'vee-validate/dist/rules';
+import { configure, ValidationObserver, ValidationProvider, setInteractionMode } from 'vee-validate';
+// import { required, email, max, min, confirmed, min_value, max_value } from 'vee-validate/dist/rules';
 import i18n from '@/i18n';
 
 setInteractionMode('lazy');

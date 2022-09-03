@@ -1,5 +1,5 @@
 const dynamodbHelper = require("../helper/DynamodbHelper");
-const config = require("../helper/id_config");
+const searchByUrl = require("../helper/id_config");
 
 function checkIsValidDomain(event) {
   const listDomainValid = ["https://x-pcw.store", "http://localhost:8080", "https://d3kxmkwimuhvhe.cloudfront.net"];
@@ -11,7 +11,6 @@ module.exports = async (event, context) => {
 
   const queryParams = event.queryStringParameters;
   console.log('[ACTION] =>', queryParams["action"])
-
   let result = null;
   let res = null;
   if (!queryParams) {
@@ -72,8 +71,13 @@ function parseParams(body) {
 async function searchItemsByUrl(event) {
   const body = JSON.parse(event.body);
   const baseEncodedUrl = body["baseEncodedUrl"];
-  if (Object.keys(config.IdConfig).includes(baseEncodedUrl)) {
-    const id = config.IdConfig[baseEncodedUrl]
+  let id = ''
+  if (!baseEncodedUrl.includes('.') && Object.keys(searchByUrl.searchByUrl.IdConfig).includes(baseEncodedUrl)) {
+    id = searchByUrl.searchByUrl.IdConfig[baseEncodedUrl]
+  } else if (baseEncodedUrl.includes('.') && Object.keys(searchByUrl.searchByUrl.IdConfigURL).includes(baseEncodedUrl)) {
+    id = searchByUrl.searchByUrl.IdConfigURL[baseEncodedUrl]
+  }
+  if (id !== '') {
     const params = {
       TableName: process.env.PRODUCT_TABLE_NAME,
       IndexName: "SEARCH-INDEX",
@@ -93,16 +97,13 @@ async function searchItemsByUrl(event) {
       },
       ProjectionExpression: 'PK, SK, #URL, price, voucher_info, slug_id, #BRAND, #DOMAIN, #NAME, #IMAGE, list_price, discount_rate, agency, description',
     };
-    console.log('params', params)
     const data = await dynamodbHelper.queryItems(params);
     return data;
-  } else {
-    return []
   }
+  return []
 }
 
 async function queryItemByTarget(event) {
-  console.log("event", event);
   const body = JSON.parse(event.body);
   const PK = body["category"];
   const SK = body["SK"];
@@ -171,15 +172,12 @@ async function queryItemByTarget(event) {
     },
 
   };
-  console.log('params', params)
   const data = await dynamodbHelper.queryItems(params);
-  console.log('data', data.length)
   return data.slice((page - 1) * limit, page * limit)
 }
 
 
 async function queryPromotionItems(event) {
-  console.log("event", event);
   const body = JSON.parse(event.body);
   const limit = body["limit"] ? parseInt(body["limit"]) : 16;
   const page = body["page"] ? parseInt(body["page"]) : 1;
@@ -207,8 +205,6 @@ async function queryPromotionItems(event) {
     },
 
   };
-  console.log('params', params)
   const data = await dynamodbHelper.queryAllItemsByLimit(params, limit);
-  console.log('data', data.length)
   return data.slice((page - 1) * limit, page * limit)
 }

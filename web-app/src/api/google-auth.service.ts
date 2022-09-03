@@ -73,7 +73,7 @@ export default class GoogleAuthService {
 
   static async authorizeCode({ scope, state, code }: { scope: string; state: string; code: string }) {
     const url = process.env.VUE_APP_API_BASE_URL + `/${process.env.VUE_APP_ENV}/oauth?action=authorize_code`;
-    const params = { code: code, state: state, scope: scope };
+    const params = { code: code, state: state, scope: scope, redirectURI: `${window.location.origin}/login` };
     try {
       const data = await axios
         .post(url, params)
