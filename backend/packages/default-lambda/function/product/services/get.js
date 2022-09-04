@@ -10,11 +10,6 @@ String.prototype.isLatin = function () {
   return this == this.latinise();
 };
 
-function checkIsValidDomain(event) {
-  const listDomainValid = ["https://x-pcw.store", "http://localhost:8080", "https://d3kxmkwimuhvhe.cloudfront.net"];
-  if (event.headers && Object.keys(event.headers).includes('origin') && listDomainValid.includes(event.headers.origin)) return true;
-  return false;
-}
 
 module.exports = async (event, context) => {
   const queryParams = event.queryStringParameters;
@@ -25,42 +20,35 @@ module.exports = async (event, context) => {
   if (!queryParams) {
     throw new Error("There's no query parameter");
   } else {
-    if (checkIsValidDomain(event)) {
-      switch (queryParams["action"]) {
-        case "querySearchItems":
-          result = await querySearchItems(event);
-          break;
-        case "queryChildItem":
-          result = await queryChildItem(event);
-          break;
-        case "queryAllCategory":
-          result = await queryAllCategory();
-          break;
-        case "queryBrandItems":
-          result = await queryBrandItems(event);
-          break;
-        case "queryItemByCategoryId":
-          result = await queryItemByCategoryId(event);
-          break;
-        case "queryItemById":
-          result = await queryItemById(event);
-          break;
-        default:
-          result = [];
-          break;
-      }
-      res = {
-        message: "Successful",
-        action: queryParams["action"],
-        data: result,
-      };
-    } else {
-      res = {
-        message: "Failed",
-        action: queryParams["action"],
-        data: result,
-      };
+
+    switch (queryParams["action"]) {
+      case "querySearchItems":
+        result = await querySearchItems(event);
+        break;
+      case "queryChildItem":
+        result = await queryChildItem(event);
+        break;
+      case "queryAllCategory":
+        result = await queryAllCategory();
+        break;
+      case "queryBrandItems":
+        result = await queryBrandItems(event);
+        break;
+      case "queryItemByCategoryId":
+        result = await queryItemByCategoryId(event);
+        break;
+      case "queryItemById":
+        result = await queryItemById(event);
+        break;
+      default:
+        result = [];
+        break;
     }
+    res = {
+      message: "Successful",
+      action: queryParams["action"],
+      data: result,
+    };
   }
   return res;
 };

@@ -125,9 +125,9 @@ export default Vue.extend({
 .body-user-page {
 }
 .body-user-page-mobile {
-  overflow: hidden !important;
-  position: relative !important;
-  margin: 0 !important;
-  padding: 0 !important;
+  // overflow: hidden !important;
+  // position: relative !important;
+  // margin: 0 !important;
+  // padding: 0 !important;
 }
 </style>

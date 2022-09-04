@@ -1,11 +1,11 @@
 <template>
-  <v-card
-    :height="innerHeight"
-    width="100vw"
-    class="elevation-0 bg-primary-color-0 d-flex flex-column justify-start align-center"
-  >
-    <StreamBarcodeReader @decode="onDecode" @loaded="onLoaded"></StreamBarcodeReader>
-    <v-card-text class="px-0" v-for="(item, index) in listSearchItem" :key="`${index}-search-item-qr-bar-${item.SK}`">
+  <v-card width="100vw" class="elevation-0 bg-primary-color-0 d-flex flex-column justify-start align-center">
+    <v-card-text
+      class="pa-1 rounded-0"
+      v-for="(item, index) in listSearchItem"
+      :class="item.isDisplayHover ? 'bg-primary-color-8' : ''"
+      :key="`${index}-search-item-qr-bar-${item.SK}`"
+    >
       <v-hover v-slot="{ hover }">
         <v-list-item
           @click="goToItem(item)"
@@ -41,20 +41,39 @@
         </v-list-item>
       </v-hover>
     </v-card-text>
+    <StreamBarcodeReader v-if="!isPaused" @decode="onDecode" @loaded="onLoaded"></StreamBarcodeReader>
+    <div
+      v-else
+      class="bg-primary-color-6 px-1"
+      :style="`height:${innerWidth * 0.7}px; width:${innerWidth * 0.9}px;`"
+    ></div>
+    <v-snackbar :timeout="2000" color="primary" v-model="snackbar" :vertical="vertical">
+      {{ text }}
+    </v-snackbar>
   </v-card>
 </template>
 
 <script lang="ts">
+async function sleep(min: number, max: number) {
+  return new Promise((res) => setTimeout(res, Math.floor(Math.random() * (max - min + 1)) + min));
+}
 import { StreamBarcodeReader } from 'vue-barcode-reader';
 import Vue from 'vue';
 import AuthService from '@/api/auth.service';
 import ProductService, { ProductItem } from '@/api/product.service';
+import CategoryService from '@/api/category.service';
 
 export default Vue.extend({
   components: { StreamBarcodeReader },
   data: () => ({
     listSearchItem: [] as ProductItem[],
-    listHasAlreadySearch: [] as string[],
+    listHasAlreadySearch: {} as any,
+    snackbar: false,
+    text: 'Lorem ipsum dolor sit amet',
+    vertical: true,
+    isPaused: false,
+    interval: {} as any,
+    isSearch: false,
   }),
   computed: {
     widthMenu(): number {
@@ -89,22 +108,73 @@ export default Vue.extend({
     },
     async onDecode(text: string) {
       console.log(`Decode text from QR code is ${text}`);
-      if (text.includes('http') && AuthService.isValidHttpUrl(text) && !this.listHasAlreadySearch.includes(text)) {
+      clearTimeout(this.interval);
+      if (
+        text.includes('http') &&
+        AuthService.isValidHttpUrl(text) &&
+        !Object.keys(this.listHasAlreadySearch).includes(text) &&
+        !this.isSearch
+      ) {
+        this.isSearch = true;
         const listSearchItemSK = this.listSearchItem.map((i: ProductItem) => i.SK);
-        this.listHasAlreadySearch.push(text);
         const listSearchItem = await ProductService.querySearchItemsByUrl({ searchUrl: text });
-
-        this.listSearchItem = this.listSearchItem.concat(
-          listSearchItem.filter((i: ProductItem) => {
-            return !listSearchItemSK.includes(i.SK);
-          })
-        );
-        console.log('listSearchItem', listSearchItem);
+        const addItems = listSearchItem.filter((i: ProductItem) => {
+          return !listSearchItemSK.includes(i.SK);
+        });
+        this.snackbar = true;
+        if (addItems && addItems.length != 0) {
+          this.listHasAlreadySearch[text] = addItems.map((i) => i.SK);
+          this.listSearchItem = this.listSearchItem.concat(addItems);
+          this.text = `Tìm được ${addItems.length} sản phẩm`;
+          console.log('addItems', addItems);
+        } else {
+          this.text = `Không tìm thấy sản phẩm`;
+        }
+        this.isSearch = false;
+      } else {
+        this.snackbar = true;
+        if (Object.keys(this.listHasAlreadySearch).includes(text)) {
+          //
+          const listSK = this.listHasAlreadySearch[text];
+          const listItemFound = this.listSearchItem.filter((i: ProductItem) => listSK.includes(i.SK));
+          for (const item of listItemFound) {
+            item.isDisplayHover = true;
+          }
+          const timeout = setTimeout(() => {
+            for (const item of listItemFound) {
+              item.isDisplayHover = false;
+            }
+            clearTimeout(timeout);
+          }, 2000);
+          this.text = `Đã tìm thấy sản phẩm`;
+        } else {
+          this.text = `Không phải QR Code hợp lệ`;
+        }
       }
+      this.confirm();
+    },
+
+    async confirm() {
+      this.interval = setTimeout(async () => {
+        clearTimeout(this.interval);
+        this.isPaused = true;
+        await sleep(200, 200);
+        const isConfirm = confirm('Tiếp tục quét QR?');
+        if (isConfirm) {
+          this.isPaused = false;
+          await this.confirm();
+        } else {
+          this.$emit('change-method-search-to-text');
+        }
+      }, 1000 * 30);
     },
     onLoaded() {
+      this.confirm();
       console.log(`Ready to start scanning barcodes`);
     },
+  },
+  beforeDestroy() {
+    clearTimeout(this.interval);
   },
 });
 </script>

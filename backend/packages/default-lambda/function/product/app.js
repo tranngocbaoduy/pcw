@@ -11,6 +11,12 @@
  *
  */
 
+function checkIsValidDomain(event) {
+  const listDomainValid = ["https://x-pcw.store", "http://localhost:8080", "https://d3kxmkwimuhvhe.cloudfront.net"];
+  if (event.headers && Object.keys(event.headers).includes('origin') && listDomainValid.includes(event.headers.origin)) return true;
+  return false;
+}
+
 const get = require("./services/get");
 const post = require("./services/post");
 
@@ -24,11 +30,18 @@ exports.lambdaHandler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false
   let response = {};
   try {
-    if (event.httpMethod == "GET") {
-      response = await get(event, context);
-    }
-    if (event.httpMethod == "POST") {
-      response = await post(event, context);
+    if (checkIsValidDomain(event)) {
+      if (event.httpMethod == "GET") {
+        response = await get(event, context);
+      }
+      if (event.httpMethod == "POST") {
+        response = await post(event, context);
+      }
+    } else {
+      response = {
+        message: "Failed",
+        data: null,
+      };
     }
     response = {
       statusCode: 200,

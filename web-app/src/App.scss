@@ -1,4 +1,6 @@
-
+.v-application--wrap {
+  min-height: 100vh  !important;
+}
 @media (min-width: 1264px) and (max-width: 1903px) {
   .flex.lg5-custom {
       width: 20%;

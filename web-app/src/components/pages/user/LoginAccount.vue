@@ -2,7 +2,7 @@
   <v-card
     elevation="0"
     width="400"
-    height="200"
+    height="300"
     class="pa-auto ma-auto rounded-0 d-flex-column justify-center align-center my-4 py-4"
   >
     <v-card-text class="d-flex justify-center align-center">

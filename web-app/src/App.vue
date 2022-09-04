@@ -1,5 +1,5 @@
 <template>
-  <v-app>
+  <v-app style="min-height: 100vh !important">
     <router-view v-if="$route" :key="$route.fullPath" />
   </v-app>
 </template>

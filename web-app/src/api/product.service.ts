@@ -42,6 +42,7 @@ export interface ProductItem {
   shopItem: {};
   shopUrl: string;
   description: [];
+  isDisplayHover?: boolean;
 }
 
 export interface QueryProductItems {
@@ -256,6 +257,7 @@ export default class ProductService {
       itemRating: item.item_rating ? item.item_rating : '',
       countReview: item.item_rating ? item.item_rating.rating_count[0] : 0,
       description: item.description ? ProductService.handleDescription(item.description) : [],
+      isDisplayHover: false,
     } as ProductItem;
   }
 

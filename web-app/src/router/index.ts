@@ -3,7 +3,7 @@ import store from '@/store';
 import Vue from 'vue';
 import VueRouter, { RawLocation, RouteConfig } from 'vue-router';
 import RouterHelper from './helper';
-
+import moment from 'moment-timezone';
 // export function register(Vue: VueConstructor) {
 //   const routerPush = VueRouter.prototype.push;
 //   const routerReplace = VueRouter.prototype.push;
@@ -121,6 +121,11 @@ const routes: Array<RouteConfig> = [
   },
 ];
 
+function logout() {
+  localStorage.setItem('google-auth', '');
+  localStorage.removeItem('google-auth');
+  store.dispatch('logout');
+}
 const router = new VueRouter({
   mode: 'history',
   base: process.env.BASE_URL,
@@ -136,13 +141,15 @@ router.beforeEach((to, from, next) => {
         userGoogleInfo = JSON.parse(userGoogleInfo);
         if (userGoogleInfo && userGoogleInfo.id) {
           GoogleAuthService.getUserInfo(userGoogleInfo.id).then(async (data: UserGoogleInfo) => {
-            store.dispatch('login', { data });
-            console.log('[INITIALIZED] =>', data);
+            if (-1 * moment().diff(data.expriedAt, 'minute') < 0) {
+              logout();
+            } else {
+              store.dispatch('login', { data });
+              console.log('[INITIALIZED] =>', data);
+            }
           });
         } else {
-          localStorage.setItem('google-auth', '');
-          localStorage.removeItem('google-auth');
-          store.dispatch('logout');
+          logout();
         }
       }
     } else {

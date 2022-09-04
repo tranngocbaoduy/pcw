@@ -1,11 +1,6 @@
 const dynamodbHelper = require("../helper/DynamodbHelper");
 const searchByUrl = require("../helper/id_config");
 
-function checkIsValidDomain(event) {
-  const listDomainValid = ["https://x-pcw.store", "http://localhost:8080", "https://d3kxmkwimuhvhe.cloudfront.net"];
-  if (event.headers && Object.keys(event.headers).includes('origin') && listDomainValid.includes(event.headers.origin)) return true;
-  return false;
-}
 
 module.exports = async (event, context) => {
 
@@ -16,33 +11,25 @@ module.exports = async (event, context) => {
   if (!queryParams) {
     throw new Error("There's no query parameter");
   } else {
-    if (checkIsValidDomain(event)) {
-      switch (queryParams["action"]) {
-        case "queryItemByTarget":
-          result = await queryItemByTarget(event);
-          break;
-        case "queryPromotionItems":
-          result = await queryPromotionItems(event);
-          break;
-        case "searchItemsByUrl":
-          result = await searchItemsByUrl(event);
-          break;
-        default:
-          result = [];
-          break;
-      }
-      res = {
-        message: "Successful",
-        action: queryParams["action"],
-        data: await result,
-      };
-    } else {
-      res = {
-        message: "Failed",
-        action: queryParams["action"],
-        data: result,
-      };
+    switch (queryParams["action"]) {
+      case "queryItemByTarget":
+        result = await queryItemByTarget(event);
+        break;
+      case "queryPromotionItems":
+        result = await queryPromotionItems(event);
+        break;
+      case "searchItemsByUrl":
+        result = await searchItemsByUrl(event);
+        break;
+      default:
+        result = [];
+        break;
     }
+    res = {
+      message: "Successful",
+      action: queryParams["action"],
+      data: await result,
+    };
   }
   return res;
 };

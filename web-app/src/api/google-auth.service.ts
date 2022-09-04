@@ -10,6 +10,7 @@ export interface UserGoogleInfo {
   givenName: string;
   familyName: string;
   picture: string;
+  expriedAt: string;
   locale: string;
 }
 
@@ -99,6 +100,7 @@ export default class GoogleAuthService {
       familyName: data.familyName,
       picture: data.picture,
       locale: data.locale,
+      expriedAt: data.expriedAt,
     };
   }
 }

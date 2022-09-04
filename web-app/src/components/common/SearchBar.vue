@@ -1,20 +1,24 @@
 <template>
   <v-card
-    :height="innerHeight"
+    height="100vh"
     width="100vw"
     class="elevation-0 bg-primary-color-0 d-flex flex-column justify-start align-center"
   >
-    <div style="width: 100%; height: 15%"></div>
+    <div v-if="!isSelectedQR" style="width: 100%; height: 15%"></div>
     <router-link class="custom-link pa-2" :to="`/home`">
       <v-img :height="130" :width="270" contain :src="require('@/assets/image/logo/Light.png')" alt=""> </v-img>
     </router-link>
-    <div class="d-flex align-center justify-center font-size-16">
+    <div class="d-flex align-center justify-center font-size-16 bg-primary-color-0">
       <div @click="isSelectedQR = false" class="hover-custom-link">Text</div>
       <span class="px-2">/</span>
       <div @click="isSelectedQR = true" class="hover-custom-link">QR Code</div>
     </div>
-    <div style="width: 95%" class="pb-0 pt-4">
-      <SearchQRBar v-if="isSelectedQR" />
+    <div style="width: 95%" class="pb-0 pt-4 bg-primary-color-0">
+      <SearchQRBar
+        v-if="isSelectedQR"
+        @change-method-search-to-text="isSelectedQR = false"
+        @change-method-search-to-qr-code="isSelectedQR = true"
+      />
       <v-autocomplete
         v-else
         class="rounded-md elevation-1"
@@ -296,26 +300,6 @@ export default Vue.extend({
     isMobile(): boolean {
       return this.$store.getters.isMobile;
     },
-    // allProductName(): any[] {
-    //   let items = this.$store.getters.allProductName as string[];
-
-    //   if (this.selectedCategory && this.selectedCategory.SK && this.selectedCategory.SK != 'TatCa') {
-    //     const mappingId = (this as any).mappingCategoryId[this.selectedCategory.SK];
-    //     items = items.filter((item: string) => item.includes(mappingId));
-    //   } else if (this.categoryId && !this.selectedCategory) {
-    //     items = items.filter((item: string) => item.includes(this.categoryId));
-    //   }
-
-    //   return items.map((item: string) => {
-    //     const ele = item.split('#');
-    //     return {
-    //       category: ele[0],
-    //       code: ele[1],
-    //       name: ele[2],
-    //       wholeSent: item,
-    //     };
-    //   });
-    // },
   },
   watch: {},
   filters: {

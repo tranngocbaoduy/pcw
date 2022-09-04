@@ -1,13 +1,8 @@
 const axios = require('axios')
 const dynamodbHelper = require("../helper/DynamodbHelper");
 
-function checkIsValidDomain(event) {
-  const listDomainValid = ["https://x-pcw.store", "http://localhost:8080", "https://d3kxmkwimuhvhe.cloudfront.net"];
-  if (event.headers && Object.keys(event.headers).includes('origin') && listDomainValid.includes(event.headers.origin)) return true;
-  return false;
-}
 
-module.exports = async (event, context) => {
+module.exports = async (event) => {
   const queryParams = event.queryStringParameters;
   let data = null;
   let res = null;
@@ -15,27 +10,19 @@ module.exports = async (event, context) => {
   if (!queryParams) {
     throw new Error("There's no query parameter");
   } else {
-    if (checkIsValidDomain(event)) {
-      switch (queryParams["action"]) {
-        case "authorize_code":
-          data = await authorizationCode(event);
-          break;
-        default:
-          data = [];
-          break;
-      }
-      res = {
-        message: "Successful",
-        action: queryParams["action"],
-        data: data,
-      };
-    } else {
-      res = {
-        message: "Failed",
-        action: queryParams["action"],
-        data: data,
-      };
+    switch (queryParams["action"]) {
+      case "authorize_code":
+        data = await authorizationCode(event);
+        break;
+      default:
+        data = [];
+        break;
     }
+    res = {
+      message: "Successful",
+      action: queryParams["action"],
+      data: data,
+    };
   }
   return res;
 };
@@ -55,6 +42,12 @@ async function authorizationCode(event) {
   // Google's OAuth 2.0 endpoint for requesting an access token
   const body = JSON.parse(event.body);
   const code = body["code"];
+  let userIP = ''
+  try {
+    userIP = event['requestContext']['identity']['sourceIp']
+  } catch (err) {
+    userIP = ''
+  }
   const redirect_uri = body["redirectURI"];
   const oauth2Endpoint = 'https://oauth2.googleapis.com/token';
 
@@ -88,11 +81,13 @@ async function authorizationCode(event) {
       ExpressionAttributeNames: {
         "#NAME": "name"
       },
-      ProjectionExpression: 'PK, SK, email, #NAME, givenName, familyName, picture, locale',
+      ProjectionExpression: 'PK, SK, email, #NAME, givenName, familyName, picture, locale, lastTimeLogin, lastTimeIP, countLoginTime',
     }
     const userInfo = await dynamodbHelper.getItem(params)
     if (!userInfo) {
       console.log("[FIRST LOGIN] =>", data)
+      const dummyIp = {}
+      dummyIp[userIP] = [new Date().toISOString()]
       const params = {
         TableName: process.env.USER_TABLE_NAME,
         Item: {
@@ -107,6 +102,9 @@ async function authorizationCode(event) {
           accessToken: res.data.access_token,
           refreshToken: res.data.refresh_token,
           expriedAt: new Date(new Date().getTime() + res.data.expires_in * 1000).toISOString(),
+          lastTimeLogin: new Date().toISOString(),
+          lastTimeIP: dummyIp,
+          countLoginTime: 0,
         }
       }
       await dynamodbHelper.putItem(params)
@@ -121,7 +119,33 @@ async function authorizationCode(event) {
         locale: data.locale,
       }
     } else {
-      data = userInfo;
+
+      const dummyLastTimeIP = userInfo.lastTimeIP;
+      if (!Object.keys(dummyLastTimeIP).includes(userIP)) {
+        dummyLastTimeIP[userIP] = [new Date().toISOString()]
+      } else {
+        dummyLastTimeIP[userIP].push(new Date().toISOString())
+        dummyLastTimeIP[userIP] = dummyLastTimeIP[userIP].sort((a, b) => { if (a > b) return 1; return -1 })
+      }
+      const newUserInfo = {
+        ...userInfo,
+        lastTimeLogin: new Date().toISOString(),
+        lastTimeIP: dummyLastTimeIP,
+        accessToken: res.data.access_token,
+        refreshToken: res.data.refresh_token,
+        expriedAt: new Date(new Date().getTime() + res.data.expires_in * 1000).toISOString(),
+        countLoginTime: userInfo.countLoginTime + 1
+      }
+      const params = {
+        TableName: process.env.USER_TABLE_NAME,
+        Item: newUserInfo
+      }
+      await dynamodbHelper.putItem(params)
+      data = newUserInfo;
+      delete data['countLoginTime']
+      delete data['lastTimeIP']
+      delete data['accessToken']
+      delete data['refreshToken']
       console.log("[LOGIN] =>", userInfo)
     }
     return data;
