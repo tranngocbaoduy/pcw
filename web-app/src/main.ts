@@ -12,6 +12,7 @@ import '@/mixin';
 import './plugins/vue-loading-overlay';
 import VueMeta from 'vue-meta';
 import '@/vue-meta';
+import './registerServiceWorker';
 
 (function (original) {
   (console as any).enableLogging = function () {

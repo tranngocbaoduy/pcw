@@ -1,4 +1,16 @@
 module.exports = {
+  pwa: {
+    workbox: {
+      config: {
+        debug: true,
+      },
+    },
+    //workboxPluginMode: 'GenerateSW',
+    workboxPluginMode: 'InjectManifest',
+    workboxOptions: {
+      swSrc: 'src/service-worker.js',
+    },
+  },
   transpileDependencies: ['vuetify'],
   pluginOptions: {
     i18n: {
@@ -11,7 +23,7 @@ module.exports = {
 
   chainWebpack: (config) => {
     config.plugin('html').tap((args) => {
-      args[0].title = 'PCW　ー Top compare price website';
+      args[0].title = 'PCW ー Top compare price website';
       return args;
     });
     config.module
