@@ -241,6 +241,8 @@ import ProductAnotherAgency from '@/components/pages/common/product-detail-page/
 import CategoryService from '@/api/category.service';
 import ProductService, { ProductItem } from '@/api/product.service';
 import DetailRatingItem from '@/components/common/rating/DetailRatingItem.vue';
+import SeoService from '@/api/seo.service';
+import { MetaInfo } from 'vue-meta';
 
 export default Vue.extend({
   name: 'Body',
@@ -252,6 +254,11 @@ export default Vue.extend({
     ProductAnotherAgency,
     DetailRatingItem,
     // ListProductRelated,
+  },
+  metaInfo(): MetaInfo {
+    const name = this.mainProduct ? this.mainProduct.cleanName || '' : '';
+    const url = this.listPhotoItems && this.listPhotoItems.length != 0 ? this.listPhotoItems[0].url : '';
+    return SeoService.getMetaInfoProductPage(name, url);
   },
   data: () => ({
     tabModel: null,
@@ -325,7 +332,7 @@ export default Vue.extend({
           exact: true,
         },
         {
-          text: this.categoryId ? this.$t(`category.${CategoryService.code2category(this.categoryId)}`) : '',
+          text: this.categoryId ? `${CategoryService.code2category(this.categoryId)}` : '',
           to: `/category/${this.categoryId ? this.categoryId.toLowerCase() : ''}`,
           disabled: false,
           exact: true,
@@ -344,8 +351,6 @@ export default Vue.extend({
     window.scrollTo({ top: 0, left: 0 });
     await this.initialize();
     this.allProduct = [this.mainProduct, ...this.subProductItems];
-    console.log('this.allProduct', this.allProduct);
-
     this.handleChangeSorter(this.sortByProductAnotherAgency.find((i) => i.isSelected));
     this.cheapestItem = JSON.parse(JSON.stringify(this.allProduct[0]));
   },

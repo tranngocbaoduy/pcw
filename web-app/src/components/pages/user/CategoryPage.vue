@@ -80,6 +80,8 @@ import CategoryService from '@/api/category.service';
 import ProductService, { ProductItem } from '@/api/product.service';
 
 import EnhancedFilter from '@/components/search-filter/EnhancedFilter.vue';
+import SeoService from '@/api/seo.service';
+import { MetaInfo } from 'vue-meta';
 
 export default Vue.extend({
   name: 'CategoryPage',
@@ -88,6 +90,9 @@ export default Vue.extend({
     BreadCrumbs,
     Product,
     EnhancedFilter,
+  },
+  metaInfo(): MetaInfo {
+    return SeoService.getMetaInfoCategoryPage(this.categoryName || '');
   },
   data: () => ({
     isLoading: false,
@@ -165,9 +170,7 @@ export default Vue.extend({
     },
     categoryName(): string {
       return CategoryService.upperCaseFirstLetter(CategoryService.code2category(this.categoryId))
-        ? this.$t(
-            `category.${CategoryService.upperCaseFirstLetter(CategoryService.code2category(this.categoryId))}`
-          ).toString()
+        ? `${CategoryService.upperCaseFirstLetter(CategoryService.code2category(this.categoryId))}`
         : '';
     },
     categoryId(): string {

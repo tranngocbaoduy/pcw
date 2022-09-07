@@ -1,67 +1,14 @@
 import GoogleAuthService, { UserGoogleInfo } from '@/api/google-auth.service';
 import store from '@/store';
 import Vue from 'vue';
-import VueRouter, { RawLocation, RouteConfig } from 'vue-router';
+import VueRouter, { RawLocation, Route, RouteConfig } from 'vue-router';
 import RouterHelper from './helper';
 import moment from 'moment-timezone';
-// export function register(Vue: VueConstructor) {
-//   const routerPush = VueRouter.prototype.push;
-//   const routerReplace = VueRouter.prototype.push;
+import SeoService from '@/api/seo.service';
+import i18n from '@/i18n';
+import CategoryService from '@/api/category.service';
 
-//   const isNavigationDuplicated = (currentRoute: any, nextRoute: any) => {
-//     const { name: nextName, params: nextParams = {}, query: nextQuery = {} } = nextRoute;
-//     const { name, params, query } = currentRoute;
-
-//     return equals(nextQuery, query) && equals(nextParams, params) && equals(nextName, name);
-//   };
-
-//   VueRouter.prototype.push = async function push(location: RawLocation): Promise<Route | any> {
-//     if (!isNavigationDuplicated(this.currentRoute, location)) {
-//       return await routerPush.call(this, location);
-//     }
-//   };
-
-//   VueRouter.prototype.replace = async function replace(location: RawLocation): Promise<Route | any> {
-//     if (!isNavigationDuplicated(this.currentRoute, location)) {
-//       return await routerReplace.call(this, location);
-//     }
-//   };
-
-//   Vue.use(VueRouter);
-// }
-// register(Vue);
 Vue.use(VueRouter);
-
-// const superPush = VueRouter.prototype.push;
-// VueRouter.prototype.push = async function push(loc: RawLocation): Promise<Route> {
-//   try {
-//     return await superPush.bind(this)(loc);
-//   } catch (e) {
-//     if (e?.name === 'NavigationDuplicated') {
-//       console.warn(e);
-//       console.log(e);
-//       return await superPush.bind(this)(loc);
-//     } else {
-//       throw e;
-//     }
-//   }
-// };
-
-// const superReplace = VueRouter.prototype.replace;
-// VueRouter.prototype.replace = async function replace(loc: RawLocation): Promise<Route> {
-//   try {
-//     return await superReplace.bind(this)(loc);
-//   } catch (e) {
-//     if (e?.name === 'NavigationDuplicated') {
-//       console.warn(e);
-//       return await superReplace.bind(this)(loc);
-//     } else {
-//       throw e;
-//     }
-//   }
-// };
-
-// Vue.use(VueRouter);
 
 const routes: Array<RouteConfig> = [
   {
@@ -145,7 +92,7 @@ router.beforeEach((to, from, next) => {
               logout();
             } else {
               store.dispatch('login', { data });
-              console.log('[INITIALIZED] =>', data);
+              console.log('[FIRST INITIALIZED] =>', data);
             }
           });
         } else {

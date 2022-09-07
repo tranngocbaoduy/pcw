@@ -23,6 +23,8 @@ import RecommendProducts from '@/components/pages/products/TrendingRecommendProd
 import TrendingCategory from '@/components/pages/products/TrendingCategory.vue';
 import { CategoryItem } from '@/api/category.service';
 import ProductService, { ProductItem } from '@/api/product.service';
+import { MetaInfo } from 'vue-meta';
+import SeoService from '@/api/seo.service';
 
 export default Vue.extend({
   name: 'Body',
@@ -36,6 +38,9 @@ export default Vue.extend({
     // TrendingSearchProducts,
     // TrendingSearch,
     // Feature,
+  },
+  metaInfo(): MetaInfo {
+    return SeoService.getMetaInfoHomePage();
   },
   data: () => ({
     trendingCategoryItems: [] as CategoryItem[],

@@ -49,7 +49,7 @@ export default class CategoryService {
       PK: item.PK,
       SK: item.SK,
       name: CategoryService.upperCaseFirstLetter(item.NAME),
-      translateName: CategoryService.upperCaseFirstLetter(item.NAME),
+      translateName: CategoryService.upperCaseFirstLetter(item.ViNAME),
       href: '/category/' + item.SK.toLowerCase(),
     } as CategoryItem;
   }
@@ -67,7 +67,7 @@ export default class CategoryService {
       PK: item.PK,
       SK: item.SK,
       name: CategoryService.upperCaseFirstLetter(item.NAME),
-      translateName: CategoryService.upperCaseFirstLetter(item.NAME),
+      translateName: CategoryService.upperCaseFirstLetter(item.ViNAME),
       selected: false,
     } as BrandItem;
   }

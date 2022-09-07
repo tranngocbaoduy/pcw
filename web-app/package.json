@@ -30,6 +30,7 @@
     "vue-i18n": "8.17.0",
     "vue-loading-overlay": "3.3.2",
     "vue-lodash": "^2.1.2",
+    "vue-meta": "^2.4.0",
     "vue-property-decorator": "^9.1.2",
     "vue-router": "3.2.0",
     "vuetify": "2.2.21",

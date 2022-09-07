@@ -10,6 +10,8 @@ import lodash from 'lodash';
 //register component
 import '@/mixin';
 import './plugins/vue-loading-overlay';
+import VueMeta from 'vue-meta';
+import '@/vue-meta';
 
 (function (original) {
   (console as any).enableLogging = function () {
@@ -20,6 +22,7 @@ import './plugins/vue-loading-overlay';
   };
 })((console as any).log);
 
+Vue.use(VueMeta);
 Vue.config.productionTip = false;
 Vue.config.devtools = process.env.NODE_ENV === 'production' ? false : true;
 process.env.NODE_ENV === 'production' ? (console as any).disableLogging() : (console as any).enableLogging();

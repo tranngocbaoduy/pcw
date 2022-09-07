@@ -1,0 +1,3 @@
+Sitemap: https://x-pcw.store/sitemap.xml
+User-agent: *
+Disallow: /login

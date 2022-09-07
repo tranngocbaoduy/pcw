@@ -11,7 +11,7 @@ module.exports = {
 
   chainWebpack: (config) => {
     config.plugin('html').tap((args) => {
-      args[0].title = 'PCW - Price Comparision Website';
+      args[0].title = 'PCW　ー Top compare price website';
       return args;
     });
     config.module
