@@ -258,7 +258,11 @@ export default Vue.extend({
   metaInfo(): MetaInfo {
     const name = this.mainProduct ? this.mainProduct.cleanName || '' : '';
     const url = this.listPhotoItems && this.listPhotoItems.length != 0 ? this.listPhotoItems[0].url : '';
-    return SeoService.getMetaInfoProductPage(name, url);
+    const price =
+      this.mainProduct && this.mainProduct.price
+        ? this.mainProduct.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+        : '';
+    return SeoService.getMetaInfoProductPage(name, url, price);
   },
   data: () => ({
     tabModel: null,

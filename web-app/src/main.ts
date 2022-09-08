@@ -23,7 +23,10 @@ import './registerServiceWorker';
   };
 })((console as any).log);
 
-Vue.use(VueMeta);
+Vue.use(VueMeta, {
+  // optional pluginOptions
+  refreshOnceOnNavigation: true,
+});
 Vue.config.productionTip = false;
 Vue.config.devtools = process.env.NODE_ENV === 'production' ? false : true;
 process.env.NODE_ENV === 'production' ? (console as any).disableLogging() : (console as any).enableLogging();

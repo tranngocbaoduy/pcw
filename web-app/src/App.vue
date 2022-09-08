@@ -6,6 +6,8 @@
 
 <script lang="ts">
 import Vue from 'vue';
+import { MetaInfo } from 'vue-meta';
+import SeoService from './api/seo.service';
 
 export default Vue.extend({
   name: 'App',
@@ -14,6 +16,9 @@ export default Vue.extend({
     isMobile() {
       return this.$store.getters.isMobile;
     },
+  },
+  metaInfo(): MetaInfo {
+    return SeoService.getMetaInfoHomePage();
   },
   async created() {
     console.log('App component is created');

@@ -28,8 +28,8 @@ export default class SeoService {
       'og:site_name': BASE_URL ? urlObj.host : 'x-pcw.store',
       'og:url': BASE_URL,
       'og:image': `${BASE_URL}/logo.png`,
-      'og:image:width': '500',
-      'og:image:height': '350',
+      'og:image:width': '600',
+      'og:image:height': '200',
     };
 
     return seoInfo[field];
@@ -43,16 +43,36 @@ export default class SeoService {
       },
       meta: [
         { charset: 'utf-8' },
-        { name: 'keyword', content: SeoService.getSeoInfoCommon('keywords') },
-        { name: 'description', content: SeoService.getSeoInfoCommon('description') },
-        { name: 'robots', content: SeoService.getSeoInfoCommon('robots') },
-        { name: 'viewport', content: SeoService.getSeoInfoCommon('viewport') },
-        { name: 'og:type', content: SeoService.getSeoInfoCommon('og:type') },
-        { name: 'og:site_name', content: SeoService.getSeoInfoCommon('og:site_name') },
-        { name: 'og:url', content: SeoService.getSeoInfoCommon('og:url') },
-        { name: 'og:image', content: SeoService.getSeoInfoCommon('og:image') },
-        { name: 'og:image:width', content: SeoService.getSeoInfoCommon('og:image:width') },
-        { name: 'og:image:height', content: SeoService.getSeoInfoCommon('og:image:height') },
+        { vmid: 'keyword', property: 'keyword', name: 'keyword', content: SeoService.getSeoInfoCommon('keywords') },
+        {
+          vmid: 'description',
+          property: 'description',
+          name: 'description',
+          content: SeoService.getSeoInfoCommon('description'),
+        },
+        { vmid: 'robots', property: 'robots', name: 'robots', content: SeoService.getSeoInfoCommon('robots') },
+        { vmid: 'viewport', property: 'viewport', name: 'viewport', content: SeoService.getSeoInfoCommon('viewport') },
+        { vmid: 'og:type', property: 'og:type', name: 'og:type', content: SeoService.getSeoInfoCommon('og:type') },
+        {
+          vmid: 'og:site_name',
+          property: 'og:site_name',
+          name: 'og:site_name',
+          content: SeoService.getSeoInfoCommon('og:site_name'),
+        },
+        { vmid: 'og:url', property: 'og:url', name: 'og:url', content: SeoService.getSeoInfoCommon('og:url') },
+        { vmid: 'og:image', property: 'og:image', name: 'og:image', content: SeoService.getSeoInfoCommon('og:image') },
+        {
+          vmid: 'og:image:width',
+          property: 'og:image:width',
+          name: 'og:image:width',
+          content: SeoService.getSeoInfoCommon('og:image:width'),
+        },
+        {
+          vmid: 'og:image:height',
+          property: 'og:image:height',
+          name: 'og:image:height',
+          content: SeoService.getSeoInfoCommon('og:image:height'),
+        },
       ],
     };
   }
@@ -65,20 +85,40 @@ export default class SeoService {
       },
       meta: [
         { charset: 'utf-8' },
-        { name: 'keyword', content: SeoService.getSeoInfoCommon('keywords') },
-        { name: 'description', content: SeoService.getSeoInfoCommon('description') },
-        { name: 'viewport', content: SeoService.getSeoInfoCommon('viewport') },
-        { name: 'og:type', content: SeoService.getSeoInfoCommon('og:type') },
-        { name: 'og:site_name', content: SeoService.getSeoInfoCommon('og:site_name') },
-        { name: 'og:url', content: SeoService.getSeoInfoCommon('og:url') },
-        { name: 'og:image', content: SeoService.getSeoInfoCommon('og:image') },
-        { name: 'og:image:width', content: SeoService.getSeoInfoCommon('og:image:width') },
-        { name: 'og:image:height', content: SeoService.getSeoInfoCommon('og:image:height') },
+        { vmid: 'keyword', property: 'keyword', name: 'keyword', content: SeoService.getSeoInfoCommon('keywords') },
+        {
+          vmid: 'description',
+          property: 'description',
+          name: 'description',
+          content: `Hàng ngàn mẫu mã ${categoryName} khác nhau`,
+        },
+        { vmid: 'viewport', property: 'viewport', name: 'viewport', content: SeoService.getSeoInfoCommon('viewport') },
+        { vmid: 'og:type', property: 'og:type', name: 'og:type', content: SeoService.getSeoInfoCommon('og:type') },
+        {
+          vmid: 'og:site_name',
+          property: 'og:site_name',
+          name: 'og:site_name',
+          content: SeoService.getSeoInfoCommon('og:site_name'),
+        },
+        { vmid: 'og:url', property: 'og:url', name: 'og:url', content: SeoService.getSeoInfoCommon('og:url') },
+        { vmid: 'og:image', property: 'og:image', name: 'og:image', content: SeoService.getSeoInfoCommon('og:image') },
+        {
+          vmid: 'og:image:width',
+          property: 'og:image:width',
+          name: 'og:image:width',
+          content: SeoService.getSeoInfoCommon('og:image:width'),
+        },
+        {
+          vmid: 'og:image:height',
+          property: 'og:image:height',
+          name: 'og:image:height',
+          content: SeoService.getSeoInfoCommon('og:image:height'),
+        },
       ],
     };
   }
 
-  static getMetaInfoProductPage(productName: string, imageURL: string): MetaInfo {
+  static getMetaInfoProductPage(productName: string, imageURL: string, price: string): MetaInfo {
     const imageStrSplit = imageURL.split('.');
     const typeImage = imageStrSplit[imageStrSplit.length - 1];
     return {
@@ -88,17 +128,37 @@ export default class SeoService {
       },
       meta: [
         { charset: 'utf-8' },
-        { name: 'keyword', content: SeoService.getSeoInfoCommon('keywords') },
-        { name: 'description', content: `So sánh giá của ${productName}` },
-        { name: 'viewport', content: SeoService.getSeoInfoCommon('viewport') },
-        { name: 'og:type', content: SeoService.getSeoInfoCommon('og:type') },
-        { name: 'og:site_name', content: SeoService.getSeoInfoCommon('og:site_name') },
-        { name: 'og:url', content: SeoService.getSeoInfoCommon('og:url') },
-        { name: 'og:image', content: imageURL },
-        { name: 'og:image:url', content: imageURL },
-        { name: 'og:image:type', content: `image/${typeImage == 'jpg' ? 'jpeg' : typeImage}` },
-        { name: 'og:image:width', content: SeoService.getSeoInfoCommon('og:image:width') },
-        { name: 'og:image:height', content: SeoService.getSeoInfoCommon('og:image:height') },
+        { vmid: 'keyword', property: 'keyword', name: 'keyword', content: SeoService.getSeoInfoCommon('keywords') },
+        { vmid: 'description', property: 'description', name: 'description', content: `${price} - ${productName}` },
+        { vmid: 'viewport', property: 'viewport', name: 'viewport', content: SeoService.getSeoInfoCommon('viewport') },
+        { vmid: 'og:type', property: 'og:type', name: 'og:type', content: SeoService.getSeoInfoCommon('og:type') },
+        {
+          vmid: 'og:site_name',
+          property: 'og:site_name',
+          name: 'og:site_name',
+          content: SeoService.getSeoInfoCommon('og:site_name'),
+        },
+        { vmid: 'og:url', property: 'og:url', name: 'og:url', content: SeoService.getSeoInfoCommon('og:url') },
+        { vmid: 'og:image', property: 'og:image', name: 'og:image', content: imageURL },
+        { vmid: 'og:image:url', property: 'og:image:url', name: 'og:image:url', content: imageURL },
+        {
+          vmid: 'og:image:type',
+          property: 'og:image:type',
+          name: 'og:image:type',
+          content: `image/${typeImage == 'jpg' ? 'jpeg' : typeImage}`,
+        },
+        {
+          vmid: 'og:image:width',
+          property: 'og:image:width',
+          name: 'og:image:width',
+          content: '500',
+        },
+        {
+          vmid: 'og:image:height',
+          property: 'og:image:height',
+          name: 'og:image:height',
+          content: '500',
+        },
       ],
     };
   }
