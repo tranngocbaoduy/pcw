@@ -22,15 +22,16 @@ export default Vue.extend({
   },
   async created() {
     console.log('App component is created');
+    window.addEventListener('load', this.onResize);
   },
   mounted() {
-    this.onResize();
     window.addEventListener('resize', this.onResize, { passive: true });
     window.addEventListener('scroll', this.onResize, { passive: true });
   },
   methods: {
     onResize() {
       const isMobile = !(this.$vuetify.breakpoint.lg || this.$vuetify.breakpoint.xl || this.$vuetify.breakpoint.md);
+      console.log('isMobile', isMobile);
       if (this.isMobile != isMobile) {
         this.$store.dispatch('setIsMobile', { isMobile: isMobile });
       }

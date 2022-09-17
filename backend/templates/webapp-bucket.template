@@ -28,17 +28,17 @@ Conditions:
 Mappings:
   EnvTypeMap:
     prod:
-      DomainName: "x-pcw.com"
-      HostedZoneId: "Z051864831RELXO1IWRT7"
-      AcmCertificateArn: "arn:aws:acm:us-east-1:194560059530:certificate/372dc1aa-2490-4ff5-919c-29d392d3255d"
+      DomainName: "x-pcw.store"
+      HostedZoneId: "Z01928522L3SLHN2WWWU"
+      AcmCertificateArn: "arn:aws:acm:us-east-1:194560059530:certificate/e7ada2cf-5f07-4475-8cab-263f2cf8de30"
     duy:
-      DomainName: "x-pcw.com"
-      HostedZoneId: "Z051864831RELXO1IWRT7"
-      AcmCertificateArn: "arn:aws:acm:us-east-1:194560059530:certificate/372dc1aa-2490-4ff5-919c-29d392d3255d"
+      DomainName: "x-pcw.store"
+      HostedZoneId: "Z01928522L3SLHN2WWWU"
+      AcmCertificateArn: "arn:aws:acm:us-east-1:194560059530:certificate/e7ada2cf-5f07-4475-8cab-263f2cf8de30"
     dev:
-      DomainName: 'localhost:8080'
-      HostedZoneId: ''
-      AcmCertificateArn: ''
+      DomainName: "x-pcw.store"
+      HostedZoneId: "Z01928522L3SLHN2WWWU"
+      AcmCertificateArn: "arn:aws:acm:us-east-1:194560059530:certificate/e7ada2cf-5f07-4475-8cab-263f2cf8de30"
     
 Resources:
   WebappBucket:
@@ -230,7 +230,7 @@ Resources:
       Type: A
       AliasTarget:
         DNSName: !GetAtt CloudFrontDistribution.DomainName
-        HostedZoneId: Z051864831RELXO1IWRT7
+        HostedZoneId: Z01928522L3SLHN2WWWU
 
 Outputs:
   WebappBucketName:

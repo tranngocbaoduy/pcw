@@ -28,4 +28,22 @@ manifest_hash = ""
 packagetype = "Zip"
 functions = ["STSFunction"]
 
+[function_build_definitions.56d86fc6-a314-4a10-8d80-1753ce572fc6]
+codeuri = "/Users/genkisystem/Desktop/da2/da2/backend/packages/default-lambda/function/ssr"
+runtime = "nodejs14.x"
+architecture = "x86_64"
+handler = "app.lambdaHandler"
+manifest_hash = ""
+packagetype = "Zip"
+functions = ["SSRFunction"]
+
+[function_build_definitions.d32b2dfe-02b2-4bdb-ac3f-08e852c905d0]
+codeuri = "/Users/genkisystem/Desktop/da2/da2/backend/packages/default-lambda/function/metadata"
+runtime = "nodejs16.x"
+architecture = "x86_64"
+handler = "app.lambdaHandler"
+manifest_hash = ""
+packagetype = "Zip"
+functions = ["MetaDataFunction"]
+
 [layer_build_definitions]

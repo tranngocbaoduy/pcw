@@ -12,13 +12,13 @@
  */
 
 function checkIsValidDomain(event) {
-  const listDomainValid = ["https://x-pcw.store", "http://localhost:8080", "https://d28melu1a3bqp.cloudfront.net"];
-  if (event.headers && Object.keys(event.headers).includes('origin') && listDomainValid.includes(event.headers.origin)) return true;
-  return false;
+  return true;
+  // const listDomainValid = ["https://x-pcw.store", "http://localhost:8080", "https://d28melu1a3bqp.cloudfront.net"];
+  // if (event.headers && Object.keys(event.headers).includes('origin') && listDomainValid.includes(event.headers.origin)) return true;
+  // return false;
 }
 
 const get = require("./services/get");
-const post = require("./services/post");
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -33,9 +33,6 @@ exports.lambdaHandler = async (event, context) => {
     if (checkIsValidDomain(event)) {
       if (event.httpMethod == "GET") {
         response = await get(event, context);
-      }
-      if (event.httpMethod == "POST") {
-        response = await post(event, context);
       }
     } else {
       response = {

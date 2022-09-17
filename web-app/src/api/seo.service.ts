@@ -128,7 +128,12 @@ export default class SeoService {
       },
       meta: [
         { charset: 'utf-8' },
-        { vmid: 'keyword', property: 'keyword', name: 'keyword', content: SeoService.getSeoInfoCommon('keywords') },
+        {
+          vmid: 'keyword',
+          property: 'keyword',
+          name: 'keyword',
+          content: SeoService.getSeoInfoCommon('keywords') + ',' + productName.split(' ').join(', '),
+        },
         { vmid: 'description', property: 'description', name: 'description', content: `${price} - ${productName}` },
         { vmid: 'viewport', property: 'viewport', name: 'viewport', content: SeoService.getSeoInfoCommon('viewport') },
         { vmid: 'og:type', property: 'og:type', name: 'og:type', content: SeoService.getSeoInfoCommon('og:type') },
