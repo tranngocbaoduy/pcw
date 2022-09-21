@@ -4,6 +4,8 @@ backend/tools/aws_service/training
 backend/tools/aws_service/model
 
 web-app/.env*
+web-app-admin/crawler_admin/data-*
+web-app-admin/.env
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
