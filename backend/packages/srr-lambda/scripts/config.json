@@ -1,0 +1,6 @@
+{
+  "function_names": ["SSRFunction"],
+  "function_zip_rpath": ".aws-sam/build/",
+  "layer_name": "SSRFunctionLayer",
+  "layer_zip_rpath": ".aws-sam/build/SSRFunctionLayer.zip"
+}

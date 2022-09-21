@@ -1,5 +1,5 @@
 <template>
-  <v-col sm="12" md="12" cols="12" :class="isMobile ? 'py-0' : 'py-3'" class="trending-brand">
+  <v-col sm="12" md="12" cols="12" :class="isMobile ? 'py-0' : 'py-3'" class="trending-category px-0">
     <div class="mt-2 pa-0">
       <v-card-title class="trending-page-name font-size-32 font-weight-3 px-0 mt-2 mx-0">
         {{ $t('trendingCategory') }}
@@ -12,24 +12,24 @@
           <v-icon class="primary-color-1 pb-1" size="20px">mdi-chevron-right</v-icon>
         </div>
       </v-card-title>
-      <v-row class="mx-0" no-gutters>
-        <v-col class="pa-0" :key="brand.href" v-for="brand in trendingCategoryItems" :cols="columns">
+      <v-row class="mx-0" no-gutters v-if="listItem && listItem.length">
+        <v-col class="pa-0" :key="category.href" v-for="category in filterListItem" :cols="columns">
           <v-hover v-slot="{ hover }">
-            <router-link class="custom-link" :to="brand.href">
+            <router-link class="custom-link" :to="category.href">
               <v-card
                 :elevation="hover ? 3 : 1"
                 :style="hover ? 'z-index: 50' : ''"
-                class="border-custom-6 pa-4 mx-0 rounded-0"
+                class="border-custom-6 pa-1 py-4 mx-0 rounded-0"
               >
                 <v-img
+                  v-if="category.image"
+                  :class="hover ? 'mt-2' : 'mt-4'"
+                  style="width: 164px; height: 164px"
                   contain
-                  aspect-ratio="1.2"
-                  min-height="80"
-                  height="100%"
                   class="ma-auto rounded-0"
-                  :src="brand.img"
+                  :src="category.image"
                 ></v-img>
-                <div class="text-center font-weight-bold">{{ brand.name }}</div>
+                <div class="text-center font-weight-bold my-1">{{ categoryName(category.name) }}</div>
               </v-card>
             </router-link>
           </v-hover>
@@ -41,23 +41,15 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { CategoryItem } from '@/api/category.service';
 
 export default Vue.extend({
   name: 'CategoryPage',
-  props: [],
+  props: ['listItem'],
   components: {},
-  data: () => ({
-    trendingCategoryItems: [] as any[],
-  }),
-  async created() {
-    this.initialize();
-  },
+  data: () => ({}),
+  async created() {},
   mounted() {},
   computed: {
-    categoryItems(): CategoryItem[] {
-      return this.$store.getters.categoryItems || [];
-    },
     isMobile(): boolean {
       return this.$store.getters.isMobile;
     },
@@ -68,34 +60,15 @@ export default Vue.extend({
       if (this.$vuetify.breakpoint.sm) return 2;
       return 6;
     },
+    filterListItem(): any[] {
+      return this.listItem.filter((i: any) => i.image);
+    },
   },
 
   watch: {},
   methods: {
-    async initialize() {
-      this.trendingCategoryItems = [] as any[];
-      const catalog = [
-        'Điện thoại',
-        'Truyện Tranh',
-        'Tủ lạnh',
-        'Tác phẩm kinh điển',
-        'Tivi',
-        'Máy giặt',
-        'Balo',
-        'Sách nghệ thuật',
-        'Kem chống nắng',
-        'Tủ',
-        'Sách tư duy',
-        'Bàn ghế làm việc',
-      ];
-      for (const i of catalog) {
-        this.trendingCategoryItems.push({
-          name: i,
-          img: require('@/assets/brand/apple/brand.png'),
-          logo: require('@/assets/brand/apple/logo.jpg'),
-          href: '/category/television/?' + i,
-        });
-      }
+    categoryName(categoryId: string): string {
+      return categoryId ? this.$t(`category.${categoryId}`).toString() : '';
     },
   },
 });

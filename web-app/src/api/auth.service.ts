@@ -185,6 +185,22 @@ export default class AuthService {
       ...configAuth,
     };
   }
+
+  static isValidHttpUrl(str: string): boolean {
+    let url;
+    try {
+      url = new URL(str);
+    } catch (_) {
+      return false;
+    }
+    const validDomains = ['tiki.vn', 'shopee.vn', 'www.lazada.vn'];
+    console.log(
+      '[URL] =>',
+      (url.protocol === 'http:' || url.protocol === 'https:') && validDomains.includes(url.hostname),
+      str
+    );
+    return (url.protocol === 'http:' || url.protocol === 'https:') && validDomains.includes(url.hostname);
+  }
 }
 
 //https://github.com/axios/axios

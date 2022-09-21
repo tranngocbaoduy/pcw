@@ -1,5 +1,5 @@
 <template>
-  <v-breadcrumbs class="pa-0 ma-0" :class="isMobile ? 'pa-2' : ''" :items="breadcrumbs">
+  <v-breadcrumbs class="pa-0 ma-0" :items="breadcrumbs">
     <template v-slot:divider>
       <v-icon>mdi-chevron-right</v-icon>
     </template>

@@ -42,7 +42,9 @@
     "Washing": "Washing Machine",
     "Phone": "Phone",
     "Air Condition": "Air Condition",
-    "Laptop": "Laptop"
+    "Laptop": "Laptop",
+    "Motor": "Motor",
+    "Tablet": "Tablet"
   },
 
   "en": "English",

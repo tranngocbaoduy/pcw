@@ -1,5 +1,5 @@
 <template>
-  <v-col sm="12" md="12" cols="12" :class="isMobile ? 'py-0' : 'py-3'" class="trending-brand">
+  <v-col sm="12" md="12" cols="12" :class="isMobile ? 'py-0' : 'py-3'" class="trending-promotion px-0">
     <div class="mt-2 pa-0">
       <v-card-title class="trending-page-name font-size-32 font-weight-3 px-0 mt-2 mx-0">
         {{ $t('trendingPromotion') }}
@@ -17,7 +17,6 @@
         light
         touchless
         :cycle="true"
-        hide-delimiters
         hide-delimiter-background
         class="px-0"
         height="100%"
@@ -25,40 +24,67 @@
         <template v-for="(item, index) in filterPromotionItems">
           <v-carousel-item
             v-if="(index + 1) % quantityItemsInCarousel === 1 || quantityItemsInCarousel === 1"
-            :key="index"
+            :key="`promotions-${index}`"
           >
             <v-row class="pt-0 mx-0" no-gutters>
               <template v-for="(n, i) in quantityItemsInCarousel">
                 <template v-if="+index + i < filterPromotionItems.length">
-                  <v-col class="pa-2 px-0" :key="i">
-                    <v-hover v-slot="{ hover }">
-                      <v-card
-                        :elevation="hover ? 3 : 1"
-                        v-if="+index + i < filterPromotionItems.length"
-                        class="border-custom-4 pa-4 py-4 mx-auto"
-                      >
-                        <span
-                          v-if="item.listPrice != item.price"
-                          class="discount-rate px-3 font-size-16 font-weight-2 text-right"
+                  <v-col class="py-2 px-0" :key="i">
+                    <router-link :to="`${getSlugId(filterPromotionItems[+index + i])}`" :key="`${i}-${n}-s`">
+                      <v-hover v-slot="{ hover }">
+                        <v-card
+                          :elevation="hover ? 3 : 1"
+                          v-if="+index + i < filterPromotionItems.length"
+                          class="border-custom-4 pa-2 py-4 mx-auto"
                         >
-                          {{ filterPromotionItems[+index + i].sale }}%
-                        </span>
+                          <v-img
+                            contain
+                            width="120"
+                            height="120"
+                            class="ma-auto mb-2 rounded-0"
+                            :src="filterPromotionItems[+index + i].listImage[0]"
+                          ></v-img>
+                          <v-card-title class="font-size-16 font-weight-3 pa-0">
+                            <div>
+                              <!-- <div class="primary-color-2 mr-4">
+                                {{ filterPromotionItems[+index + i].price | formatPrice }}đ
+                              </div> -->
 
-                        <v-img
-                          height="100%"
-                          aspect-ratio="1.2"
-                          class="my-2 rounded-0"
-                          :src="filterPromotionItems[+index + i].img"
-                        ></v-img>
-                        <v-card-title class="font-size-16 font-weight-3 pa-2">
-                          <v-row class="justify-center">
-                            <div class="primary-color-2 mr-4">
-                              {{ filterPromotionItems[+index + i].price | formatPrice }}đ
+                              <div class="d-flex-col align-center justify-start line-height-18">
+                                <div
+                                  style="height: 50px"
+                                  class="font-size-12 font-weight-2 line-height-22 title-product mb-2"
+                                >
+                                  {{ filterPromotionItems[+index + i].cleanName }}
+                                </div>
+                                <span
+                                  class="mr-3 line-height-22 font-size-10 font-weight-1 old-price"
+                                  v-if="
+                                    filterPromotionItems[+index + i].listPrice != filterPromotionItems[+index + i].price
+                                  "
+                                >
+                                  {{ filterPromotionItems[+index + i].listPrice | formatPrice }}đ
+                                </span>
+                                <div class="d-flex align-center justify-space-between">
+                                  <span class="mr-3 font-weight-bold font-size-12 primary-color-2"
+                                    >{{ filterPromotionItems[+index + i].price | formatPrice }}đ
+                                  </span>
+                                  <span
+                                    class="discount-rate font-size-14 font-weight-2 elevation-0 bg-primary-color-7"
+                                    v-if="
+                                      filterPromotionItems[+index + i].listPrice !=
+                                      filterPromotionItems[+index + i].price
+                                    "
+                                  >
+                                    {{ filterPromotionItems[+index + i].discountRate }}%
+                                  </span>
+                                </div>
+                              </div>
                             </div>
-                          </v-row>
-                        </v-card-title>
-                      </v-card>
-                    </v-hover>
+                          </v-card-title>
+                        </v-card>
+                      </v-hover>
+                    </router-link>
                   </v-col>
                 </template>
               </template>
@@ -71,9 +97,11 @@
 </template>
 
 <script lang="ts">
+import ProductService, { ProductItem } from '@/api/product.service';
 import Vue from 'vue';
 
 export default Vue.extend({
+  props: ['promotionItems'],
   data() {
     return {
       promotions: [
@@ -82,60 +110,6 @@ export default Vue.extend({
           sale: 18,
           price: '13000000',
           img: 'https://image.thanhnien.vn/1024/uploaded/nthanhluan/2020_10_14/1_foyn.jpg',
-        },
-        {
-          name: 'Product2',
-          sale: 18,
-          price: '300000',
-          img: 'https://cf.shopee.vn/file/e057297df1d99840c6ed44c936c7017f',
-        },
-        {
-          name: 'Product3',
-          sale: 18,
-          price: '450000',
-          img: 'https://cf.shopee.vn/file/1e38d6b16c9035cd9966a9551890b47b',
-        },
-        {
-          name: 'Product4',
-          sale: 30,
-          price: '17000000',
-          img: 'https://phucanhcdn.com/media/product/42432_nitro_series_an515_44_ha5.jpg',
-        },
-        {
-          name: 'Product1',
-          sale: 18,
-          price: '13000000',
-          img: 'https://image.thanhnien.vn/1024/uploaded/nthanhluan/2020_10_14/1_foyn.jpg',
-        },
-        {
-          name: 'Product2',
-          sale: 18,
-          price: '300000',
-          img: 'https://cf.shopee.vn/file/e057297df1d99840c6ed44c936c7017f',
-        },
-        {
-          name: 'Product3',
-          sale: 18,
-          price: '450000',
-          img: 'https://cf.shopee.vn/file/1e38d6b16c9035cd9966a9551890b47b',
-        },
-        {
-          name: 'Product4',
-          sale: 30,
-          price: '17000000',
-          img: 'https://phucanhcdn.com/media/product/42432_nitro_series_an515_44_ha5.jpg',
-        },
-        {
-          name: 'Product2',
-          sale: 18,
-          price: '300000',
-          img: 'https://cf.shopee.vn/file/e057297df1d99840c6ed44c936c7017f',
-        },
-        {
-          name: 'Product3',
-          sale: 18,
-          price: '450000',
-          img: 'https://cf.shopee.vn/file/1e38d6b16c9035cd9966a9551890b47b',
         },
       ],
     };
@@ -158,17 +132,22 @@ export default Vue.extend({
       return 350;
     },
     filterPromotionItems(): any[] {
-      return this.promotions.slice(
+      return this.promotionItems.slice(
         0,
-        Math.floor(this.promotions.length / this.quantityItemsInCarousel) * this.quantityItemsInCarousel
+        Math.floor(this.promotionItems.length / this.quantityItemsInCarousel) * this.quantityItemsInCarousel
       );
     },
     quantityItemsInCarousel(): number {
       if (this.$vuetify.breakpoint.xl) return 7;
       if (this.$vuetify.breakpoint.lg) return 7;
-      if (this.$vuetify.breakpoint.md) return 7;
-      if (this.$vuetify.breakpoint.sm) return 7;
+      if (this.$vuetify.breakpoint.md) return 2;
+      if (this.$vuetify.breakpoint.sm) return 3;
       return 2;
+    },
+  },
+  methods: {
+    getSlugId(item: ProductItem): string {
+      return ProductService.getSlugId(item);
     },
   },
 });
@@ -176,17 +155,26 @@ export default Vue.extend({
 
 <style lang="scss" scoped>
 .trending-promotion {
-  background: white;
+  background: transparent;
+
+  .old-price {
+    text-decoration: line-through !important;
+    text-decoration-color: #607d8b !important;
+    text-decoration-style: solid 1px !important;
+  }
 
   .discount-rate {
-    border: #ca3e29 1px solid;
-    background-color: #ca3e29;
-    color: white;
     position: absolute;
     right: 0px;
-    top: 0px;
-    z-index: 100;
-    border-radius: 0px 8px 0px 8px !important;
+    bottom: 20px;
+    z-index: 2;
+    width: 36px;
+    color: white;
+    height: 36px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    text-align: center !important;
+    border-radius: 0px 0px 0px 2px !important;
   }
 }
 </style>

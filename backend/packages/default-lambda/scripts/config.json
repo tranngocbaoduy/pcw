@@ -1,5 +1,10 @@
 {
-  "function_names": ["ProductFunction", "STSFunction"],
+  "function_names": [
+    "ProductFunction",
+    "STSFunction",
+    "OAuthFunction",
+    "MetaDataFunction"
+  ],
   "function_zip_rpath": ".aws-sam/build/",
   "layer_name": "ProductFunctionLayer",
   "layer_zip_rpath": ".aws-sam/build/ProductFunctionLayer.zip"

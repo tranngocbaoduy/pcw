@@ -16,10 +16,12 @@ export default {
           src: require('@/assets/banner/Top-Banner.png'),
         },
         {
-          src: 'https://i0.wp.com/www.androidsage.com/wp-content/uploads/2018/09/Download-iPhone-XS-XS-Max-and-XR-Official-Stock-Wallpapers-min.jpg',
+          src:
+            'https://i0.wp.com/www.androidsage.com/wp-content/uploads/2018/09/Download-iPhone-XS-XS-Max-and-XR-Official-Stock-Wallpapers-min.jpg',
         },
         {
-          src: 'https://9to5mac.com/wp-content/uploads/sites/6/2021/06/MacBook-Pro-2020-Review-unboxed.jpg?quality=82&strip=all&w=1600',
+          src:
+            'https://9to5mac.com/wp-content/uploads/sites/6/2021/06/MacBook-Pro-2020-Review-unboxed.jpg?quality=82&strip=all&w=1600',
         },
       ],
     };

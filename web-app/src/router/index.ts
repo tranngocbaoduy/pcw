@@ -1,66 +1,14 @@
-import Vue, { VueConstructor } from 'vue';
+import GoogleAuthService, { UserGoogleInfo } from '@/api/google-auth.service';
+import store from '@/store';
+import Vue from 'vue';
 import VueRouter, { RawLocation, Route, RouteConfig } from 'vue-router';
 import RouterHelper from './helper';
-import { equals } from 'ramda';
-
-// export function register(Vue: VueConstructor) {
-//   const routerPush = VueRouter.prototype.push;
-//   const routerReplace = VueRouter.prototype.push;
-
-//   const isNavigationDuplicated = (currentRoute: any, nextRoute: any) => {
-//     const { name: nextName, params: nextParams = {}, query: nextQuery = {} } = nextRoute;
-//     const { name, params, query } = currentRoute;
-
-//     return equals(nextQuery, query) && equals(nextParams, params) && equals(nextName, name);
-//   };
-
-//   VueRouter.prototype.push = async function push(location: RawLocation): Promise<Route | any> {
-//     if (!isNavigationDuplicated(this.currentRoute, location)) {
-//       return await routerPush.call(this, location);
-//     }
-//   };
-
-//   VueRouter.prototype.replace = async function replace(location: RawLocation): Promise<Route | any> {
-//     if (!isNavigationDuplicated(this.currentRoute, location)) {
-//       return await routerReplace.call(this, location);
-//     }
-//   };
-
-// }
-// register(Vue);
+import moment from 'moment-timezone';
+import SeoService from '@/api/seo.service';
+import i18n from '@/i18n';
+import CategoryService from '@/api/category.service';
 
 Vue.use(VueRouter);
-
-// const superPush = VueRouter.prototype.push;
-// VueRouter.prototype.push = async function push(loc: RawLocation): Promise<Route> {
-//   try {
-//     return await superPush.bind(this)(loc);
-//   } catch (e) {
-//     if (e?.name === 'NavigationDuplicated') {
-//       console.warn(e);
-//       console.log(e);
-//       return await superPush.bind(this)(loc);
-//     } else {
-//       throw e;
-//     }
-//   }
-// };
-
-// const superReplace = VueRouter.prototype.replace;
-// VueRouter.prototype.replace = async function replace(loc: RawLocation): Promise<Route> {
-//   try {
-//     return await superReplace.bind(this)(loc);
-//   } catch (e) {
-//     if (e?.name === 'NavigationDuplicated') {
-//       console.warn(e);
-//       return await superReplace.bind(this)(loc);
-//     } else {
-//       throw e;
-//     }
-//   }
-// };
-
-// Vue.use(VueRouter);
 
 const routes: Array<RouteConfig> = [
   {
@@ -69,14 +17,19 @@ const routes: Array<RouteConfig> = [
     children: [
       {
         path: '',
+        name: '',
+        component: () => import('@/components/pages/user/HomePage.vue').catch(RouterHelper.handleAsyncComponentError),
+      },
+      {
+        path: '/home',
         name: 'HomePage',
         component: () => import('@/components/pages/user/HomePage.vue').catch(RouterHelper.handleAsyncComponentError),
       },
       {
-        path: ':slugId',
-        name: 'ProductDetailSlugPage',
+        path: '/login',
+        name: 'LoginPage',
         component: () =>
-          import('@/components/pages/user/ProductDetailSlugPage.vue').catch(RouterHelper.handleAsyncComponentError),
+          import('@/components/pages/user/LoginAccount.vue').catch(RouterHelper.handleAsyncComponentError),
       },
       {
         path: '/category/:idCate',
@@ -85,16 +38,16 @@ const routes: Array<RouteConfig> = [
           import('@/components/pages/user/CategoryPage.vue').catch(RouterHelper.handleAsyncComponentError),
       },
       {
-        path: '/category/:idCate/product/:idProd',
-        name: 'ProductDetailPage',
-        component: () =>
-          import('@/components/pages/user/ProductDetailPage.vue').catch(RouterHelper.handleAsyncComponentError),
-      },
-      {
         path: '/compare',
         name: 'ComparasionPage',
         component: () =>
           import('@/components/pages/user/PriceComparisonPage.vue').catch(RouterHelper.handleAsyncComponentError),
+      },
+      {
+        path: ':slugId*',
+        name: 'ProductDetailSlugPage',
+        component: () =>
+          import('@/components/pages/user/ProductDetailSlugPage.vue').catch(RouterHelper.handleAsyncComponentError),
       },
     ],
   },
@@ -103,6 +56,7 @@ const routes: Array<RouteConfig> = [
     name: 'sys',
     component: () => import('@/views/SysHome.vue').catch(RouterHelper.handleAsyncComponentError),
   },
+
   {
     path: '/about',
     name: 'About',
@@ -114,22 +68,50 @@ const routes: Array<RouteConfig> = [
   },
 ];
 
+function logout() {
+  localStorage.setItem('google-auth', '');
+  localStorage.removeItem('google-auth');
+  store.dispatch('logout');
+}
 const router = new VueRouter({
   mode: 'history',
   base: process.env.BASE_URL,
   routes,
 });
 
-export default router;
 router.beforeEach((to, from, next) => {
-  console.log(to, from);
+  console.log(to);
   new Promise<RawLocation | undefined>((resolve) => {
-    resolve();
+    if (!store.getters.isAuthenticated) {
+      let userGoogleInfo: any = localStorage.getItem('google-auth');
+      if (userGoogleInfo) {
+        userGoogleInfo = JSON.parse(userGoogleInfo);
+        if (userGoogleInfo && userGoogleInfo.id) {
+          GoogleAuthService.getUserInfo(userGoogleInfo.id).then(async (data: UserGoogleInfo) => {
+            if (-1 * moment().diff(data.expriedAt, 'minute') < 0) {
+              logout();
+            } else {
+              store.dispatch('login', { data });
+              console.log('[FIRST INITIALIZED] =>', data);
+            }
+          });
+        } else {
+          logout();
+        }
+      }
+    } else {
+      console.log('[INITIALIZED] =>', store.getters.userGoogleInfo);
+    }
+    resolve(undefined);
   }).then((location) => {
-    console.log('location', location);
+    if (!to.fullPath.includes('/login') && to.fullPath.includes('%2F')) {
+      next(decodeURIComponent(to.fullPath));
+    }
     if (location) next(location);
     else if (to.path === from.path && to.fullPath.length < from.fullPath.length) {
       // Do nothing
     } else next();
   });
 });
+
+export default router;

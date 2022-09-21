@@ -92,26 +92,9 @@ try:
 except:
     pass
 
-print('x')
 version = cur_version + '.' + (datetime.datetime.utcnow().replace(microsecond=0).isoformat() + 'Z').replace(':', '_')
 
-if not args['skip_build']:
-#     AWSHelper.run_command(' '.join([
-#         sys.executable,
-#         root_dir + "/scripts/update_webapp_env.py",
-#         args['env_name'],
-#         '--env=production',
-#         '--profile',
-#         args['profile']
-#     ]))
-    
-#     # Run generate personal agreement pdf script
-#     # personal_agreement_script_filename = os.path.join(root_dir, 'scripts/js/generate_personal_agreement_pdf.js')
-#     # AWSHelper.run_command(' '.join([
-#     #     "node",
-#     #     personal_agreement_script_filename,
-#     #     "--env_name={}".format(args['env_name'])
-#     # ]))
+if not args['skip_build']: 
 
     AWSHelper.run_command(' '.join([
         "npm",
@@ -120,15 +103,7 @@ if not args['skip_build']:
         "--prefix",
         webapp_dir
     ]))
-
-#     with open(maintenance_html_path, encoding='utf-8') as f:
-#         s = f.read()
-#         s = s.replace("VUE_APP_API_BASE_URL", rest_api_base_url)
-#     with open(maintenance_html_path, "w", encoding='utf-8') as f:
-#         f.write(s)
-
-#     shutil.copy2(dist_dir + '/file/landing_page.html', dist_dir + '/lp')
-#     shutil.copy2(dist_dir + '/index.html', dist_dir + '/sys-admin')
+ 
 
 
 def upload_webapp():
@@ -186,9 +161,7 @@ except:
 
 if not args['skip_upload'] and is_bucket_exists:
     upload_webapp()
-
-# waf_env_name = env_type if not args['use_env_name_waf'] else args['env_name']
-# waf_stack_name = '{}-{}-waf-cloudfront'.format(args['project_name'], waf_env_name)
+ 
 web_acl_arn = ''
 try:
     waf_stack_outputs = session.client('cloudformation', region_name='ap-southeast-1').describe_stacks(StackName=waf_stack_name)['Stacks'][0]['Outputs']
@@ -206,9 +179,7 @@ AWSHelper.run_command(' '.join([
     "EnvName={}".format(args['env_name']),
     "EnvType={}".format(env_type),
     "WebappBucketName={}".format(webapp_bucket_name),
-    "WebACLArn={}".format(web_acl_arn),
-    # "BasicAuthFunctionVersionArn={}".format(basic_auth_version_arn),
-    # "MaintenanceState={}".format('ENABLED' if args['maintenance'] else 'DISABLED'),
+    "WebACLArn={}".format(web_acl_arn), 
     "--tags",
     "env={}".format(args['env_name']),
     "--profile={}".format(args['profile'])

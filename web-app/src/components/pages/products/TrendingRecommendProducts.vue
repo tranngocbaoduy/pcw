@@ -16,15 +16,11 @@
             </div>
           </v-card-title>
         </div>
+
+        <!-- :style="$vuetify.breakpoint.mdAndUp ? ' flex: 1 0 18%;' : ''" -->
         <div v-if="filterProductItems && filterProductItems.length != 0" class="mt-0">
           <v-row no-gutters>
-            <v-col
-              :key="item['SK']"
-              v-for="item in filterProductItems"
-              :style="$vuetify.breakpoint.mdAndUp ? ' flex: 1 0 18%;' : ''"
-              cols="6"
-              sm="3"
-            >
+            <v-col :key="item['SK']" v-for="item in filterProductItems" cols="6" md="2" xl="2" lg="2" sm="3">
               <router-link class="custom-link" :to="`${getSlugId(item)}`">
                 <Product :item="item" />
               </router-link>
@@ -53,19 +49,20 @@ export default Vue.extend({
   },
   data: () => ({
     noItemImage: require('@/assets/banner/no-product.png'),
-    limit: 10,
-    quantity: 10,
+    limit: 12,
+    quantity: 12,
     page: 1,
     productItems: [] as ProductItem[],
+    randomCategory: {} as CategoryItem,
     randomPathChangeTo: '',
     isLoading: true,
   }),
-  async created() {
+  async created() {},
+  async mounted() {
     this.page = 1;
     await this.initialize();
     this.isLoading = false;
   },
-  mounted() {},
   computed: {
     categoryItems(): CategoryItem[] {
       return this.$store.getters.categoryItems || [];
@@ -74,8 +71,8 @@ export default Vue.extend({
       return this.$store.getters.isMobile;
     },
     filterProductItems(): ProductItem[] {
-      const number = parseInt((this.productItems.length / 5).toString());
-      return this.productItems.slice(0, number * 5);
+      const number = parseInt((this.productItems.length / 6).toString());
+      return this.productItems.slice(0, number * 6);
     },
   },
 
@@ -88,9 +85,10 @@ export default Vue.extend({
         }
       }
     },
-    categoryItems() {
-      const randomItem = this.categoryItems[Math.floor(Math.random() * this.categoryItems.length)];
-      this.randomPathChangeTo = `/category/${randomItem.SK}`;
+    async categoryItems() {
+      this.randomCategory = this.categoryItems[Math.floor(Math.random() * this.categoryItems.length)];
+      this.randomPathChangeTo = `/category/${this.randomCategory.SK}`;
+      await this.loadProductItemByTarget();
     },
   },
   methods: {
@@ -98,31 +96,32 @@ export default Vue.extend({
       window.scrollTo({ top: 0, left: 0 });
       this.page = parseInt((this as any).$route.query.page || 1);
       this.$store.commit('setState', { searchString: this.$route.query.name });
-      await this.loadProductItemByTarget();
+      console.log('LOADING', this.productItems);
+      if (this.productItems.length == 0) {
+        this.randomCategory = this.categoryItems[Math.floor(Math.random() * this.categoryItems.length)];
+        await this.loadProductItemByTarget();
+      }
     },
     handleChangeToCategory() {
       if (this.randomPathChangeTo) this.$router.push(this.randomPathChangeTo);
     },
     async loadProductItemByTarget() {
-      this.productItems = await ProductService.queryItemByTarget({
-        category: 'TELEVISION',
-        limit: this.limit,
-        page: this.page,
-        agencyItems: [],
-        brandItems: [],
-        minPrice: 0,
-        maxPrice: 1000000000,
-        isRep: false,
-      });
-      console.log('this.productItems', this.productItems);
-    },
-
-    getSlugId(item: ProductItem): string {
-      if (item.url) {
-        const obj = new URL(item.url);
-        return obj.pathname;
+      if (this.randomCategory) {
+        this.productItems = await ProductService.queryItemByTarget({
+          category: this.randomCategory.SK,
+          limit: this.isMobile ? 6 : this.limit,
+          page: this.page,
+          agencyItems: [],
+          brandItems: [],
+          minPrice: 0,
+          maxPrice: 1000000000,
+          isRep: true,
+        });
+        console.log('this.productItems', this.productItems);
       }
-      return '';
+    },
+    getSlugId(item: ProductItem): string {
+      return ProductService.getSlugId(item);
     },
     getIdProduct(item: ProductItem) {
       if (item['SK'].includes('REP')) return item['SK'].split('#').join('_');

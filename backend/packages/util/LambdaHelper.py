@@ -28,9 +28,8 @@ class LambdaHelper(object):
         return config 
 
     def copy_function_to(self,build_dir_func):
-        shutil.copytree(os.path.join(self.root_dir, 'function'), 
-                build_dir_func, ignore=shutil.ignore_patterns('.aws-sam', 'node_modules'))
-
+        shutil.copytree(os.path.join(self.root_dir, 'function'), build_dir_func)
+        # ignore=shutil.ignore_patterns('.aws-sam', 'node_modules')
     def use_env(self, env):  
         env = env if env else self.env_name
         src_file = self.root_dir + '/function/.env.{}.local'.format(env)
@@ -48,9 +47,9 @@ class LambdaHelper(object):
         LambdaHelper.run_command(command)
 
     def make_archive(self, build_dir_func): 
-        for function_name in self.config['function_names']:
+        for function_name in self.config['function_names']: 
             zip_dir_upload = os.path.join(build_dir_func, function_name)
-            zip_dir_local = os.path.join(build_dir_func, self.get_local_name_function(function_name)) 
+            zip_dir_local = os.path.join(build_dir_func, function_name)  
             if (os.path.isdir(zip_dir_local)):  
                 shutil.make_archive(zip_dir_upload, 'zip', zip_dir_local)
 
@@ -64,7 +63,7 @@ class LambdaHelper(object):
                 "s3",
                 "cp",
                 os.path.join(self.root_dir, self.config['function_zip_rpath'] + function_name + '.zip'),
-                "s3://{}-{}-source-bucket/packages/lastest/{}".format(
+                "s3://{}-{}-source-bucket/packages/latest/{}".format(
                     self.project_name, self.env_name, os.path.basename(self.config['function_zip_rpath'] + function_name + '.zip')),
                 "--profile={}".format(self.profile)
             ])
@@ -81,7 +80,7 @@ class LambdaHelper(object):
                     self.project_name, self.env_name, function_name),
                 "--s3-bucket={}-{}-source-bucket".format(
                     self.project_name, self.env_name),
-                "--s3-key=packages/lastest/{}".format(os.path.basename(self.config['function_zip_rpath'] + function_name + '.zip')),
+                "--s3-key=packages/latest/{}".format(os.path.basename(self.config['function_zip_rpath'] + function_name + '.zip')),
                 "--profile={}".format(self.profile)
             ]))
         LambdaHelper.run_parallel(commands)

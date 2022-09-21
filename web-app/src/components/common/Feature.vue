@@ -30,7 +30,8 @@ export default Vue.extend({
             { subtitle: 'Laptop', src: 'https://maytinhanphat.com.vn/img/image/m/workstation-vs-desktop.jpg', flex: 6 },
             {
               subtitle: 'Video Games',
-              src: 'https://www.rollingstone.com/wp-content/uploads/2021/01/AdobeStock_274383137.jpeg?resize=1800,1200&w=450',
+              src:
+                'https://www.rollingstone.com/wp-content/uploads/2021/01/AdobeStock_274383137.jpeg?resize=1800,1200&w=450',
               flex: 6,
             },
             {
@@ -46,7 +47,8 @@ export default Vue.extend({
           Items: [
             {
               subtitle: '',
-              src: 'https://www.hoteljob.vn/uploads/images/19-01-23-14/May-danh-trung-va-5-dieu-dau-bep-banh-can-biet-02.jpg',
+              src:
+                'https://www.hoteljob.vn/uploads/images/19-01-23-14/May-danh-trung-va-5-dieu-dau-bep-banh-can-biet-02.jpg',
               flex: 12,
             },
           ],
@@ -79,7 +81,8 @@ export default Vue.extend({
           Items: [
             {
               subtitle: '',
-              src: 'https://image.freepik.com/free-photo/digital-tablet-screen-with-smart-home-controller-wooden-table_53876-96317.jpg',
+              src:
+                'https://image.freepik.com/free-photo/digital-tablet-screen-with-smart-home-controller-wooden-table_53876-96317.jpg',
               flex: 12,
             },
           ],
@@ -115,5 +118,4 @@ export default Vue.extend({
 });
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>
