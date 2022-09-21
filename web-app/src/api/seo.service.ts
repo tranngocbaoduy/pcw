@@ -6,7 +6,7 @@ export default class SeoService {
       | 'title'
       | 'description'
       | 'keywords'
-      | 'robots'
+      // | 'robots'
       | 'viewport'
       | 'og:type'
       | 'og:site_name'
@@ -21,7 +21,7 @@ export default class SeoService {
       title: 'PCW - Trang web so sánh giá hàng đầu',
       description:
         'Tìm ra giá phù hợp cho tất cả sản phẩm mà bạn tìm kiếm - Hỗ trợ so sánh trên nhiều nền tảng bán hàng online',
-      keywords: 'pcw, x-pcw, store, price compare, so sánh',
+      keywords: 'pcw, so sánh giá, x-pcw, store, price compare, so sánh',
       robots: 'index, follow',
       viewport: 'width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no',
       'og:type': 'website',
@@ -50,7 +50,7 @@ export default class SeoService {
           name: 'description',
           content: SeoService.getSeoInfoCommon('description'),
         },
-        { vmid: 'robots', property: 'robots', name: 'robots', content: SeoService.getSeoInfoCommon('robots') },
+        // { vmid: 'robots', property: 'robots', name: 'robots', content: SeoService.getSeoInfoCommon('robots') },
         { vmid: 'viewport', property: 'viewport', name: 'viewport', content: SeoService.getSeoInfoCommon('viewport') },
         { vmid: 'og:type', property: 'og:type', name: 'og:type', content: SeoService.getSeoInfoCommon('og:type') },
         {

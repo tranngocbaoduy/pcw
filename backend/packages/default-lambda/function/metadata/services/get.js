@@ -66,8 +66,8 @@ async function getMetaDataProduct(event) {
       return {
         title: `PCW - ${upperName}`,
         description: `${formatPrice(result.price)} - ${upperName}`,
-        keywords: 'pcw, x-pcw, price compare, store, ' + upperName.split(' ').join(', '),
-        robots: 'index, follow',
+        keywords: 'pcw, so sánh giá, x-pcw, price compare, store, ' + upperName.split(' ').join(', '),
+        // robots: 'index, follow',
         viewport: 'width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no',
         'og:type': 'website',
         'og:site_name': BASE_HOST,
@@ -98,8 +98,8 @@ async function getMetaDataCategory(event) {
       return {
         title: `PCW - ${result.ViNAME}`,
         description: `Hàng ngàn mẫu mã ${result.ViNAME} khác nhau`,
-        keywords: 'pcw, x-pcw, store, price compare, so sánh',
-        robots: 'index, follow',
+        keywords: 'pcw, so sánh giá, x-pcw, store, price compare, so sánh',
+        // robots: 'index, follow',
         viewport: 'width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no',
         'og:type': 'website',
         'og:site_name': BASE_HOST,
@@ -120,8 +120,8 @@ function getMetaDataDefault() {
     title: 'PCW - Trang web so sánh giá hàng đầu',
     description:
       'Tìm ra giá phù hợp cho tất cả sản phẩm mà bạn tìm kiếm - Hỗ trợ so sánh trên nhiều nền tảng bán hàng online',
-    keywords: 'pcw, x-pcw, store, price compare, so sánh',
-    robots: 'index, follow',
+    keywords: 'pcw, so sánh giá, x-pcw, store, price compare, so sánh',
+    // robots: 'index, follow',
     viewport: 'width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no',
     'og:type': 'website',
     'og:site_name': BASE_HOST,

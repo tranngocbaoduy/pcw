@@ -155,7 +155,6 @@ exports.lambdaHandler = (event, context, callback) => {
     const { request, config } = event.Records[0].cf;
     const BASE_URL = 'https://x-pcw.store'
     const metaUrl = isGetMetaData(request);
-    logger.info('[LOG] =>', { event, context })
     console.log('[START] => ', request.uri)
     if (metaUrl != '') {
         fetchMetaData(metaUrl, (isOk, metaTags, metaHeaders) => {
