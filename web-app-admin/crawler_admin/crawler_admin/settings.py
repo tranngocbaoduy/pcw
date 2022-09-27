@@ -10,9 +10,12 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
-from pathlib import Path
 import os
 import sys
+from dotenv import load_dotenv
+from pathlib import Path
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,14 +24,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
+# SECURITY WARNING: keep the secret key used in production secret! 
 SECRET_KEY = os.getenv('APP_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('APP_DEBUG')
 
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '[::1]']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -58,8 +61,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware'
 ]
 
-ROOT_URLCONF = 'crawler_admin.urls'
-
+ROOT_URLCONF = 'crawler_admin.urls' 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -87,22 +89,33 @@ WSGI_APPLICATION = 'crawler_admin.wsgi.application'
 #         'ENGINE': 'django.db.backends.sqlite3',
 #         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
-# }
+
 
 DATABASES = {
     'default': {
-        'ENGINE': 'djongo',
+        'ENGINE': 'django.db.backends.{}'.format(os.getenv('DATABASE_DRIVER')),
+        'HOST': os.getenv('DATABASE_HOST'),
+        'PORT': os.getenv('DATABASE_PORT'),
         'NAME': os.getenv('DATABASE_NAME'),
-        'CLIENT': {
-            'host': '{}://{}:{}/{}?directConnection=true'.format(os.getenv('DATABASE_DRIVER'), os.getenv('DATABASE_DRIVER'), os.getenv('DATABASE_PORT'), os.getenv('DATABASE_NAME')),
-            # 'username': os.getenv('DATABASE_USER'),
-            # 'password': os.getenv('DATABASE_PASSWORD'),
-            # 'authSource': 'admin',
-            # 'authMechanism': 'SCRAM-SHA-1',
-        }
+        'USER': os.getenv('DATABASE_USER'),
+        'PASSWORD': os.getenv('DATABASE_PASSWORD'),
     }
-}
-print('DATABASES', DATABASES)
+} 
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'djongo',
+#         'NAME': os.getenv('DATABASE_NAME'),
+#         'CLIENT': {
+#             'host': '{}://{}:{}/{}?directConnection=true'.format(os.getenv('DATABASE_DRIVER'), os.getenv('DATABASE_HOST'), os.getenv('DATABASE_PORT'), os.getenv('DATABASE_NAME')),
+#             # 'username': os.getenv('DATABASE_USER'),
+#             # 'password': os.getenv('DATABASE_PASSWORD'),
+#             # 'authSource': 'admin',
+#             # 'authMechanism': 'SCRAM-SHA-1',
+#         }
+#     }
+# }
+# print('DATABASES', DATABASES)
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators

@@ -1,0 +1,6 @@
+laptop
+dell
+acer
+msi
+lenovo
+macbook

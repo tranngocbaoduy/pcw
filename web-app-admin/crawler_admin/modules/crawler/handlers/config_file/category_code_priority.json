@@ -1,0 +1,106 @@
+{
+  "accessory": {
+    "code": "ACCESSORY",
+    "priority": 20
+  },
+  "bumper": {
+    "code": "BUMPER",
+    "priority": 12
+  },
+  "camera": {
+    "code": "CAMERA",
+    "priority": 9
+  },
+  "case": {
+    "code": "CASE",
+    "priority": 0
+  },
+  "charge": {
+    "code": "CHARGE",
+    "priority": 0
+  },
+  "chip": {
+    "code": "CHIP",
+    "priority": 40
+  },
+  "watch": {
+    "code": "WATCH",
+    "priority": 11
+  },
+  "ear_phone": {
+    "code": "EARPHONE",
+    "priority": 12
+  },
+  "fridge_accessory": {
+    "code": "FRIDGE_ACCESSORY",
+    "priority": 6
+  },
+  "fridge": {
+    "code": "FRIDGE",
+    "priority": 4
+  },
+  "aircondition": {
+    "code": "AIRCONDITION",
+    "priority": 4
+  },
+  "laptop_accessory": {
+    "code": "LAPTOP_ACCESSORY",
+    "priority": 15
+  },
+  "laptop": {
+    "code": "LAPTOP",
+    "priority": 14
+  },
+  "light": {
+    "code": "LIGHT",
+    "priority": 0
+  },
+  "lock": {
+    "code": "LOCK",
+    "priority": 0
+  },
+  "monitor": {
+    "code": "MONITOR",
+    "priority": 0
+  },
+  "motor": {
+    "code": "MOTOR",
+    "priority": 11
+  },
+  "phone": {
+    "code": "PHONE",
+    "priority": 10
+  },
+  "projector": {
+    "code": "PROJECTOR",
+    "priority": 0
+  },
+  "software": {
+    "code": "SOFTWARE",
+    "priority": 0
+  },
+  "tablet": {
+    "code": "TABLET",
+    "priority": 0
+  },
+  "television": {
+    "code": "TELEVISION",
+    "priority": 12
+  },
+  "television_accessory": {
+    "code": "TELEVISION_ACCESSORY",
+    "priority": 13
+  },
+  "usb": {
+    "code": "USB",
+    "priority": 0
+  },
+  "washing": {
+    "code": "WASHING",
+    "priority": 4
+  },
+  "noise": {
+    "code": "NOISE",
+    "priority": 0
+  }
+}

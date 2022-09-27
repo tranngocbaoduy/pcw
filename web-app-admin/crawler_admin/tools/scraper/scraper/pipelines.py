@@ -6,16 +6,17 @@
 
 # useful for handling different item types with a single interface
 import scrapy
+import requests
+import json
+
 from bs4 import BeautifulSoup
 from django.utils import timezone
 from itemadapter import ItemAdapter
 from scrapy.exceptions import DropItem
 from dateutil import parser
-import requests
 from validators.url import url
-
-from modules.crawler.models import Item, News
-
+from modules.crawler.models import Item, News, RawProduct
+from tools.scraper.scraper.utils import CrawlingHelper
 
 class ScraperPipeline:
     def extract_text_item(self, item, scraper):
@@ -53,16 +54,19 @@ class ScraperPipeline:
                                          fuzzy=True),
             'url': item['url']
         }
-        return output
+        return output 
 
-    def process_item(self, item, spider):
-        news = self.extract_text_item(item, spider.spider.scraper)
-        news, is_created = News.objects.get_or_create(**news)
-        if spider.spider.category not in news.categories.all():
-            news.categories.add(spider.spider.category)
+    def convert_raw_product_db(self, item):
+        return {
+            "url": item.get('url'),
+            "base_encoded_url": CrawlingHelper.urlsafre_encode(item.get('url')),
+            "data": item,
+        }
 
-        newsItem, is_created = Item.objects.get_or_create(**item)
-        if is_created:
-            spider.spider.spider.item_set.add(newsItem)
+    def process_item(self, item, spider): 
+        product = self.convert_raw_product_db(item)
+        is_exist = True if len(RawProduct.objects.filter(base_encoded_url=product['base_encoded_url'])) != 0 else False
+        if not is_exist:
+            product, is_created = RawProduct.objects.get_or_create(**product)
 
-        return item
+        return product

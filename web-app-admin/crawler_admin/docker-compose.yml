@@ -1,18 +1,26 @@
 services:
-  mongodb:
-    image: mongo:latest
-    restart: always 
-    container_name: "mongodb"
-    ports:
-      - ${DATABASE_PORT}:${DATABASE_PORT}
-    volumes: 
-      - ./data-mongodb:/data/db
+  # mongodb:
+  #   image: mongo:latest
+  #   restart: always 
+  #   container_name: "mongodb"
+  #   ports:
+  #     - ${DATABASE_PORT}:${DATABASE_PORT}
+  #   volumes: 
+  #     - ./data-mongodb:/data/db
+  #   environment:
+  #     - DATABASE_USER=${DATABASE_USER}
+  #     - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+  #     - DATABASE_NAME=${DATABASE_NAME} 
+  #   env_file:
+  #     - ./.env 
+  db:
+    image: postgres
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
     environment:
-      - DATABASE_USER=${DATABASE_USER}
-      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
-      - DATABASE_NAME=${DATABASE_NAME} 
-    env_file:
-      - ./.env 
+      - POSTGRES_DB=${DATABASE_NAME}
+      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
     # command: mongod --smallfiles --logpath=/dev/null # --quiet
 
   web:

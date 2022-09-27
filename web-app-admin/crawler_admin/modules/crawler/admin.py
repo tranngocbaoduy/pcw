@@ -4,33 +4,18 @@ from import_export.admin import ImportExportModelAdmin
 from mptt.admin import DraggableMPTTAdmin
 
 from modules.crawler.apps import scheduler
-from modules.crawler.forms import ParserInlineFormSet
-from modules.crawler.models import Spider, Scraper, ScraperSpider, Category, Parser, Item, News
+from modules.crawler.models import Spider, Scraper, ScraperSpider, Category, Parser, Item, News, RawProduct, Product, Brand, Shop, GroupProduct
 from import_export import resources
 
 
-# Register your models here.
+from modules.crawler.filters import FilterByCategory, FilterByDomain, FilterByAgency
+from modules.crawler.tabular_in_lines import ParserTabularInline, ProductTabularInline, ScraperSpiderTabularInline
 
-class ItemResource(resources.ModelResource):
-    class Meta:
-        model = Item
-
-
-class ParserTabularInline(admin.TabularInline):
-    model = Parser
-    formset = ParserInlineFormSet
-    extra = 0
-
-
-class ItemTabularInline(admin.TabularInline):
-    model = Item
-    readonly_fields = [f.name for f in model._meta.fields]
-    fields = ['url']
-
+# Register your models here. 
 
 @admin.register(Spider)
 class SpiderAdmin(admin.ModelAdmin):
-    list_display = ['name', 'url', 'total_items']
+    list_display = ['name', 'domain', 'url', 'total_items']
     inlines = (
         ParserTabularInline,
     )
@@ -40,12 +25,6 @@ class SpiderAdmin(admin.ModelAdmin):
 
     total_items.short_description = 'Total Items'
 
-
-class ScraperSpiderTabularInline(admin.TabularInline):
-    model = ScraperSpider
-    extra = 0
-
-
 @admin.register(Scraper)
 class ScraperAdmin(admin.ModelAdmin):
     inlines = (
@@ -53,7 +32,7 @@ class ScraperAdmin(admin.ModelAdmin):
     )
 
     actions = ['setup_crawler', 'stop_crawler']
-    list_display = ['name', 'scheduler_type', 'start_time', 'start_date', 'is_active']
+    list_display = ['name', 'scraper_type', 'scheduler_type', 'start_time', 'start_date', 'is_active']
     readonly_fields = ('job_id',)
 
     @admin.action(description='Start crawling now')
@@ -87,11 +66,52 @@ class ScraperAdmin(admin.ModelAdmin):
             len(queryset),
         ) % len(queryset), messages.SUCCESS)
 
+@admin.register(RawProduct)
+class RawProductAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    list_display = ['url', 'created_at', 'updated_at']  
 
-@admin.register(News)
-class NewsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ['title', 'published_at', 'url']
+    actions = ['extract_info']
+    @admin.action(description='Extract Infomation')
+    def extract_info(self, request, queryset):
+        for query in queryset:
+            query.extract_data_from_raw()
 
+        self.message_user(request, ngettext(
+            '%d was successfully running.',
+            '%d were successfully running.',
+            len(queryset),
+        ) % len(queryset), messages.SUCCESS)
+    
+@admin.register(Product)
+class ProductAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    list_display = ['name', 'domain', 'category', 'price','created_at'] 
+    list_filter = (FilterByCategory, FilterByAgency, )
+     
+admin.site.register(Brand)
+admin.site.register(Shop) 
 
-admin.site.register(Item)
-admin.site.register(Category, DraggableMPTTAdmin)
+@admin.register(Category)
+class CategoryAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    list_display = ['name', 'created_at', 'updated_at']
+
+    actions = ['group_product_by_code']
+    @admin.action(description='Group Product By Code')
+    def group_product_by_code(self, request, queryset):
+        for query in queryset:
+            query.group_product_by_code()
+
+        self.message_user(request, ngettext(
+            '%d was successfully running.',
+            '%d were successfully running.',
+            len(queryset),
+        ) % len(queryset), messages.SUCCESS)
+
+@admin.register(GroupProduct)
+class GroupProductAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    list_display = ['name', 'quantity', 'category', 'agencies']
+    list_filter = (FilterByCategory, FilterByAgency)
+    inlines = (
+        ProductTabularInline,
+    )
+    
+    
