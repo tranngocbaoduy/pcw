@@ -15,7 +15,7 @@ from itemadapter import ItemAdapter
 from scrapy.exceptions import DropItem
 from dateutil import parser
 from validators.url import url
-from modules.crawler.models import Item, News, RawProduct
+from modules.crawler.models import RawProduct
 from tools.scraper.scraper.utils import CrawlingHelper
 
 class ScraperPipeline:
@@ -60,6 +60,8 @@ class ScraperPipeline:
         return {
             "url": item.get('url'),
             "base_encoded_url": CrawlingHelper.urlsafre_encode(item.get('url')),
+            "agency": item.get('agency'),
+            "name": item.get('name'),
             "data": item,
         }
 

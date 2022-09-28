@@ -11,7 +11,7 @@ class ParserTabularInline(admin.TabularInline):
 class ProductTabularInline(admin.TabularInline):
     model = Product 
     readonly_fields = [f.name for f in model._meta.fields]
-    fields = ['clean_name', 'price', 'list_price']
+    fields = ['id', 'clean_name', 'agency', 'price', 'list_price']
     extra = 0
  
 class ScraperSpiderTabularInline(admin.TabularInline):

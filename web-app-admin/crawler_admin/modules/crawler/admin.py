@@ -4,26 +4,21 @@ from import_export.admin import ImportExportModelAdmin
 from mptt.admin import DraggableMPTTAdmin
 
 from modules.crawler.apps import scheduler
-from modules.crawler.models import Spider, Scraper, ScraperSpider, Category, Parser, Item, News, RawProduct, Product, Brand, Shop, GroupProduct
+from modules.crawler.models import Spider, Scraper, ScraperSpider, Category, Parser, RawProduct, Product, Brand, Shop, GroupProduct
 from import_export import resources
 
 
-from modules.crawler.filters import FilterByCategory, FilterByDomain, FilterByAgency
+from modules.crawler.filters import FilterByCategory, FilterByDomain, FilterByAgency, FilterByAgencyUrl
 from modules.crawler.tabular_in_lines import ParserTabularInline, ProductTabularInline, ScraperSpiderTabularInline
 
 # Register your models here. 
 
 @admin.register(Spider)
 class SpiderAdmin(admin.ModelAdmin):
-    list_display = ['name', 'domain', 'url', 'total_items']
+    list_display = ['id', 'name', 'domain', 'url', 'updated_at']
     inlines = (
         ParserTabularInline,
     )
-
-    def total_items(self, obj):
-        return obj.item_set.count()
-
-    total_items.short_description = 'Total Items'
 
 @admin.register(Scraper)
 class ScraperAdmin(admin.ModelAdmin):
@@ -32,7 +27,7 @@ class ScraperAdmin(admin.ModelAdmin):
     )
 
     actions = ['setup_crawler', 'stop_crawler']
-    list_display = ['name', 'scraper_type', 'scheduler_type', 'start_time', 'start_date', 'is_active']
+    list_display = ['id', 'name', 'scraper_type', 'scheduler_type', 'start_time', 'start_date', 'is_active']
     readonly_fields = ('job_id',)
 
     @admin.action(description='Start crawling now')
@@ -68,9 +63,11 @@ class ScraperAdmin(admin.ModelAdmin):
 
 @admin.register(RawProduct)
 class RawProductAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ['url', 'created_at', 'updated_at']  
+    list_display = ['id', 'name', 'agency', 'updated_at']  
+    list_filter = (FilterByAgency, )
 
     actions = ['extract_info']
+
     @admin.action(description='Extract Infomation')
     def extract_info(self, request, queryset):
         for query in queryset:
@@ -81,10 +78,12 @@ class RawProductAdmin(ImportExportModelAdmin, admin.ModelAdmin):
             '%d were successfully running.',
             len(queryset),
         ) % len(queryset), messages.SUCCESS)
+
+        
     
 @admin.register(Product)
 class ProductAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ['name', 'domain', 'category', 'price','created_at'] 
+    list_display = ['id', 'name', 'agency', 'category', 'price', 'updated_at'] 
     list_filter = (FilterByCategory, FilterByAgency, )
      
 admin.site.register(Brand)
@@ -92,7 +91,7 @@ admin.site.register(Shop)
 
 @admin.register(Category)
 class CategoryAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ['name', 'created_at', 'updated_at']
+    list_display = ['id', 'name', 'updated_at']
 
     actions = ['group_product_by_code']
     @admin.action(description='Group Product By Code')
@@ -108,10 +107,15 @@ class CategoryAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
 @admin.register(GroupProduct)
 class GroupProductAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ['name', 'quantity', 'category', 'agencies']
+    list_display = ['id', 'name', 'category', 'agencies', 'total_items']
     list_filter = (FilterByCategory, FilterByAgency)
     inlines = (
         ProductTabularInline,
     )
+
+    def total_items(self, obj): 
+        return len(obj.product_ids)
+
+    total_items.short_description = 'Total Items'
     
     

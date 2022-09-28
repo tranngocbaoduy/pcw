@@ -319,7 +319,7 @@
         "type": "http",
         "curl": "http://194.163.154.9:3128",
         "ipPort": "194.163.154.9:3128",
-        "count_use": 6433
+        "count_use": 6423
     },
     {
         "supportsHttps": true,

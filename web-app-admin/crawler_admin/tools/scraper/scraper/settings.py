@@ -6,6 +6,7 @@ import sys
 # sys.path.append(os.path.normpath(root_dir))  
 
 import django
+from tools.scraper.scraper.utils import CrawlingHelper
 
 # DJANGO INTEGRATION
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".."))
@@ -28,6 +29,7 @@ BOT_NAME = 'scraper'
 SPIDER_MODULES = ['tools.scraper.scraper.spiders']
 NEWSPIDER_MODULE = 'tools.scraper.scraper.spiders'
 
+LOG_FILE = os.path.join('tools/scraper/scraper/log','{}.log'.format(CrawlingHelper.get_name_by_time())) 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'scraper (+http://www.yourdomain.com)'
@@ -108,5 +110,4 @@ ITEM_PIPELINES = {
 #
 # IMAGES_URLS_FIELD = 'image_link'
 # IMAGES_RESULT_FIELD = 'image'
-
-LOG_FILE = 'mylog.log'
+ 

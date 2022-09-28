@@ -15,17 +15,21 @@ from scrapy.settings import Settings
 from scrapy.crawler import CrawlerRunner
 from scrapy.utils.log import configure_logging
 
-from modules.crawler.apps import scheduler
-from tools.scraper.scraper.spiders.news import NewsSpider
-from tools.scraper.scraper.spiders.tiki import TikiSpider
+from modules.crawler.apps import scheduler 
+from tools.scraper.scraper.spiders.api import ApiSpider
+from tools.scraper.scraper.spiders.html import HtmlSpider
 from modules.crawler.handlers.extractor import ExtractorService
 
 # Create your models here.
 class Spider(models.Model):
     name = models.CharField(max_length=256)
     url = models.CharField('URL', max_length=512)
-    domain = models.CharField('domain', default='',max_length=256)
-    is_multiple = models.BooleanField('Multiple')
+    is_using_proxy = models.BooleanField('Using Proxy', default=False)
+    limit_per_request = models.IntegerField('Limit per page', default=30)
+    start_page = models.IntegerField('Start page',default=0)
+    end_page = models.IntegerField('End page', default=100)
+    domain = models.CharField('Domain', default='',max_length=256)
+    agency = models.CharField('Agency', default='',max_length=256) 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -55,8 +59,7 @@ class Category(MPTTModel):
         for name, quantity in stat.items():
             info_group_product = {
                 "category": self,
-                "name": name,
-                "quantity": quantity,
+                "name": name, 
             }
             info_group_product, created = GroupProduct.objects.get_or_create(**info_group_product)
             if not created:
@@ -80,21 +83,24 @@ class Category(MPTTModel):
 class Brand(models.Model):
     name = models.CharField(max_length=50)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return '{} - {}'.format(self.name, self.category.name)
+        return '{} - {}'.format(self.category.name, self.name)
 
 class Shop(models.Model):
     name = models.CharField(max_length=256, blank=True)
     address = models.CharField(max_length=256, blank=True)
     agency = models.CharField(max_length=256, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return '{} - {}'.format(self.name, self.agency)
 
 class GroupProduct(models.Model):
-    name = models.CharField(max_length=50, blank=True)
-    quantity = models.CharField(max_length=50, blank=True) 
+    name = models.CharField(max_length=50, blank=True) 
     category = models.ForeignKey(Category, on_delete=models.CASCADE) 
     agencies = ArrayField(
         ArrayField(
@@ -114,9 +120,11 @@ class GroupProduct(models.Model):
         size=1000,
         default=list
     )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
  
     def __str__(self):
-        return '{} - {}'.format(self.name, str(self.quantity))
+        return '{} - {}'.format(self.name, str(len(self.product_ids)))
 
 class Product(models.Model): 
     name = models.CharField('Name', max_length=256)
@@ -126,9 +134,7 @@ class Product(models.Model):
     domain = models.CharField('Domain', max_length=256)
     agency = models.CharField('Agency', max_length=256)
     product_code = models.CharField('Code', max_length=256)
-    is_api = models.BooleanField('From API', default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    is_api = models.BooleanField('From API', default=True) 
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE)
     group_product = models.ForeignKey(GroupProduct, blank=True, null=True, on_delete=models.CASCADE)
@@ -146,12 +152,17 @@ class Product(models.Model):
     price = models.CharField(max_length=100, default='',blank=True,)
     list_price = models.CharField(max_length=100, default='',blank=True,)
     score = models.CharField(max_length=100, default='',blank=True,)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
 
     def __str__(self):
         return self.name  
 
 class RawProduct(models.Model): 
     url = models.CharField('URL', max_length=512)
+    name = models.CharField('Name', max_length=512, blank=True)
+    agency = models.CharField('Agency', max_length=512, blank=True)
     base_encoded_url = models.CharField('Encode URL', max_length=512)
     data = JSONField(default=dict)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -194,8 +205,7 @@ class RawProduct(models.Model):
                 "name": product_code,
                 "category": info_category,
                 "agencies": [info_product.get('agency', '')],
-                "product_ids": [],
-                "quantity": 1
+                "product_ids": []
             } 
             print('[CREATE] =>', info_group_product)
             info_group_product, created = GroupProduct.objects.get_or_create(**info_group_product)
@@ -217,8 +227,7 @@ class RawProduct(models.Model):
         product_id = str(info_product.id)
         print('info_group_product', info_group_product.product_ids)
         if product_id not in info_group_product.product_ids: 
-            info_group_product.product_ids = info_group_product.product_ids + [product_id]
-            info_group_product.quantity = len(info_group_product.product_ids)
+            info_group_product.product_ids = info_group_product.product_ids + [product_id] 
             info_group_product.save()
 
 class Scraper(models.Model):
@@ -264,8 +273,7 @@ class Scraper(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def start_crawling(self): 
-        print("[START CRAWLING] =>")
+    def start_crawling(self):  
         if self.is_active is False:
             return
 
@@ -274,7 +282,11 @@ class Scraper(models.Model):
         crawl_settings.setmodule('tools.scraper.scraper.settings')
         runner = CrawlerRunner(crawl_settings) 
         for _spider in self.scraperspider_set.all(): 
-            runner.crawl(TikiSpider, spider=_spider)
+            print('self.scraper_type',self.scraper_type)
+            if self.scraper_type == 'api':
+                runner.crawl(ApiSpider, spider=_spider)
+            if self.scraper_type == 'html':
+                runner.crawl(HtmlSpider, spider=_spider)
 
     def update_job(self):
         if self.job_id is not None:
@@ -336,39 +348,4 @@ class Parser(models.Model):
     spider = models.ForeignKey(Spider, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-class Item(models.Model):
-    title = models.TextField(null=True)
-    content = models.TextField(null=True)
-    url = models.TextField()
-    author = models.TextField(null=True)
-    category = models.TextField(null=True)
-    tag = models.TextField(null=True)
-    summary = models.TextField(null=True)
-    published_at = models.TextField(null=True)
-    thumbnail_link = models.TextField(null=True)
-    image_link = models.TextField(null=True)
-    spider = models.ForeignKey(Spider, on_delete=models.SET_NULL, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.url
-
-
-class News(models.Model):
-    title = models.CharField(max_length=256)
-    content = models.TextField(null=True)
-    url = models.CharField(max_length=256)
-    thumbnail_link = models.CharField(max_length=256, null=True)
-    image_link = models.CharField(max_length=256, null=True)
-    author = models.CharField(max_length=256)
-    summary = models.TextField(null=True)
-    published_at = models.DateTimeField()
-    categories = models.ManyToManyField(Category)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        verbose_name_plural = 'News'
  

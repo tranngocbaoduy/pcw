@@ -27,11 +27,9 @@ from tools.scraper.scraper.items import RawProductItem, ProductItem
 from tools.scraper.scraper.utils import CrawlingHelper
 from tools.scraper.scraper.proxy import ProxyService
 
-class TikiSpider(scrapy.Spider):
-    name = 'tiki'
-    FILE_PROXY_PATH = './proxy_list.json'
-    start_request_time = None
-    proxy_item = None
+class ApiSpider(scrapy.Spider):
+    name = 'api'
+    start_request_time = None 
     url_timeout = [] 
     custom_settings = {
         "SELENIUM_DRIVER_NAME":'firefox',
@@ -41,16 +39,19 @@ class TikiSpider(scrapy.Spider):
     }
 
     def __init__(self, *a, **kwargs):
-        super(TikiSpider, self).__init__(*a, **kwargs)
+        super(ApiSpider, self).__init__(*a, **kwargs)
         self.spider = kwargs.get('spider') 
-        self.parsers = self.spider.spider.parser_set
-        self.total_failed = 0
+        self.parsers = self.spider.spider.parser_set 
+        self.count_err = 0
         self.news_thumbnail_link = None 
-        self.current_page = 1
         self.encoded_urls = []
+        self.proxy_item = None
         self.START_URL = self.spider.spider.url
-        self.LIMIT = 60 
-        self.end_page = 1
+        self.LIMIT = int(self.spider.spider.limit_per_request)
+        self.FILE_PROXY_PATH = os.path.join(file_dir, '../proxy_list.json')
+        self.is_using_proxy = self.spider.spider.is_using_proxy
+        self.current_page = int(self.spider.spider.start_page)
+        self.end_page = int(self.spider.spider.end_page)
         self.retry = 0
 
     def start_requests(self):  
@@ -65,14 +66,8 @@ class TikiSpider(scrapy.Spider):
             self.start_request_time = time.time()
             return diff
 
-    def get_new_request(self, url=None):
-        # diff_time = self.get_diff_time()
-        # if diff_time == 0 or diff_time > 1.5 and self.start_request_time:
-        #     self.start_request_time 
-        #     self.proxy_item = ProxyService.get_random_proxy(FILE_PROXY_PATH)
-        #     print('=====Setting new proxy {} diff time {}'.format(self.proxy_item['curl'],diff_time))
+    def get_new_request(self, url=None): 
         url = self.START_URL.format(self.LIMIT, self.current_page)
-        CrawlingHelper.log("=== Start request: {0} === ".format(url))
         params = { 
             "url": url if url else url,
             "headers": {
@@ -85,10 +80,15 @@ class TikiSpider(scrapy.Spider):
             "meta":{
                 'max_retry_times': 1, 
                 'download_timeout': 20,
-                # "proxy": self.proxy_item['curl']
             },
             "dont_filter":True
         }     
+        if self.is_using_proxy: 
+            self.proxy_item = ProxyService.get_proxy_high_confident(self.FILE_PROXY_PATH, self.count_err)
+            params['meta']['proxy'] = self.proxy_item['curl']
+            CrawlingHelper.log("=== Start request: {0} - {1} === ".format(url, self.proxy_item['curl']))
+        else:
+            CrawlingHelper.log("=== Start request: {0} === ".format(url))
         self.start_urls.append(url)
         request = scrapy.Request(**params)    
         return request
@@ -99,10 +99,6 @@ class TikiSpider(scrapy.Spider):
             # you can get the non-200 response
             response = failure.value.response
             print('HttpError on %s', response)
-            print('===== Change proxy item')
-            self.proxy_item = ProxyService.get_proxy_high_confident(FILE_PROXY_PATH, self.count)
-            self.count +=1
-
         elif failure.check(DNSLookupError):
             # this is the original request
             request = failure.request
@@ -113,15 +109,13 @@ class TikiSpider(scrapy.Spider):
             request = failure.request
             self.url_timeout.append(request.url)
             print('TimeoutError on %s', request.url)
-            print('===== Change proxy item')
-            self.proxy_item = ProxyService.get_proxy_high_confident(FILE_PROXY_PATH, self.count)
-            self.count +=1
         else:
             print("Failure Undefined", failure)
+        self.count_err += 1
+        if self.is_using_proxy:
             print('===== Change proxy item')
-            self.proxy_item = ProxyService.get_proxy_high_confident(FILE_PROXY_PATH, self.count)
-            self.count +=1
-        ProxyService.update_count_ip(FILE_PROXY_PATH, self.proxy_item.get('curl', ''), -100)
+            self.proxy_item = ProxyService.get_proxy_high_confident(self.FILE_PROXY_PATH, self.count_err)
+            ProxyService.update_count_ip(self.FILE_PROXY_PATH, self.proxy_item.get('curl', ''), -100)
         yield self.get_new_request() 
 
     def parse(self, response):  
@@ -161,15 +155,13 @@ class TikiSpider(scrapy.Spider):
         merged_item.update(response)
         merged_item['url'] = 'https://{}/{}.html'.format(self.spider.spider.domain, response['url_key'])
         merged_item['domain'] = self.spider.spider.domain
-        merged_item['agency'] = self.spider.spider.domain
+        merged_item['agency'] = self.spider.spider.agency
         merged_item['created_date'] = CrawlingHelper.get_now() 
         merged_item['id_pcw'] = CrawlingHelper.create_uuid()
         merged_item['category_code'] = self.spider.category.name 
         merged_item['slug_id'] = '/{}'.format(response['url_key'])
         
-        # merged_item.update(base_item)
-        # merged_item.update(product_item)
-
-        # ProxyService.update_count_ip(FILE_PROXY_PATH, self.proxy_item.get('curl', ''))            
+        if self.is_using_proxy:
+            ProxyService.update_count_ip(self.FILE_PROXY_PATH, self.proxy_item.get('curl', ''))
         return merged_item
  
