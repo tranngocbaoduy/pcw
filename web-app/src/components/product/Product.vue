@@ -140,7 +140,7 @@ export default Vue.extend({
 @import '@/resources/scss/FontSize.scss';
 .product {
   height: 100%;
-  border: #cdcdcd 0.1px solid;
+  border: #f2f2f2 0.1px solid;
   box-shadow: none;
   .product-img {
     -webkit-transition: all 0.2s;
