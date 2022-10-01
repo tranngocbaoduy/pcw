@@ -86,16 +86,7 @@
                             >
                               <v-col
                                 cols="9"
-                                class="
-                                  ma-0
-                                  pa-0
-                                  primary-color-4
-                                  text-left
-                                  font-weight-1
-                                  line-height-18
-                                  old-price
-                                  font-size-14
-                                "
+                                class="ma-0 pa-0 primary-color-4 text-left font-weight-1 line-height-18 old-price font-size-14"
                                 >{{ item.listPrice | formatPrice }}đ
                               </v-col>
                             </v-row>
@@ -202,9 +193,9 @@ export default Vue.extend({
 </script>
 
 <style lang="scss">
-@import '@/assets/scss/Common.scss';
-@import '@/assets/scss/LineHeight.scss';
-@import '@/assets/scss/FontSize.scss';
+@import '@/resources/scss/Common.scss';
+@import '@/resources/scss/LineHeight.scss';
+@import '@/resources/scss/FontSize.scss';
 .product-line-card {
   width: 100%;
   background-color: gray;

@@ -1,41 +1,35 @@
 const dynamodbHelper = require("../helper/DynamodbHelper");
+const searchByUrl = require("../helper/id_config");
 
-function checkIsValidDomain(event) {
-  const listDomainValid = ['https://x-pcw.com', 'http://localhost:8080']
-  if (listDomainValid.includes(event.headers.origin)) return true
-  return false;
-}
 
-module.exports = async (event) => {
+module.exports = async (event, context) => {
+
   const queryParams = event.queryStringParameters;
-
+  console.log('[ACTION] =>', queryParams["action"])
   let result = null;
   let res = null;
   if (!queryParams) {
     throw new Error("There's no query parameter");
   } else {
-    if (checkIsValidDomain(event)) {
-      switch (queryParams["action"]) {
-        case "queryItemByTarget":
-          result = await queryItemByCategoryId(event);
-          break;
-
-        default:
-          result = [];
-          break;
-      }
-      res = {
-        message: "Successful",
-        action: queryParams["action"],
-        data: result,
-      };
-    } else {
-      res = {
-        message: "Failed",
-        action: queryParams["action"],
-        data: result,
-      };
+    switch (queryParams["action"]) {
+      case "queryItemByTarget":
+        result = await queryItemByTarget(event);
+        break;
+      case "queryPromotionItems":
+        result = await queryPromotionItems(event);
+        break;
+      case "searchItemsByUrl":
+        result = await searchItemsByUrl(event);
+        break;
+      default:
+        result = [];
+        break;
     }
+    res = {
+      message: "Successful",
+      action: queryParams["action"],
+      data: await result,
+    };
   }
   return res;
 };
@@ -61,9 +55,42 @@ function parseParams(body) {
   //   "minPrice": 10000
   // }
 }
+async function searchItemsByUrl(event) {
+  const body = JSON.parse(event.body);
+  const baseEncodedUrl = body["baseEncodedUrl"];
+  let id = ''
+  if (!baseEncodedUrl.includes('.') && Object.keys(searchByUrl.searchByUrl.IdConfig).includes(baseEncodedUrl)) {
+    id = searchByUrl.searchByUrl.IdConfig[baseEncodedUrl]
+  } else if (baseEncodedUrl.includes('.') && Object.keys(searchByUrl.searchByUrl.IdConfigURL).includes(baseEncodedUrl)) {
+    id = searchByUrl.searchByUrl.IdConfigURL[baseEncodedUrl]
+  }
+  if (id !== '') {
+    const params = {
+      TableName: process.env.PRODUCT_TABLE_NAME,
+      IndexName: "SEARCH-INDEX",
+      KeyConditionExpression: "#PRODUCT_KEY = :productKey and begins_with(#SK, :sk)",
+      ExpressionAttributeNames: {
+        "#PRODUCT_KEY": "PRODUCT_KEY",
+        "#URL": "url",
+        "#BRAND": "brand",
+        "#DOMAIN": "domain",
+        "#NAME": "name",
+        "#IMAGE": "image",
+        "#SK": "SK",
+      },
+      ExpressionAttributeValues: {
+        ":productKey": "PRODUCT",
+        ":sk": id
+      },
+      ProjectionExpression: 'PK, SK, #URL, price, voucher_info, slug_id, #BRAND, #DOMAIN, #NAME, #IMAGE, list_price, discount_rate, agency, description',
+    };
+    const data = await dynamodbHelper.queryItems(params);
+    return data;
+  }
+  return []
+}
 
-async function queryItemByCategoryId(event) {
-  console.log("event", event);
+async function queryItemByTarget(event) {
   const body = JSON.parse(event.body);
   const PK = body["category"];
   const SK = body["SK"];
@@ -81,9 +108,9 @@ async function queryItemByCategoryId(event) {
   agencyFilterExpressionValues = [];
   agencyFilterExpressionNames = {};
   for (const agencyIndex in agencyItems) {
-    agencyFilterExpressionValues.push(`begins_with(#DOMAIN, :domain${agencyIndex})`);
-    agencyValues[`:domain${agencyIndex}`] = agencyItems[agencyIndex];
-    agencyFilterExpressionNames['#DOMAIN'] = 'domain'
+    agencyFilterExpressionValues.push(`begins_with(#AGENCY, :agency${agencyIndex})`);
+    agencyValues[`:agency${agencyIndex}`] = agencyItems[agencyIndex];
+    agencyFilterExpressionNames['#AGENCY'] = 'agency'
   }
 
   brandValues = {};
@@ -99,7 +126,8 @@ async function queryItemByCategoryId(event) {
   if (!PK) return [];
   const params = {
     TableName: process.env.PRODUCT_TABLE_NAME,
-    KeyConditionExpression: isRep ? "#PK = :pk and begins_with(SK, :sk)" : "#PK = :pk",
+    KeyConditionExpression: isRep ? "#PK = :pk and begins_with(RBGI, :rbgi)" : "#PK = :pk",
+    IndexName: 'RELATIONSHIP-BRAND-GROUP-INDEX',
     FilterExpression: `${brandFilterExpressionValues.length != 0
       ? `(${brandFilterExpressionValues.join(" OR ")}) AND`
       : ``
@@ -109,21 +137,61 @@ async function queryItemByCategoryId(event) {
       } (price BETWEEN :minPrice AND :maxPrice) and (discount_rate >= :discountRate)`,
     ExpressionAttributeNames: {
       "#PK": "PK",
+      "#URL": "url",
+      "#NAME": "name",
+      "#AGENCY": "agency",
+      "#DOMAIN": "domain",
+      "#BRAND": "brand",
+      "#IMAGE": "image",
+      "#STOCK": "stock",
       ...agencyFilterExpressionNames,
       ...brandFilterExpressionNames
     },
+    ProjectionExpression: 'PK, SK, #URL, price, voucher_info, slug_id, liked_count, #BRAND, #AGENCY,#DOMAIN, #NAME, shop_location, #IMAGE, list_price, item_rating, #STOCK, historical_sold, discount_rate, child, shop_item, description',
     ExpressionAttributeValues: {
       ":pk": PK,
       ":minPrice": minPrice,
       ":maxPrice": maxPrice,
       ":discountRate": discountRate,
-      ...isRep ? { ":sk": "REP#" } : {},
+      ...isRep ? { ":rbgi": "REP#" } : {},
       ...agencyValues,
       ...brandValues,
     },
+
   };
-  console.log('params', params)
   const data = await dynamodbHelper.queryItems(params);
-  console.log('data', data.length)
+  return data.slice((page - 1) * limit, page * limit)
+}
+
+
+async function queryPromotionItems(event) {
+  const body = JSON.parse(event.body);
+  const limit = body["limit"] ? parseInt(body["limit"]) : 16;
+  const page = body["page"] ? parseInt(body["page"]) : 1;
+  const discountRate = body["discountRate"] ? parseInt(body["discountRate"]) : 0;
+
+  const params = {
+    TableName: process.env.PRODUCT_TABLE_NAME,
+    IndexName: "SEARCH-INDEX",
+    KeyConditionExpression: "#PRODUCT_KEY = :productKey",
+    FilterExpression: `discount_rate >= :discountRate`,
+    ExpressionAttributeNames: {
+      "#PRODUCT_KEY": "PRODUCT_KEY",
+      "#URL": "url",
+      "#NAME": "name",
+      "#AGENCY": "agency",
+      "#DOMAIN": "domain",
+      "#BRAND": "brand",
+      "#IMAGE": "image",
+      "#STOCK": "stock",
+    },
+    ProjectionExpression: 'PK, SK, #URL, price, voucher_info, slug_id, liked_count, #BRAND, #AGENCY, #DOMAIN, #NAME, shop_location, #IMAGE, list_price, #STOCK, discount_rate, child, shop_item, description',
+    ExpressionAttributeValues: {
+      ":productKey": 'PRODUCT',
+      ":discountRate": discountRate,
+    },
+
+  };
+  const data = await dynamodbHelper.queryAllItemsByLimit(params, limit);
   return data.slice((page - 1) * limit, page * limit)
 }

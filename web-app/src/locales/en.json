@@ -12,9 +12,12 @@
   "featureBrand": "Feature Brand",
   "trendingPromotion": "Trending Promotion",
   "trendingSearch": "Trending Search",
+  "trendingCategory": "Trending Category",
+  "searchProducts": "Search Product",
+  "recommendProducts": "Recommend Product",
   "seeMore": "See More",
   "aboutUs": "About us",
-  "aboutUsContent": "We created this website for the purpose of facilitating purchases between different dealers, not for commercial purposes. Thank you",
+  "aboutUsContent": "*Website is automatically collected, support for purchases, we do not sell",
   "contact": "Contact",
   "linking": "Linked Agency",
   "Below 2 MIL VND": "Below 2 MIL VND",
@@ -39,7 +42,9 @@
     "Washing": "Washing Machine",
     "Phone": "Phone",
     "Air Condition": "Air Condition",
-    "Laptop": "Laptop"
+    "Laptop": "Laptop",
+    "Motor": "Motor",
+    "Tablet": "Tablet"
   },
 
   "en": "English",
@@ -55,5 +60,8 @@
   "Smart Home": "Smart Home",
   "Business Equipment": "Business Equipment",
   "search": "Search",
-  "No products found!!!": "No products found!!!"
+  "No products found!!!": "No products found!!!",
+  "Below": "Below",
+  "Range": "Range",
+  "Above": "Above"
 }

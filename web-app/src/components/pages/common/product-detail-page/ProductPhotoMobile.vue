@@ -1,20 +1,15 @@
 <template>
-  <div v-if="listPhotoItems && listPhotoItems.length != 0">
-    <div class="d-flex justify-center align-center px-0 py-0">
-      <div v-for="photo in remainPhotos" :key="photo.name" class="py-0 px-2">
-        <v-hover v-slot="{ hover }">
-          <v-card
-            @click="getMainImage(photo)"
-            :width="140"
-            :height="140"
-            :elevation="hover ? 12 : 2"
-            :class="hover ? 'pa-2' : 'pa-3'"
-          >
-            <v-img class="" width="100%" height="100%" :src="photo.url"></v-img>
-          </v-card>
-        </v-hover>
-      </div>
-    </div>
+  <div v-if="listPhotoItems && listPhotoItems.length != 0" style="background-color: transparent">
+    <v-hover v-slot="{ hover }">
+      <v-card
+        class="rounded-0 d-flex align-center justify-center"
+        height="276px"
+        :elevation="0"
+        style="background-color: transparent"
+      >
+        <v-img :class="hover ? 'pt-1' : 'pt-2'" contain width="270px" height="270px" :src="currentPhoto"></v-img>
+      </v-card>
+    </v-hover>
   </div>
 </template>
 
@@ -34,7 +29,9 @@ export default Vue.extend({
       if (this.listPhotoItems && this.listPhotoItems.length != 0) this.refreshImage();
     },
   },
-  created() {},
+  created() {
+    this.refreshImage();
+  },
   methods: {
     getMainImage(selectPhoto: any) {
       this.isLoadingImage = true;
@@ -70,15 +67,5 @@ export default Vue.extend({
 
 <style lang="scss">
 .product-photo {
-  .domain {
-    background: #1859db !important;
-    border: #1859db 1px solid;
-    color: white;
-    position: absolute;
-    left: 0px;
-    top: 0px;
-    z-index: 100;
-    border-radius: 8px 0px 8px 0px !important;
-  }
 }
 </style>

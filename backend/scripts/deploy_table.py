@@ -50,6 +50,7 @@ def main(args={}):
     template_parameters_map = {
         'CategoryTableName': '{}-CATEGORY'.format(main_stack_name),
         'ProductTableName': '{}-PRODUCT'.format(main_stack_name),
+        'UserTableName': '{}-USER'.format(main_stack_name),
     }
 
     AWSHelper.run_command(' '.join([

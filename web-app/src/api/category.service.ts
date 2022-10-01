@@ -1,10 +1,12 @@
 import AuthService from '@/api/auth.service';
-import i18n from '@/i18n';
+import store from '@/store';
 export interface CategoryItem {
   PK: string;
   SK: string;
   name: string;
   translateName: string;
+  href?: string;
+  image?: string;
 }
 
 export interface BrandItem {
@@ -46,8 +48,9 @@ export default class CategoryService {
     return {
       PK: item.PK,
       SK: item.SK,
-      name: CategoryService.upperCaseFirstLetter(item.SK),
-      translateName: CategoryService.upperCaseFirstLetter(item.SK),
+      name: CategoryService.upperCaseFirstLetter(item.NAME),
+      translateName: CategoryService.upperCaseFirstLetter(item.ViNAME),
+      href: '/category/' + item.SK.toLowerCase(),
     } as CategoryItem;
   }
 
@@ -63,8 +66,8 @@ export default class CategoryService {
     return {
       PK: item.PK,
       SK: item.SK,
-      name: CategoryService.upperCaseFirstLetter(item.SK.split('#')[1]),
-      translateName: CategoryService.upperCaseFirstLetter(item.SK.split('#')[1]),
+      name: CategoryService.upperCaseFirstLetter(item.NAME),
+      translateName: CategoryService.upperCaseFirstLetter(item.ViNAME),
       selected: false,
     } as BrandItem;
   }
@@ -78,8 +81,15 @@ export default class CategoryService {
   }
 
   static code2category(code: string) {
+    if (!code) return '';
+    if (code == 'undefined' || code == undefined) return '';
+    const category = store.getters.categoryItems.find((i: CategoryItem) => i.SK == code);
+    if (category) return category.translateName;
+    else return '';
     const categoryDict = {
       AIRCONDITION: 'Air Condition',
+      MOTOR: 'Motor',
+      TABLET: 'Tablet',
       FRIDGE: 'Fridge',
       LAPTOP: 'Laptop',
       PHONE: 'Phone',
@@ -97,6 +107,7 @@ export default class CategoryService {
       Phone: 'PHONE',
       Television: 'TELEVISION',
       Washing: 'WASHING',
+      Shoes_man: 'Giày nam',
     } as any;
     return categoryDict[category];
   }

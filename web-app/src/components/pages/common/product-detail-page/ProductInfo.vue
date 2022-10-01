@@ -1,34 +1,56 @@
 <template>
   <div class="product-info" v-if="item">
-    <v-card-title class="font-size-22 font-weight-2 mb-3 px-0 pb-0 line-height-30">{{
-      item.name | reduceText(500)
-    }}</v-card-title>
-    <v-card-text class="font-size-12 font-weight-2 pl-2">
-      <v-row>
-        <v-rating class="" :value="5" color="yellow" dense half-increments readonly size="15"></v-rating>
-        <div class="mx-3">
-          <span>{{ $t('brand') }}: </span>
-          <span class="font-weight-3 primary-color-2">{{ item.brand || '' }}</span>
+    <v-card-title class="font-size-22 font-weight-2 mb-2 px-0 pb-0 line-height-30 d-inline-block">
+      <span
+        :class="domain ? domain.toLowerCase() : ''"
+        style="border-radius: 2px !important"
+        class="rounded-0 font-size-16 pa-1 mb-2 mr-3 font-weight-2 text-right elevation-0"
+      >
+        {{ domain }}
+      </span>
+      <span class="primary-color-2 font-size-22">{{ item.brand || '' }} </span> -
+      <span class="font-size-20">{{ item.cleanName | reduceText(500) }}</span>
+    </v-card-title>
+    <v-card-text class="font-size-14 font-weight-2 pl-0 pb-4">
+      <div class="d-flex justify-start align-center">
+        <RatingItem class="hover-custom-link py-2 pr-4" :itemRating="item.itemRating" :isDisplay="true" />
+        <v-divider vertical style="width: 10px" class="my-2" />
+        <div :class="isMobile ? 'mx-2' : 'mx-3'">
+          <span>Đánh giá: </span>
+          <span class="font-weight-3 primary-color-2">{{
+            item.itemRating.rating_count.reduce((partialSum, a) => partialSum + a, 0) || 0
+          }}</span>
         </div>
-      </v-row>
+        <v-divider vertical style="width: 10px" class="my-2" />
+        <div :class="isMobile ? 'mx-2' : 'mx-3'">
+          <span>Đã bán: </span>
+          <span class="font-weight-3 primary-color-2">{{ item.historicalSold || 0 }}</span>
+        </div>
+        <v-divider vertical style="width: 10px" class="my-2" />
+        <div :class="isMobile ? 'mx-2' : 'mx-3'">
+          <span>Thích: </span>
+          <span class="font-weight-3 primary-color-2">{{ item.likedCount || 0 }}</span>
+        </div>
+      </div>
     </v-card-text>
 
-    <v-card-text class="ma-0 pa-0 primary-color-4">
+    <div class="my-0 pl-0 pb-4">
       <v-row align="center" no-gutters>
-        <div class="mr-6">{{ $t('freeShip') }}</div>
-        <div>{{ $t('genuine') }}</div>
-      </v-row>
-    </v-card-text>
-
-    <v-card-text class="my-2 py-4 pl-2">
-      <v-row align="center">
-        <div class="font-size-30 font-weight-3 mr-7 primary-color-1">{{ item.price | formatPrice }}đ</div>
-        <div class="font-size-16 font-weight-1 line-through">{{ item.listPrice | formatPrice }}đ</div>
-        <div style="border: red 1px solid" class="px-2 rounded-lg font-size-14 font-weight-2 text-right ml-5 red--text">
-          {{ item.discountRate }}%
+        <div class="font-size-16 font-weight-1 line-through pr-0 pl-1 mr-3" v-if="item.listPrice != item.price">
+          {{ item.listPrice | formatPrice }}đ
+        </div>
+        <div class="font-size-28 font-weight-3 mr-2 primary-color-1">{{ item.price | formatPrice }}đ</div>
+        <div
+          v-if="item.listPrice != item.price"
+          class="pa-1 rounded-md font-size-14 font-weight-2 text-right ml-5 elevation-0 mr-2 discount-rate"
+        >
+          {{ item.discountRate || 0 }}% giảm
         </div>
       </v-row>
-    </v-card-text>
+    </div>
+    <div class="my-0 px-0 pb-4 py-2" v-if="item.voucherInfo">
+      <div class="font-size-14 voucher-info">{{ item.voucherInfo.label }}</div>
+    </div>
     <div class="properties pt-5 px-4" v-show="isShowDetail">
       <div>
         <v-card-text class="font-size-12 font-weight-2" v-for="propertyItem in propertyItems" :key="propertyItem.name">
@@ -44,32 +66,41 @@
       </div>
     </div>
     <v-card-actions class="pa-0">
-      <a :href="item.url" target="_blank">
-        <v-btn class="white--text rounded-lg my-2" color="#1859db" height="42px" width="100%">{{ $t('buyNow') }}</v-btn>
-      </a>
+      <v-btn
+        @click="goToPlatform()"
+        class="white--text rounded-lg my-2 text-capitalize"
+        color="#1859db"
+        height="42px"
+        width="100px"
+        >{{ $t('buyNow') }}
+      </v-btn>
+      <span v-if="item.stock" class="font-size-14 ml-4">
+        Kho: <span class="font-weight-bold">{{ item.stock }} </span> sản phẩm
+      </span>
     </v-card-actions>
-    <v-card color="white" class="mt-5 rounded-lg px-3">
-      <v-card-title class="pb-3">{{ $t('note') }}:</v-card-title>
+    <v-card color="white" class="mt-5 rounded-0 px-3" elevation="0">
+      <v-card-title class="pb-3 d-flex justify-space-between align-center">
+        <div class="hover-custom-link">{{ $t('note') }}:</div>
+      </v-card-title>
 
       <v-card-text class="font-size-14 font-weight-1">
-        <ul class="font-size-14 font-weight-3 mr-7 line-height-24" :class="isMobile ? ' pa-0' : ''">
+        <ul class="line-height-24 font-size-14 font-weight-2 mr-7" :class="isMobile ? ' pa-0' : ''">
           <li class="py-1">
             {{ $t('The cheapest product is on sale at') }}
-            <a :href="item.url" target="_blank">
-              <span class="primary-color-1">{{ item && item.domain ? item.domain : '' }}</span>
-            </a>
+
+            <span @click="goToPlatform(cheapestItem)" class="primary-color-1 hover-custom-link">{{
+              cheapestItem && cheapestItem.domain ? cheapestItem.domain : ''
+            }}</span>
           </li>
           <li class="py-1" v-if="largestSaleOffItem.discountRate != 0">
             {{ $t('The store with the most discounts is') }}
-            <a :href="largestSaleOffItem.url" target="_blank">
+            <span @click="goToPlatform(largestSaleOffItem)" class="primary-color-1 hover-custom-link">
               <span class="primary-color-1">{{ largestSaleOffItem.domain }}</span>
-            </a>
+            </span>
             {{ $t('up to') }}
-            <span class="primary-color-2"> {{ largestSaleOffItem.discountRate }}% </span>-
+            <span class="primary-color-2 discount-rate px-1"> {{ largestSaleOffItem.discountRate }}% </span>
+            <span class="px-1">{{ ' với giá ưu đãi' }}</span>
             <span class="primary-color-1"> {{ largestSaleOffItem.price | formatPrice }}đ</span>
-          </li>
-          <li class="py-1">
-            {{ $t('Sold in stores') }}: <span class="primary-color-1"> {{ subProductItems.length + 1 }} </span>
           </li>
           <li class="py-1">
             {{ $t('Average product price') }}
@@ -81,26 +112,24 @@
               >
               <v-icon v-else class="mb-1 mr-0 font-size-16 font-weight-bold" color="green">mdi-arrow-up</v-icon>
               {{ percentDiffPrice ? `${percentDiffPrice}%` : '0' }}
-              <span class="primary-color-2"> {{ reviewDiffPrice }}</span>
+              <!-- <span class="primary-color-2"> {{ reviewDiffPrice }}</span> -->
             </span>
           </li>
         </ul>
       </v-card-text>
-    </v-card>
-
-    <v-card color="white" class="mt-5 rounded-lg px-3" v-if="item.content">
-      <v-card-title class="pb-3">{{ $t('content') }}:</v-card-title>
-      <v-card-text>{{ item.content }} </v-card-text>
     </v-card>
   </div>
 </template>
 
 <script lang="ts">
 import CategoryService from '@/api/category.service';
+import RatingItem from '@/components/common/rating/RatingItem.vue';
 import Vue from 'vue';
+import { ProductItem } from '@/api/product.service';
 
 export default Vue.extend({
-  props: ['item', 'averagePrice', 'subProductItems', 'largestSaleOffItem'],
+  props: ['item', 'averagePrice', 'subProductItems', 'largestSaleOffItem', 'domain', 'cheapestItem'],
+  components: { RatingItem },
   data: () => ({
     isShowDetail: false,
     propertyItems: [
@@ -141,7 +170,14 @@ export default Vue.extend({
       return res ? `- ${res}` : '';
     },
   },
-  methods: {},
+  methods: {
+    goToPlatform(item: ProductItem) {
+      window.open(this.getURLAccessTrade(item), '_blank');
+    },
+    getURLAccessTrade(item?: any): string {
+      return `${process.env.VUE_APP_BASE_ACCESS_TRADE_URL}?url=${item && item.url ? item.url : this.item.url}`;
+    },
+  },
 });
 </script>
 
@@ -150,6 +186,23 @@ export default Vue.extend({
   .properties {
     height: 224px;
     background-color: #f9f9f9;
+  }
+  .voucher-info {
+    border: 0.5px #ca3e29 solid;
+    background-color: #f9f9f9;
+    color: #ca3e29;
+    border-radius: 2px;
+    padding: 8px;
+    margin: 0;
+    display: inline;
+  }
+
+  .discount-rate {
+    color: #ca3e29;
+    z-index: 2;
+    border: 1px solid #ca3e29;
+    border-radius: 1px !important;
+    line-height: 14px !important;
   }
 }
 </style>

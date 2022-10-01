@@ -1,15 +1,13 @@
 <template>
-  <v-app>
-    <router-view />
+  <v-app style="min-height: 100vh !important">
+    <router-view v-if="$route" :key="$route.fullPath" />
   </v-app>
 </template>
 
 <script lang="ts">
 import Vue from 'vue';
-
-async function sleep(min: number, max: number) {
-  return new Promise((res) => setTimeout(res, Math.floor(Math.random() * (max - min + 1)) + min));
-}
+import { MetaInfo } from 'vue-meta';
+import SeoService from './api/seo.service';
 
 export default Vue.extend({
   name: 'App',
@@ -19,21 +17,30 @@ export default Vue.extend({
       return this.$store.getters.isMobile;
     },
   },
+  metaInfo(): MetaInfo {
+    return SeoService.getMetaInfoHomePage();
+  },
   async created() {
     console.log('App component is created');
+    window.addEventListener('load', this.onResize);
   },
   mounted() {
-    this.onResize();
     window.addEventListener('resize', this.onResize, { passive: true });
+    window.addEventListener('scroll', this.onResize, { passive: true });
   },
   methods: {
     onResize() {
       const isMobile = !(this.$vuetify.breakpoint.lg || this.$vuetify.breakpoint.xl || this.$vuetify.breakpoint.md);
+      console.log('isMobile', isMobile);
       if (this.isMobile != isMobile) {
         this.$store.dispatch('setIsMobile', { isMobile: isMobile });
       }
-      this.$store.dispatch('setInnerWidth', { innerWidth: window.innerWidth });
-      console.log(isMobile, window.innerWidth);
+      this.$store.dispatch('setBoxDistance', {
+        innerWidth: window.innerWidth,
+        innerHeight: window.innerHeight,
+        offsetHeight: window.pageYOffset,
+      });
+      // console.log(isMobile, window.innerWidth, window.pageYOffset);
     },
   },
   beforeDestroy() {
@@ -45,12 +52,13 @@ export default Vue.extend({
 </script>
 
 <style lang="scss">
-@import '@/assets/scss/Common.scss';
-@import '@/assets/scss/Border.scss';
-@import '@/assets/scss/FontSize.scss';
-@import '@/assets/scss/FontWeight.scss';
-@import '@/assets/scss/LineHeight.scss';
-@import '@/assets/scss/PrimaryColor.scss';
-@import '@/assets/scss/BackgroundColor.scss';
+@import '@/resources/scss/Common.scss';
+@import '@/resources/scss/Border.scss';
+@import '@/resources/scss/FontSize.scss';
+@import '@/resources/scss/FontWeight.scss';
+@import '@/resources/scss/LineHeight.scss';
+@import '@/resources/scss/PrimaryColor.scss';
+@import '@/resources/scss/BackgroundColor.scss';
+@import '@/resources/scss/Platform.scss';
 @import './App.scss';
 </style>

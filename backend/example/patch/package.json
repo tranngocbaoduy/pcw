@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "aws-sdk": "^2.1111.0"
+    "aws-sdk": "^2.1111.0",
+    "winston": "^3.8.2"
   }
 }

@@ -185,7 +185,7 @@ def get_web_acl_arn():
 
 
 def deploy_template(): 
-    __version = 'lastest'
+    __version = 'latest'
     template_parameters_map = {
         'EnvName': args['env_name'],
         'EnvType': env_type,
@@ -193,6 +193,7 @@ def deploy_template():
         'SesRegion': 'us-east-1',
         'VpcEnabled': 'true' if not args['detach_vpc'] else 'false',
         'Version': __version, 
+        'StageName': 'dev',
         # 'WebACLArn': get_web_acl_arn(),
         # **template_parameter_layers_map,
     } 

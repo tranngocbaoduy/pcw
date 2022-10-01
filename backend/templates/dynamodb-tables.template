@@ -1,12 +1,33 @@
 ---
 AWSTemplateFormatVersion: 2010-09-09
 Parameters:
+  UserTableName:
+    Type: String
   ProductTableName:
     Type: String
   CategoryTableName:
     Type: String
 
 Resources:
+  UserTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: !Ref UserTableName
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
   ProductTable:
     Type: AWS::DynamoDB::Table
     DeletionPolicy: Retain
@@ -23,14 +44,34 @@ Resources:
           AttributeType: S
         - AttributeName: SK
           AttributeType: S
-        - AttributeName: RELATIONSHIP_ID
+        - AttributeName: GROUP_ID
+          AttributeType: S
+        - AttributeName: RBGI
+          AttributeType: S
+        - AttributeName: PRODUCT_KEY
           AttributeType: S
       GlobalSecondaryIndexes:
-        - IndexName: RELATIONSHIP-INDEX
+        - IndexName: GROUP-INDEX
           KeySchema:
             - AttributeName: PK
               KeyType: HASH
-            - AttributeName: RELATIONSHIP_ID
+            - AttributeName: GROUP_ID
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: SEARCH-INDEX
+          KeySchema:
+            - AttributeName: PRODUCT_KEY
+              KeyType: HASH
+            - AttributeName: SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: RELATIONSHIP-BRAND-GROUP-INDEX
+          KeySchema:
+            - AttributeName: PK
+              KeyType: HASH
+            - AttributeName: RBGI
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
@@ -58,6 +99,14 @@ Resources:
         PointInTimeRecoveryEnabled: true
 
 Outputs:
+  UserTableName:
+    Value: !Ref ProductTable
+    Export:
+      Name: !Sub "${AWS::StackName}-UserTableName"
+  UserTableArn:
+    Value: !GetAtt UserTable.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-UserTableArn"
   ProductTableName:
     Value: !Ref ProductTable
     Export:

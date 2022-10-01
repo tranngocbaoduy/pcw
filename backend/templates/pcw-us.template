@@ -1,0 +1,60 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  Version:
+    Type: String
+  EnvName:
+    Type: String 
+  EnvType:
+    Type: String
+    AllowedPattern: '^[a-z]+$'
+  StageName:
+    Type: String
+
+# Mappings:
+  # EnvTypeMap:
+  #   dev: 
+  #     GoogleClientId: "224016471679-frhk37rqje4qj9ocn4nl3mjgqv1ha1hk.apps.googleusercontent.com"
+  #     GoogleClientSecret: "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"
+  #     GoogleClientRedirectURL: "https://x-pcw.store/login"
+  #   prod: 
+  #     GoogleClientId: "224016471679-frhk37rqje4qj9ocn4nl3mjgqv1ha1hk.apps.googleusercontent.com"
+  #     GoogleClientSecret: "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" 
+  #     GoogleClientRedirectURL: "https://x-pcw.store/login"
+
+Resources: 
+  SSRFunctionFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+                - edgelambda.amazonaws.com
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+  SSRFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-SSRFunction"
+      Code:
+        S3Bucket: !Sub "${AWS::StackName}-source-bucket"
+        S3Key: !Sub "packages/${Version}/SSRFunction.zip"
+      Handler: server.lambdaHandler
+      Runtime: nodejs14.x
+      Role: !GetAtt SSRFunctionFunctionRole.Arn
+      MemorySize: 128
+      Timeout: 20
+  SSRFunctionVersion:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName: !GetAtt SSRFunction.Arn
+
+Outputs:
+  SSRFunctionVersionArn:
+    Value: !Ref SSRFunctionVersion
