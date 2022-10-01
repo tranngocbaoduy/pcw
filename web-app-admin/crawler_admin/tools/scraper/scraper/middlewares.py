@@ -41,7 +41,7 @@ class ScraperSpiderMiddleware:
         # (from other spider middleware) raises an exception.
 
         # Should return either None or an iterable of Request or item objects.
-        print('dmcssssss')
+        print("dmcssssss")
 
     def process_start_requests(self, start_requests, spider):
         # Called with the start requests of the spider, and works
@@ -53,7 +53,7 @@ class ScraperSpiderMiddleware:
             yield r
 
     def spider_opened(self, spider):
-        spider.logger.info('Spider opened: %s' % spider.name)
+        spider.logger.info("Spider opened: %s" % spider.name)
 
 
 class ScraperDownloaderMiddleware:
@@ -100,4 +100,4 @@ class ScraperDownloaderMiddleware:
         pass
 
     def spider_opened(self, spider):
-        spider.logger.info('Spider opened: %s' % spider.name)
+        spider.logger.info("Spider opened: %s" % spider.name)

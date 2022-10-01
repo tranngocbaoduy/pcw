@@ -8,9 +8,11 @@
 import scrapy
 import requests
 import json
+import logging
 
 from bs4 import BeautifulSoup
 from django.utils import timezone
+from django.forms.models import model_to_dict
 from itemadapter import ItemAdapter
 from scrapy.exceptions import DropItem
 from dateutil import parser
@@ -18,57 +20,82 @@ from validators.url import url
 from modules.crawler.models import RawProduct
 from tools.scraper.scraper.utils import CrawlingHelper
 
+
 class ScraperPipeline:
     def extract_text_item(self, item, scraper):
         def extract_text_with_bs4(attr):
             return BeautifulSoup(str(attr)).get_text().strip()
 
-        if item['thumbnail_link']:
-            thumbnail_link = BeautifulSoup(item['thumbnail_link'], 'html.parser')
+        if item["thumbnail_link"]:
+            thumbnail_link = BeautifulSoup(item["thumbnail_link"], "html.parser")
             if thumbnail_link:
-                thumbnail_link = thumbnail_link.img['src']
-                if not(url(thumbnail_link)):
+                thumbnail_link = thumbnail_link.img["src"]
+                if not (url(thumbnail_link)):
                     thumbnail_link = scraper.homepage + thumbnail_link
         else:
             thumbnail_link = None
 
-        if item['image_link']:
-            image_link = BeautifulSoup(item['image_link'], 'html.parser')
+        if item["image_link"]:
+            image_link = BeautifulSoup(item["image_link"], "html.parser")
             if image_link:
-                image_link = image_link.img['src']
-                if not(url(image_link)):
+                image_link = image_link.img["src"]
+                if not (url(image_link)):
                     image_link = scraper.homepage + image_link
         else:
             image_link = None
 
         output = {
-            'title': extract_text_with_bs4(item['title']),
-            'content': extract_text_with_bs4(item['content']),
-            'author': extract_text_with_bs4(item['author']),
-            'image_link': image_link,
-            'thumbnail_link': thumbnail_link,
+            "title": extract_text_with_bs4(item["title"]),
+            "content": extract_text_with_bs4(item["content"]),
+            "author": extract_text_with_bs4(item["author"]),
+            "image_link": image_link,
+            "thumbnail_link": thumbnail_link,
             # 'category': BeautifulSoup(item['category']).get_text(),
             # 'tag': BeautifulSoup(item['tag']).get_text(),
-            'summary': extract_text_with_bs4(item['summary']),
-            'published_at': parser.parse(' '.join(' '.join(extract_text_with_bs4(item['published_at']).split(' - ')).split(' | ')),
-                                         fuzzy=True),
-            'url': item['url']
+            "summary": extract_text_with_bs4(item["summary"]),
+            "published_at": parser.parse(
+                " ".join(
+                    " ".join(
+                        extract_text_with_bs4(item["published_at"]).split(" - ")
+                    ).split(" | ")
+                ),
+                fuzzy=True,
+            ),
+            "url": item["url"],
         }
-        return output 
+        return output
 
     def convert_raw_product_db(self, item):
         return {
-            "url": item.get('url'),
-            "base_encoded_url": CrawlingHelper.urlsafre_encode(item.get('url')),
-            "agency": item.get('agency'),
-            "name": item.get('name'),
+            "url": item.get("url"),
+            "base_encoded_url": CrawlingHelper.urlsafre_encode(item.get("url")),
+            "agency": item.get("agency"),
+            "name": item.get("name", ""),
             "data": item,
         }
 
-    def process_item(self, item, spider): 
-        product = self.convert_raw_product_db(item)
-        is_exist = True if len(RawProduct.objects.filter(base_encoded_url=product['base_encoded_url'])) != 0 else False
-        if not is_exist:
-            product, is_created = RawProduct.objects.get_or_create(**product)
+    def process_item(self, item, spider):
+        info_raw_product = self.convert_raw_product_db(item) 
+        try:
+            info_raw_product_db = RawProduct.objects.get(
+                base_encoded_url=info_raw_product["base_encoded_url"]
+            )
+            logging.info({"message": "[UPDATE PRODUCT]", "data": info_raw_product_db})
+            for attr, value in info_raw_product.items():
+                if attr == "count_update":
+                    setattr(info_raw_product_db, attr, int(value) +  1)
+                else:
+                    setattr(info_raw_product_db, attr, value)
+            info_raw_product_db.save()
+        except:
+            info_raw_product_db, is_created = RawProduct.objects.get_or_create(
+                **info_raw_product
+            )
+            if not is_created:
+                logging.error(
+                    {"message": "[CREATE PRODUCT ERROR]", "data": info_raw_product_db}
+                )
+            else:
+                logging.info({"message": "[CREATE PRODUCT]", "data": info_raw_product_db})
 
-        return product
+        return info_raw_product_db

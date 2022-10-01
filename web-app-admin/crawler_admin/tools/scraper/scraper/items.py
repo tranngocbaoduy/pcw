@@ -24,15 +24,16 @@ class NewsItem(scrapy.Item):
 #
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/items.html
- 
-import json
-from json import JSONEncoder 
 
-class RawProductItem(scrapy.Item): 
+import json
+from json import JSONEncoder
+
+
+class RawProductItem(scrapy.Item):
     url = scrapy.Field()
     sk = scrapy.Field()
     base_encoded_url = scrapy.Field()
-    slug_id = scrapy.Field() 
+    slug_id = scrapy.Field()
     voucher_info = scrapy.Field()
     html_text_compressed = scrapy.Field()
     domain = scrapy.Field()
@@ -42,10 +43,11 @@ class RawProductItem(scrapy.Item):
     shopid = scrapy.Field()
     created_date = scrapy.Field()
 
+
 class ProductItem(scrapy.Item):
     id_pcw = scrapy.Field()
-    name = scrapy.Field()  
-    clean_name = scrapy.Field()  
+    name = scrapy.Field()
+    clean_name = scrapy.Field()
     product_code = scrapy.Field()
     category_code = scrapy.Field()
     main_category_code = scrapy.Field()
@@ -66,6 +68,7 @@ class ProductItem(scrapy.Item):
     voucher_info = scrapy.Field()
     shop_item = scrapy.Field()
     description = scrapy.Field()
+
 
 # subclass JSONEncoder
 class Encoder(JSONEncoder):
