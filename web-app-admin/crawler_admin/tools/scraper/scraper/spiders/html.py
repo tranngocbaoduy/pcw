@@ -184,12 +184,27 @@ class HtmlSpider(scrapy.Spider):
         info_from_parser = dict()
         for parser in self.parsers:
             # Get value from tag html
-            tags = self._parse_attribute(
-                response, parser.selector_type, parser.selector
-            ).getall()
-            str_tags = " ".join([self.strip_tags(html) for html in tags if html])
-            if str_tags:
-                info_from_parser[parser.name] = str_tags
+            if parser.name == "image" or parser.name == "img":
+                # handle for image
+                img_tags = self._parse_attribute(
+                    response, parser.selector_type, parser.selector
+                )
+                list_url_images = self.handle_get_list_image(response, img_tags)
+                info_from_parser["image"] = list_url_images
+            else:
+                tags = self._parse_attribute(
+                    response, parser.selector_type, parser.selector
+                ).getall()
+                str_tags = " ".join([self.strip_tags(html) for html in tags if html])
+                if str_tags:
+                    if "price" in parser.name:
+                        # handle for currency
+                        info_from_parser[
+                            parser.name
+                        ] = CrawlingHelper.get_currency_from_text(str_tags)
+                    else:
+                        # handle for value of parser
+                        info_from_parser[parser.name] = str_tags
 
         merged_item.update(info_from_parser)
         if self.IS_USING_PROXY:
@@ -198,10 +213,24 @@ class HtmlSpider(scrapy.Spider):
             )
         return merged_item
 
-    def _parse_attribute(self, response, selector_type, selector):
+    def handle_get_list_image(self, dom, selector_items):
+        image_urls = []
+        for selector in selector_items:
+            try:
+                image_element_items = selector.css("img").xpath("@src").getall()
+                for img_element in image_element_items:
+                    if "https://" in img_element:
+                        image_urls.append(img_element)
+            except:
+                print("not image")
+        image_urls = list(set(image_urls))
+        image_urls = CrawlingHelper.get_random_from_list(4, image_urls)
+        return image_urls
+
+    def _parse_attribute(self, dom, selector_type, selector):
         attribute = ""
         if selector_type == "xpath":
-            attribute = response.xpath(selector)
+            attribute = dom.xpath(selector)
         if selector_type == "css":
-            attribute = response.css(selector)
+            attribute = dom.css(selector)
         return attribute

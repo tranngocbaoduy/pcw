@@ -1,0 +1,154 @@
+apple,iphone,ip
+samsung,samsunggalaxy,galaxy
+xiaomi,redmi
+oppo
+huawei
+realme
+lenovo
+motorola
+tecno
+vivo
+htc
+sony
+nokia
+seiko
+lg,lg việt nam
+black berry,backberry
+one plus,oneplus
+asus
+zte
+vertu
+asus
+msi
+acer
+dell
+hp
+razer
+microsoft
+toshiba
+toyota
+darling
+casper
+coocaa
+hòa phát
+electrolux
+sharp
+hitachi
+panasonic
+aqua
+sanyo
+beko
+tcl
+skyworth
+ffalcon
+asanzo
+darling
+aconatic
+akino
+akito
+daikin
+sumikura
+rapido
+philips
+elctrolux
+caso
+Hòa Phát
+kemin
+gorenje
+gree-,gree
+midea
+alaska
+nagakawa
+kachi
+sunhouse
+funiki
+daikio,daikiosan
+kooda
+kawaeco
+boss
+takasa
+carrier
+kangaroo,kangaroo_1
+karofi
+mitsubishi,mishubishi hevy,mishubishi_hevy,mitsubishi electric
+itel,oukitel,masstel,oukitel,intel
+sugar
+bphone
+nubia
+dxd
+vsmart
+bosch
+honda,honda bike,bluera bike,dk bike
+piaggio
+yamaha
+moto guzzi
+aprilia 
+hisense
+fujitsu
+general
+dairry
+suntek 
+reetech 
+koda
+koolman
+new widetech
+comfee
+media
+amoi  
+espero
+việt thái
+surface
+malloca
+whirlpool
+suzuki
+==  
+
+
+
+
+
+piaggio
+aconatic
+oppo
+aprilia
+kemin
+suntek
+ffalcon
+galanz
+singpc
+kuchen  
+sym
+vnpt technology
+max   
+vankyo
+harley-davidson  
+candy   
+victoria
+hyper
+pehouse
+vpc oil
+txcb
+alldocube
+nutraluxe md 
+black shark 
+kaff 
+nioshima 
+ariston
+hyosung
+baseus
+led
+ally
+inspiron
+zte
+hafele
+kindle
+elite
+rock space
+yadea
+vs
+amazon
+triumph motorcycle
+vespa
+doux
+kymco
+google

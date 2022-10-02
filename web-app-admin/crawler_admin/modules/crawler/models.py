@@ -40,6 +40,7 @@ class Spider(models.Model):
     agency = models.CharField("Agency", default="", max_length=256)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_running = models.BooleanField("Is running", default=False, editable=False)
 
     def __str__(self):
         return self.name
@@ -178,7 +179,7 @@ class RawProduct(models.Model):
     def __str__(self):
         return self.name
 
-    def extract_data_from_raw(self, request):
+    def extract_data_from_raw(self, request, query):
         print("[REQUEST]=>", request)
         info_product = ExtractorService.handle_extract_information_from_json(self.data)
         print("info_product", info_product)
@@ -231,24 +232,32 @@ class RawProduct(models.Model):
             )
 
         info_product["group_product"] = info_group_product
+        info_product["id_raw_product"] = query
         try:
-            info_product = Product.objects.get(
+            info_product_db = Product.objects.get(
                 base_encoded_url=info_product.get("base_encoded_url")
             )
-            for attr, value in model_to_dict(info_product).items():
+            print("UPDATE PRODUCT", info_product)
+
+            for attr, value in info_product.items():
                 if attr == "category":
-                    setattr(info_product, attr, info_category)
+                    setattr(info_product_db, attr, info_category)
                 elif attr == "brand":
-                    setattr(info_product, attr, info_brand)
+                    setattr(info_product_db, attr, info_brand)
                 elif attr == "group_product":
-                    setattr(info_product, attr, info_group_product)
+                    setattr(info_product_db, attr, info_group_product)
+                elif attr == "id_raw_product":
+                    print("query", query)
+                    setattr(info_product_db, attr, query)
                 else:
-                    setattr(info_product, attr, value if value else "1")
-            info_product.save()
+                    print('a', attr, value)
+                    setattr(info_product_db, attr, value if value else "1")
+            info_product_db.save()
         except:
             info_product, created = Product.objects.get_or_create(**info_product)
+            print("CREATE PRODUCT", created)
 
-        product_id = str(info_product.id)
+        product_id = str(info_product_db.id)
         if product_id not in info_group_product.product_ids:
             info_group_product.product_ids = info_group_product.product_ids + [
                 product_id
@@ -263,9 +272,14 @@ class RawProduct(models.Model):
 
 
 class Product(models.Model):
+    class ScraperType(models.TextChoices):
+        API = "api", _("API")
+        HTML = "html", _("HTML")
+
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False, unique=True
     )
+    id_pcw = models.CharField(max_length=20, default="")
     name = models.CharField("Name", max_length=256)
     clean_name = models.CharField("Clean Name", max_length=256)
     url = models.CharField("URL", max_length=512)
@@ -273,7 +287,9 @@ class Product(models.Model):
     domain = models.CharField("Domain", max_length=256)
     agency = models.CharField("Agency", max_length=256)
     product_code = models.CharField("Code", max_length=256)
-    is_api = models.BooleanField("From API", default=True)
+    scraper_type = models.CharField(
+        max_length=50, choices=ScraperType.choices, default=ScraperType.API
+    )
     category = models.ForeignKey(
         Category, on_delete=models.CASCADE, null=True, blank=True
     )
@@ -287,10 +303,7 @@ class Product(models.Model):
     shop = models.ForeignKey(Shop, on_delete=models.CASCADE, null=True, blank=True)
     count_update = models.IntegerField("Count Update", default=0)
 
-    slug_id = models.TextField(
-        default="",
-        blank=True,
-    )
+    slug_id = models.CharField("Slug Id", max_length=1024, blank=True)
     image = models.TextField(
         default="",
         blank=True,
@@ -391,6 +404,9 @@ class Scraper(models.Model):
         crawl_settings.setmodule("tools.scraper.scraper.settings")
         runner = CrawlerRunner(crawl_settings)
         for _spider in self.scraperspider_set.all():
+            spider_db = _spider.spider
+            spider_db.is_running = True
+            spider_db.save()
             if self.scraper_type == "api":
                 runner.crawl(ApiSpider, spider=_spider)
             if self.scraper_type == "html":
@@ -442,6 +458,9 @@ class ScraperSpider(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return "{} - {}".format(self.spider.name, self.spider.is_running)
 
 
 class Parser(models.Model):

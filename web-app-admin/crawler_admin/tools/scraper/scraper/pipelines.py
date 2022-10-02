@@ -17,7 +17,7 @@ from itemadapter import ItemAdapter
 from scrapy.exceptions import DropItem
 from dateutil import parser
 from validators.url import url
-from modules.crawler.models import RawProduct
+from modules.crawler.models import RawProduct, Spider
 from tools.scraper.scraper.utils import CrawlingHelper
 
 
@@ -102,3 +102,12 @@ class ScraperPipeline:
                 logging.info({"message": "[CREATE PRODUCT]", "data": info_raw_product})
 
         return info_raw_product_db
+
+    def close_spider(self, spider):
+        spider = spider.spider.spider
+        try:
+            spider_db = Spider.objects.get(id=spider.id)
+            spider_db.is_running = False
+            spider_db.save()
+        except:
+            print("[CLOSE SPIDER ERROR]", spider)

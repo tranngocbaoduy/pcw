@@ -26,4 +26,5 @@ class ProductTabularInline(admin.TabularInline):
 
 class ScraperSpiderTabularInline(admin.TabularInline):
     model = ScraperSpider
+    fields = ["spider", "category"]
     extra = 0

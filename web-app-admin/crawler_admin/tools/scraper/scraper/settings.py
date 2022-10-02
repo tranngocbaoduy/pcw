@@ -26,7 +26,7 @@ django.setup()
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = "scraper"
+BOT_NAME = "meteor"
 
 SPIDER_MODULES = ["tools.scraper.scraper.spiders"]
 NEWSPIDER_MODULE = "tools.scraper.scraper.spiders"

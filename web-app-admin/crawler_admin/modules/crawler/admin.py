@@ -3,6 +3,7 @@ from django.contrib import admin, messages
 from import_export.admin import ImportExportModelAdmin
 from mptt.admin import DraggableMPTTAdmin
 
+from modules.crawler.css_mixin import CSSAdminMixin
 from modules.crawler.apps import scheduler
 from modules.crawler.format.json_admin import JsonAdmin
 from modules.crawler.models import (
@@ -41,9 +42,8 @@ class SpiderAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
 
 @admin.register(Scraper)
-class ScraperAdmin(admin.ModelAdmin):
+class ScraperAdmin(admin.ModelAdmin, CSSAdminMixin):
     inlines = (ScraperSpiderTabularInline,)
-
     actions = ["setup_crawler", "stop_crawler"]
     list_display = [
         "id",
@@ -54,11 +54,15 @@ class ScraperAdmin(admin.ModelAdmin):
         "start_time",
         "start_date",
         "is_active",
+        "is_running",
     ]
     readonly_fields = ("job_id",)
 
+    def is_running(self, obj):
+        return [(spy.name, spy.is_running) for spy in obj.spiders.all()]
+
     def crawl_url(self, obj):
-        return [ spy.url for spy in obj.spiders.all()]
+        return [(spy.name, spy.url) for spy in obj.spiders.all()]
 
     @admin.action(description="Start crawling now")
     def setup_crawler(self, request, queryset):
@@ -128,7 +132,7 @@ class RawProductAdmin(ImportExportModelAdmin, JsonAdmin, admin.ModelAdmin):
     @admin.action(description="Extract Infomation")
     def extract_info(self, request, queryset):
         for query in queryset:
-            query.extract_data_from_raw(request)
+            query.extract_data_from_raw(request, query)
 
         # self.message_user(
         #     request,

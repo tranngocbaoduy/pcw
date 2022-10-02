@@ -1,0 +1,29 @@
+.column-crawl_url {
+  min-width: 20px !important;
+  max-width: 100px !important;
+  word-break: break-all;
+}
+
+th[class^="column"] {
+  text-align: center !important;
+}
+td[class^="field-is"] {
+  text-align: center !important;
+}
+
+.field-id {
+  max-width: 100px;
+}
+
+.field-name {
+    min-width: 20px !important;
+    max-width: 250px !important; 
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.field-crawl_url {
+  min-width: 20px !important;
+  max-width: 100px !important; 
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
