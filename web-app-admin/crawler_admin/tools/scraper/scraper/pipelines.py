@@ -72,20 +72,23 @@ class ScraperPipeline:
             "agency": item.get("agency"),
             "name": item.get("name", ""),
             "data": item,
+            "scraper_type": item.get("scraper_type", "api"),
         }
 
     def process_item(self, item, spider):
-        info_raw_product = self.convert_raw_product_db(item) 
+        info_raw_product = self.convert_raw_product_db(item)
         try:
             info_raw_product_db = RawProduct.objects.get(
                 base_encoded_url=info_raw_product["base_encoded_url"]
             )
-            logging.info({"message": "[UPDATE PRODUCT]", "data": info_raw_product_db})
+            logging.info({"message": "[UPDATE PRODUCT]", "data": info_raw_product})
             for attr, value in info_raw_product.items():
-                if attr == "count_update":
-                    setattr(info_raw_product_db, attr, int(value) +  1)
-                else:
-                    setattr(info_raw_product_db, attr, value)
+                setattr(info_raw_product_db, attr, value)
+            setattr(
+                info_raw_product_db,
+                "count_update",
+                info_raw_product_db.count_update + 1,
+            )
             info_raw_product_db.save()
         except:
             info_raw_product_db, is_created = RawProduct.objects.get_or_create(
@@ -93,9 +96,9 @@ class ScraperPipeline:
             )
             if not is_created:
                 logging.error(
-                    {"message": "[CREATE PRODUCT ERROR]", "data": info_raw_product_db}
+                    {"message": "[CREATE PRODUCT ERROR]", "data": info_raw_product}
                 )
             else:
-                logging.info({"message": "[CREATE PRODUCT]", "data": info_raw_product_db})
+                logging.info({"message": "[CREATE PRODUCT]", "data": info_raw_product})
 
         return info_raw_product_db

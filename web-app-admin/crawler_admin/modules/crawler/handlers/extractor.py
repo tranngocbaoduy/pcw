@@ -49,22 +49,22 @@ class ExtractorService(object):
 
         base_item = dict()
         # base_item['id_pcw'] = response.get('id_pcw',"")
-        base_item["name"] = response.get("name","").strip()
-        base_item["url"] = response.get("url","")
+        base_item["name"] = response.get("name", "").strip()
+        base_item["url"] = response.get("url", "")
         base_item["domain"] = domain
         base_item["agency"] = agency
         base_item["clean_name"] = ExtractorService.handle_get_clean_name(
-            response.get("name","")
+            response.get("name", "")
         ).strip()
-        base_item["category"] = response.get("category_code","")
+        base_item["category"] = response.get("category_code", "")
         # base_item['category_code_from_title'] = ExtractorService.handle_get_category(response.get('name',""))
 
         if domain == "lazada.vn":
-            base_item["slug_id"] = response.get("itemUrl","").replace(
+            base_item["slug_id"] = response.get("itemUrl", "").replace(
                 "//www.lazada.vn/products", ""
             )
-            base_item["brand"] = response.get("brandName","").strip()
-            base_item["image"] = [response.get("image","").strip()]
+            base_item["brand"] = response.get("brandName", "").strip()
+            base_item["image"] = [response.get("image", "").strip()]
             if response.get("sellerName", ""):
                 base_item["shop"] = {
                     "shop_id": response.get("sellerId", ""),
@@ -76,7 +76,7 @@ class ExtractorService(object):
             base_item["list_price"] = response.get(
                 "originalPrice", response.get("price", 0)
             )
-            base_item["stock"] = 10 if response.get("inStock","") else 0
+            base_item["stock"] = 10 if response.get("inStock", "") else 0
             base_item["historical_sold"] = 0
             base_item["liked_count"] = 0
             base_item["item_rating"] = {
@@ -95,7 +95,9 @@ class ExtractorService(object):
                 "rcount_with_image": 0,
             }
             base_item["product_code"] = ExtractorService.handle_get_code(
-                response.get("name",""), response.get("category_code",""), base_item["brand"].lower()
+                response.get("name", ""),
+                response.get("category_code", ""),
+                base_item["brand"].lower(),
             )
             # base_item['content'] = response.get('short_description',"").strip()
             # base_item['voucher_info'] = None
@@ -119,33 +121,39 @@ class ExtractorService(object):
                 official_shop = None
                 base_item["shop"] = None
 
-            base_item["slug_id"] = "/{}".format(response.get("url_key",""))
-            base_item["brand"] = response.get("brand_name","").strip()
-            base_item["image"] = [response.get("thumbnail_url","").strip()]
-            base_item["price"] = response.get("price","")
-            base_item["list_price"] = response.get("list_price","")
+            base_item["slug_id"] = "/{}".format(response.get("url_key", ""))
+            base_item["brand"] = response.get("brand_name", "").strip()
+            base_item["image"] = [response.get("thumbnail_url", "").strip()]
+            base_item["price"] = response.get("price", "")
+            base_item["list_price"] = response.get("list_price", "")
             base_item["stock"] = (
-                response.get("stock_item","")["qty"] if response.get("stock_item","") else 0
+                response.get("stock_item", "")["qty"]
+                if response.get("stock_item", "")
+                else 0
             )
             base_item["historical_sold"] = (
-                response.get("quantity_sold","")["value"] if response.get("quantity_sold","") else 0
+                response.get("quantity_sold", "")["value"]
+                if response.get("quantity_sold", "")
+                else 0
             )
             base_item["liked_count"] = 0
             base_item["item_rating"] = {
-                "rating_star": int(response.get("rating_average","")),
+                "rating_star": int(response.get("rating_average", "")),
                 "rating_count": [
-                    response.get("review_count",""),
-                    response.get("review_count",""),
+                    response.get("review_count", ""),
+                    response.get("review_count", ""),
                     0,
                     0,
                     0,
                     0,
                 ],
-                "rcount_with_context": response.get("review_count",""),
+                "rcount_with_context": response.get("review_count", ""),
                 "rcount_with_image": 0,
             }
             base_item["product_code"] = ExtractorService.handle_get_code(
-                response.get("name",""), response.get("category_code",""), base_item["brand"].lower()
+                response.get("name", ""),
+                response.get("category_code", ""),
+                base_item["brand"].lower(),
             )
             # base_item['content'] = response.get('short_description',"").strip()
             # base_item['voucher_info'] = None
@@ -169,21 +177,21 @@ class ExtractorService(object):
                 official_shop = None
                 base_item["shop"] = None
 
-            url_obj = urlparse(response.get("url",""))
+            url_obj = urlparse(response.get("url", ""))
             slug_arr = url_obj.path.split(".")
             base_item["slug_id"] = ".".join(slug_arr[:-2])
-            base_item["brand"] = response.get("brand","")
+            base_item["brand"] = response.get("brand", "")
             base_item["image"] = [
                 "https://cf.shopee.vn/file/{}".format(image)
-                for image in response.get("images","")
+                for image in response.get("images", "")
             ]
-            base_item["stock"] = response.get("stock","")
-            base_item["item_rating"] = response.get("item_rating","")
-            base_item["historical_sold"] = response.get("historical_sold","")
-            base_item["liked_count"] = response.get("liked_count","")
-            base_item["price"] = int(response.get("price","")) / 100000
-            base_item["list_price"] = int(response.get("price_max","")) / 100000
-            base_item["slug_id"] = response.get("slug_id","")
+            base_item["stock"] = response.get("stock", "")
+            base_item["item_rating"] = response.get("item_rating", "")
+            base_item["historical_sold"] = response.get("historical_sold", "")
+            base_item["liked_count"] = response.get("liked_count", "")
+            base_item["price"] = int(response.get("price", "")) / 100000
+            base_item["list_price"] = int(response.get("price_max", "")) / 100000
+            base_item["slug_id"] = response.get("slug_id", "")
             # base_item['voucher_info'] = response.get('voucher_info',"")
 
             not_allow_brand = [
@@ -207,7 +215,9 @@ class ExtractorService(object):
             ):
                 base_item["brand"] = base_item["brand_from_title"]
             base_item["product_code"] = ExtractorService.handle_get_code(
-                response.get("name",""), response.get("category_code",""), base_item["brand"].lower()
+                response.get("name", ""),
+                response.get("category_code", ""),
+                base_item["brand"].lower(),
             )
             base_item["description"] = []
 

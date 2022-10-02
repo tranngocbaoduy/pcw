@@ -177,6 +177,7 @@ class ApiSpider(scrapy.Spider):
         )
         merged_item["domain"] = self.spider.spider.domain
         merged_item["agency"] = self.spider.spider.agency
+        merged_item["scraper_type"] = "api"
         merged_item["created_date"] = CrawlingHelper.get_now()
         merged_item["category_code"] = self.spider.category.name
 

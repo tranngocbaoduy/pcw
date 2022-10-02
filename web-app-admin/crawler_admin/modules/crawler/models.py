@@ -8,6 +8,7 @@ from django.db.models import JSONField
 from django.utils.translation import gettext_lazy as _
 from django.forms.models import model_to_dict
 from django.shortcuts import get_object_or_404
+from django.contrib import messages
 
 from mptt.models import MPTTModel
 from mptt.fields import TreeForeignKey
@@ -155,6 +156,10 @@ class GroupProduct(models.Model):
 
 
 class RawProduct(models.Model):
+    class ScraperType(models.TextChoices):
+        API = "api", _("API")
+        HTML = "html", _("HTML")
+
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False, unique=True
     )
@@ -162,38 +167,46 @@ class RawProduct(models.Model):
     name = models.CharField("Name", max_length=512, blank=True)
     agency = models.CharField("Agency", max_length=512, blank=True)
     base_encoded_url = models.CharField("Encode URL", max_length=512)
+    scraper_type = models.CharField(
+        max_length=50, choices=ScraperType.choices, default=ScraperType.API
+    )
     data = JSONField(default=dict)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     count_update = models.IntegerField("Count Update", default=0)
 
     def __str__(self):
-        return self.url
+        return self.name
 
-    def extract_data_from_raw(self):
+    def extract_data_from_raw(self, request):
+        print("[REQUEST]=>", request)
         info_product = ExtractorService.handle_extract_information_from_json(self.data)
-        print('info_product', info_product)
+        print("info_product", info_product)
         info_product["base_encoded_url"] = self.base_encoded_url
         if info_product.get("product_code") == "NONE":
             return
 
-        info_category, created = Category.objects.get_or_create(
-            name=info_product.get("category")
-        )
-        if not created:
-            for attr, value in model_to_dict(info_category).items():
-                setattr(info_category, attr, value)
-            info_category.save()
+        if info_product.get("category"):
+            info_category, created = Category.objects.get_or_create(
+                name=info_product.get("category")
+            )
+            if not created:
+                for attr, value in model_to_dict(info_category).items():
+                    setattr(info_category, attr, value)
+                info_category.save()
+            info_product["category"] = info_category
 
-        info_brand = {"name": info_product.get("brand"), "category": info_category}
-        info_brand, created = Brand.objects.get_or_create(**info_brand)
-        if not created:
-            for attr, value in model_to_dict(info_brand).items():
-                if attr == "category":
-                    setattr(info_brand, attr, info_category)
-                else:
-                    setattr(info_brand, attr, value)
-            info_brand.save()
+        if info_product.get("brand"):
+            info_brand = {"name": info_product.get("brand"), "category": info_category}
+            info_brand, created = Brand.objects.get_or_create(**info_brand)
+            if not created:
+                for attr, value in model_to_dict(info_brand).items():
+                    if attr == "category":
+                        setattr(info_brand, attr, info_category)
+                    else:
+                        setattr(info_brand, attr, value)
+                info_brand.save()
+            info_product["brand"] = info_brand
 
         product_code = info_product.get("product_code")
         agency = info_product.get("agency")
@@ -217,8 +230,6 @@ class RawProduct(models.Model):
                 **info_group_product
             )
 
-        info_product["category"] = info_category
-        info_product["brand"] = info_brand
         info_product["group_product"] = info_group_product
         try:
             info_product = Product.objects.get(
@@ -244,6 +255,12 @@ class RawProduct(models.Model):
             ]
             info_group_product.save()
 
+        messages.add_message(
+            request,
+            messages.SUCCESS,
+            "Save {} was successfully.".format(info_group_product.name),
+        )
+
 
 class Product(models.Model):
     id = models.UUIDField(
@@ -257,15 +274,17 @@ class Product(models.Model):
     agency = models.CharField("Agency", max_length=256)
     product_code = models.CharField("Code", max_length=256)
     is_api = models.BooleanField("From API", default=True)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    brand = models.ForeignKey(Brand, on_delete=models.CASCADE)
+    category = models.ForeignKey(
+        Category, on_delete=models.CASCADE, null=True, blank=True
+    )
+    brand = models.ForeignKey(Brand, on_delete=models.CASCADE, null=True, blank=True)
     id_raw_product = models.ForeignKey(
         RawProduct, blank=True, null=True, on_delete=models.CASCADE
     )
     group_product = models.ForeignKey(
         GroupProduct, blank=True, null=True, on_delete=models.CASCADE
     )
-    shop = models.ForeignKey(Shop, on_delete=models.CASCADE)
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, null=True, blank=True)
     count_update = models.IntegerField("Count Update", default=0)
 
     slug_id = models.TextField(
@@ -372,7 +391,6 @@ class Scraper(models.Model):
         crawl_settings.setmodule("tools.scraper.scraper.settings")
         runner = CrawlerRunner(crawl_settings)
         for _spider in self.scraperspider_set.all():
-            print("self.scraper_type", self.scraper_type)
             if self.scraper_type == "api":
                 runner.crawl(ApiSpider, spider=_spider)
             if self.scraper_type == "html":

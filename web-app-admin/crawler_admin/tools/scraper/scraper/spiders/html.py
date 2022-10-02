@@ -30,8 +30,8 @@ from tools.scraper.scraper.proxy import ProxyService
 
 
 class HtmlSpider(scrapy.Spider):
-    configure_logging(install_root_handler=False)
-    logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.INFO)
+    # configure_logging(install_root_handler=False)
+    # logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.INFO)
     name = "html"
     start_request_time = None
     url_timeout = []
@@ -177,6 +177,7 @@ class HtmlSpider(scrapy.Spider):
         merged_item["name"] = response.request.url.replace(base_url, "")
         merged_item["domain"] = self.spider.spider.domain
         merged_item["agency"] = self.spider.spider.agency
+        merged_item["scraper_type"] = "html"
         merged_item["created_date"] = CrawlingHelper.get_now()
         merged_item["category_code"] = self.spider.category.name
 
@@ -186,7 +187,7 @@ class HtmlSpider(scrapy.Spider):
             tags = self._parse_attribute(
                 response, parser.selector_type, parser.selector
             ).getall()
-            str_tags = " ".join([ self.strip_tags(html) for html in tags if html])
+            str_tags = " ".join([self.strip_tags(html) for html in tags if html])
             if str_tags:
                 info_from_parser[parser.name] = str_tags
 

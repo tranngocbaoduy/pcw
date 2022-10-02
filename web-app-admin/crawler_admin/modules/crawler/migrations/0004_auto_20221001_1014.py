@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('crawler', '0003_auto_20221001_0541'),
+        ("crawler", "0003_auto_20221001_0541"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='product',
-            name='count_update',
-            field=models.IntegerField(default=0, verbose_name='Count Update'),
+            model_name="product",
+            name="count_update",
+            field=models.IntegerField(default=0, verbose_name="Count Update"),
         ),
         migrations.AlterField(
-            model_name='rawproduct',
-            name='count_update',
-            field=models.IntegerField(default=0, verbose_name='Count Update'),
+            model_name="rawproduct",
+            name="count_update",
+            field=models.IntegerField(default=0, verbose_name="Count Update"),
         ),
     ]
