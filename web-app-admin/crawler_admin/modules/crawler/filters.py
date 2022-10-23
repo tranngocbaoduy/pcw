@@ -40,14 +40,13 @@ class FilterByAgency(admin.SimpleListFilter):
     parameter_name = "agencies"
 
     def lookups(self, request, model_admin):
-        return [("Tiki", "Tiki"), ("Shopee", "Shopee")]
+        return [("tiki", "Tiki"), ("shopee", "Shopee"), ("donghohaitrieu", "HaiTrieu")]
 
     def queryset(self, request, queryset):
         if self.value():
             list_fields = [
                 str(_f).split(".")[-1] for _f in queryset.model._meta.get_fields()
-            ]
-            print("list_fields", list_fields)
+            ]  
             if "agency" in list_fields:
                 return queryset.filter(agency=self.value())
             else:

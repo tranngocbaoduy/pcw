@@ -17,6 +17,7 @@ from modules.crawler.models import (
     Brand,
     Shop,
     GroupProduct,
+    ParserWaitUntil
 )
 from import_export import resources
 
@@ -36,7 +37,7 @@ from modules.crawler.tabular_in_lines import (
 # Register your models here.
 @admin.register(Spider)
 class SpiderAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ["id", "name", "domain", "url", "base_url_item", "updated_at"]
+    list_display = [ "name", "domain", "url", "base_url_item", "updated_at"]
     search_fields = ("name", "domain")
     inlines = (ParserTabularInline,)
 
@@ -45,8 +46,7 @@ class SpiderAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 class ScraperAdmin(admin.ModelAdmin, CSSAdminMixin):
     inlines = (ScraperSpiderTabularInline,)
     actions = ["setup_crawler", "stop_crawler"]
-    list_display = [
-        "id",
+    list_display = [ 
         "name",
         "scraper_type",
         "scheduler_type",
@@ -109,8 +109,7 @@ class ScraperAdmin(admin.ModelAdmin, CSSAdminMixin):
             % len(queryset),
             messages.SUCCESS,
         )
-
-
+ 
 @admin.register(RawProduct)
 class RawProductAdmin(ImportExportModelAdmin, JsonAdmin, admin.ModelAdmin):
     list_display = [
@@ -155,8 +154,11 @@ class ProductAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         FilterByAgency,
     )
 
+@admin.register(ParserWaitUntil)
+class ProductAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    list_display = ["name", "selector_type", "selector"] 
 
-admin.site.register(Brand)
+admin.site.register(Brand) 
 admin.site.register(Shop)
 admin.site.site_header = "Meteor System"
 admin.site.site_title = "Meteor System"

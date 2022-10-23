@@ -53,8 +53,7 @@ class LazyEncoder(DjangoJSONEncoder):
 
 
 @register.simple_tag(takes_context=True)
-def context_test(context):
-    print(context)
+def context_test(context): 
     pass
 
 
@@ -107,8 +106,7 @@ def get_date_type(spec):
 
 
 @register.filter
-def test(obj):
-    print(obj)
+def test(obj): 
     # pass
     return ""
 
@@ -306,6 +304,7 @@ def get_icon(obj, name=None):
         "crawler": "fas fa-robot",
         "Scraper": "fas fa-parachute-box",
         "RawProduct": "fas fa-crosshairs",
+        "ParserWaitUntil": "fas fa-circle-pause",
         "Category": "fas fa-list",
         "Product": "fas fa-meteor",
         "GroupProduct": "fas fa-tags",

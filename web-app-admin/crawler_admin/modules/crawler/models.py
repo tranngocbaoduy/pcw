@@ -22,7 +22,23 @@ from tools.scraper.scraper.spiders.api import ApiSpider
 from tools.scraper.scraper.spiders.html import HtmlSpider
 from modules.crawler.handlers.extractor import ExtractorService
 
-# Create your models here.
+class ParserWaitUntil(models.Model):
+    id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False, unique=True
+    )
+
+    class SelectorType(models.TextChoices):
+        XPATH = "xpath", _("XPATH")
+        CSS = "css", _("CSS")
+
+    name = models.CharField(max_length=256)
+    selector_type = models.CharField(
+        max_length=50, choices=SelectorType.choices, default=SelectorType.XPATH
+    )
+    selector = models.CharField(max_length=256)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
 class Spider(models.Model):
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False, unique=True
@@ -30,14 +46,19 @@ class Spider(models.Model):
     name = models.CharField(max_length=256)
     url = models.CharField("URL", max_length=512)
     is_using_proxy = models.BooleanField("Using Proxy", default=False)
+    class_parent = models.CharField("Class Parent", max_length=256, blank=True)
+    class_child = models.CharField("Class Child", max_length=256, blank=True)
     limit_per_request = models.IntegerField("Limit per page", default=30)
     start_page = models.IntegerField("Start page", default=0)
     end_page = models.IntegerField("End page", default=100)
     base_url_item = models.CharField(
         "Base url item", default="", max_length=256, blank=True
-    )
+    ) 
+    is_headless = models.BooleanField("Not using browser", default=True, editable=True)
     domain = models.CharField("Domain", default="", max_length=256)
     agency = models.CharField("Agency", default="", max_length=256)
+    parser_wait_until_parent = models.ForeignKey(ParserWaitUntil, on_delete=models.CASCADE, editable=True, null=True, blank=True, related_name='spirder_parser_parent')
+    parser_wait_until_child = models.ForeignKey(ParserWaitUntil, on_delete=models.CASCADE, editable=True, null=True, blank=True, related_name='spirder_parser_child')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_running = models.BooleanField("Is running", default=False, editable=False)
@@ -174,7 +195,7 @@ class RawProduct(models.Model):
     data = JSONField(default=dict)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    count_update = models.IntegerField("Count Update", default=0)
+    count_update = models.IntegerField("Count Update", default=1)
 
     def __str__(self):
         return self.name
@@ -402,9 +423,16 @@ class Scraper(models.Model):
         configure_logging()
         crawl_settings = Settings()
         crawl_settings.setmodule("tools.scraper.scraper.settings")
-        runner = CrawlerRunner(crawl_settings)
+
         for _spider in self.scraperspider_set.all():
             spider_db = _spider.spider
+            params = {}
+            if spider_db.is_headless:
+                params["SELENIUM_DRIVER_ARGUMENTS"] = ['--headless']
+            else: params["SELENIUM_DRIVER_ARGUMENTS"] = []
+            crawl_settings.update(params)
+            runner = CrawlerRunner(crawl_settings)
+            
             spider_db.is_running = True
             spider_db.save()
             if self.scraper_type == "api":
@@ -461,7 +489,6 @@ class ScraperSpider(models.Model):
 
     def __str__(self):
         return "{} - {}".format(self.spider.name, self.spider.is_running)
-
 
 class Parser(models.Model):
     id = models.UUIDField(

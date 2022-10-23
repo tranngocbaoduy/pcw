@@ -16,10 +16,10 @@ td[class^="field-is"] {
 }
 
 .field-name {
-    min-width: 20px !important;
-    max-width: 250px !important; 
-    overflow: hidden;
-    text-overflow: ellipsis;
+    /* min-width: 20px !important;
+    max-width: 250px !important;  */
+    /* overflow: hidden;
+    text-overflow: ellipsis; */
 }
 .field-crawl_url {
   min-width: 20px !important;
