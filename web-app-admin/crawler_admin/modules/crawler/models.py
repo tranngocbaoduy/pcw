@@ -20,6 +20,7 @@ from scrapy.utils.log import configure_logging
 from modules.crawler.apps import scheduler
 from tools.scraper.scraper.spiders.api import ApiSpider
 from tools.scraper.scraper.spiders.html import HtmlSpider
+from tools.scraper.scraper.spiders.html_shopee import HtmlShopeeSpider
 from modules.crawler.handlers.extractor import ExtractorService
 
 class ParserWaitUntil(models.Model):
@@ -38,6 +39,9 @@ class ParserWaitUntil(models.Model):
     selector = models.CharField(max_length=256)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
 
 class Spider(models.Model):
     id = models.UUIDField(
@@ -71,10 +75,12 @@ class Category(MPTTModel):
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False, unique=True
     )
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=250)
     parent = TreeForeignKey(
         "self", on_delete=models.CASCADE, null=True, blank=True, related_name="children"
     )
+    vi_name = models.CharField(max_length=250, default='', blank=True, null=True)
+    en_name = models.CharField(max_length=250, default='', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -132,13 +138,17 @@ class Brand(models.Model):
         return "{} - {}".format(self.category.name, self.name)
 
 
-class Shop(models.Model):
+class Seller(models.Model):
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False, unique=True
     )
     name = models.CharField(max_length=256, blank=True)
-    address = models.CharField(max_length=256, blank=True)
+    address = models.CharField(max_length=256, blank=True, null=True)
+    review =  models.IntegerField(default=0, null=True)
+    star = models.FloatField(default=0, blank=True, null=True)
+    image =  models.CharField(max_length=256, blank=True, null=True)
     agency = models.CharField(max_length=256, blank=True)
+    url = models.CharField(max_length=256, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -181,7 +191,8 @@ class RawProduct(models.Model):
     class ScraperType(models.TextChoices):
         API = "api", _("API")
         HTML = "html", _("HTML")
-
+        HTML_SHOPEE = "html_shopee", _("HTML_SHOPEE")
+ 
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False, unique=True
     )
@@ -207,22 +218,58 @@ class RawProduct(models.Model):
         info_product["base_encoded_url"] = self.base_encoded_url
         if info_product.get("product_code") == "NONE":
             return
-
+        print(1)
         if info_product.get("category"):
-            info_category, created = Category.objects.get_or_create(
-                name=info_product.get("category")
-            )
+            if info_product.get("category") and type(info_product.get("category")) == dict: 
+                name_category = info_product.get("category").name
+            if info_product.get("category") and type(info_product.get("category")) == str: 
+                name_category = info_product.get("category")
+            try:
+                info_category, created = Category.objects.get_or_create(
+                    name=name_category
+                )
+            except:
+                info_category = Category.objects.filter(name=name_category)[0]
+                created = True
+
+            print('info_category',info_category)
             if not created:
                 for attr, value in model_to_dict(info_category).items():
+                    if attr == 'parent': continue
                     setattr(info_category, attr, value)
                 info_category.save()
+            
             info_product["category"] = info_category
 
+        print(3)
+        if info_product.get("tree_category"):
+            tree_category = info_product.get("tree_category", [])
+            for category in tree_category: 
+                name_category_parent = category.get('parent')
+                name_category_child = category.get('parent')
+                if name_category_parent and name_category_child: 
+                    print('name_category_parent',name_category_parent)
+                    
+                    info_category_parent, created = Category.objects.get_or_create(
+                        **{"name":name_category_parent}
+                    )
+                    info_category_child = {
+                        "name": category.get('name'),
+                        "parent": info_category_parent
+                    }
+                    print('info_category_child',info_category_child)
+                    info_category, created = Category.objects.get_or_create(
+                        **info_category_child
+                    ) 
+            del info_product['tree_category']
+            
+        print(4)
         if info_product.get("brand"):
             info_brand = {"name": info_product.get("brand"), "category": info_category}
             info_brand, created = Brand.objects.get_or_create(**info_brand)
             if not created:
                 for attr, value in model_to_dict(info_brand).items():
+                    if attr == "id": continue
                     if attr == "category":
                         setattr(info_brand, attr, info_category)
                     else:
@@ -232,6 +279,7 @@ class RawProduct(models.Model):
 
         product_code = info_product.get("product_code")
         agency = info_product.get("agency")
+       
         try:
             info_group_product_db = GroupProduct.objects.get(name__exact=product_code)
             if agency not in info_group_product_db.agencies:
@@ -251,6 +299,19 @@ class RawProduct(models.Model):
             info_group_product, created = GroupProduct.objects.get_or_create(
                 **info_group_product
             )
+        
+        if info_product.get('seller'):
+            seller = info_product.get('seller') 
+            seller['agency'] = info_product.get('domain', '') 
+            seller, created = Seller.objects.get_or_create(**seller)
+            if not created:
+                for attr, value in model_to_dict(seller).items(): 
+                    if attr == "id": continue
+                    setattr(seller, attr, value)
+                seller.save()
+            print('seller', seller)
+            info_product["seller"] = seller
+
 
         info_product["group_product"] = info_group_product
         info_product["id_raw_product"] = query
@@ -261,7 +322,8 @@ class RawProduct(models.Model):
             print("UPDATE PRODUCT", info_product)
 
             for attr, value in info_product.items():
-                if attr == "category":
+                if attr == "id": continue
+                elif attr == "category":
                     setattr(info_product_db, attr, info_category)
                 elif attr == "brand":
                     setattr(info_product_db, attr, info_brand)
@@ -274,29 +336,41 @@ class RawProduct(models.Model):
                     print('a', attr, value)
                     setattr(info_product_db, attr, value if value else "1")
             info_product_db.save()
-        except:
-            info_product, created = Product.objects.get_or_create(**info_product)
-            print("CREATE PRODUCT", created)
+        except: 
+            try:
+                info_product_db, created = Product.objects.get_or_create(**info_product)
+                print("CREATE PRODUCT", created)
+            except:
+                info_product_db = None
+                print("CREATE PRODUCT ERR", info_product)
 
-        product_id = str(info_product_db.id)
-        if product_id not in info_group_product.product_ids:
-            info_group_product.product_ids = info_group_product.product_ids + [
-                product_id
-            ]
-            info_group_product.save()
+        if info_product_db:
+            product_id = str(info_product_db.id)
+            if product_id not in info_group_product.product_ids:
+                info_group_product.product_ids = info_group_product.product_ids + [
+                    product_id
+                ]
+                info_group_product.save()
 
-        messages.add_message(
-            request,
-            messages.SUCCESS,
-            "Save {} was successfully.".format(info_group_product.name),
-        )
+            messages.add_message(
+                request,
+                messages.SUCCESS,
+                "Save {} was successfully.".format(info_group_product.name),
+            )
+        else:
+            messages.add_message(
+                request,
+                messages.SUCCESS,
+                "Save {} was failed.".format(info_group_product.name),
+            )
 
 
 class Product(models.Model):
     class ScraperType(models.TextChoices):
         API = "api", _("API")
         HTML = "html", _("HTML")
-
+        HTML_SHOPEE = "html_shopee", _("HTML_SHOPEE")
+    
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False, unique=True
     )
@@ -320,16 +394,15 @@ class Product(models.Model):
     )
     group_product = models.ForeignKey(
         GroupProduct, blank=True, null=True, on_delete=models.CASCADE
-    )
-    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, null=True, blank=True)
+    ) 
+    seller = models.ForeignKey(Seller, on_delete=models.CASCADE, null=True, blank=True)
     count_update = models.IntegerField("Count Update", default=0)
 
     slug_id = models.CharField("Slug Id", max_length=1024, blank=True)
     image = models.TextField(
         default="",
         blank=True,
-    )
-    shop = models.TextField(default="", blank=True, null=True)
+    ) 
     item_rating = models.TextField(
         default="",
         blank=True,
@@ -380,6 +453,7 @@ class Scraper(models.Model):
     class ScraperType(models.TextChoices):
         API = "api", _("API")
         HTML = "html", _("HTML")
+        HTML_SHOPEE = "html_shopee", _("HTML_SHOPEE")
 
     class SchedulerType(models.TextChoices):
         ONCE = "once", _("Once")
@@ -439,6 +513,8 @@ class Scraper(models.Model):
                 runner.crawl(ApiSpider, spider=_spider)
             if self.scraper_type == "html":
                 runner.crawl(HtmlSpider, spider=_spider)
+            if self.scraper_type == "html_shopee":
+                runner.crawl(HtmlShopeeSpider, spider=_spider)
 
     def update_job(self):
         if self.job_id is not None:

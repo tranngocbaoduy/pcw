@@ -75,6 +75,9 @@ class ScraperPipeline:
             "scraper_type": item.get("scraper_type", "api"),
         }
 
+    def handle_category_for_shopee(self, tree_category):
+        pass
+
     def process_item(self, item, spider):
         info_raw_product = self.convert_raw_product_db(item)
         try:

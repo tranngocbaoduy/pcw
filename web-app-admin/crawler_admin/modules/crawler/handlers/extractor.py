@@ -70,6 +70,8 @@ class ExtractorService(object):
 
         domain = response.get("domain", " ")
         agency = response.get("agency", " ")
+        seller = response.get("seller", None)
+        tree_category = response.get("tree_category", None)
 
         base_item = dict()
         base_item["id_pcw"] = CrawlingHelper.create_uuid(digits=6)
@@ -77,6 +79,8 @@ class ExtractorService(object):
         base_item["url"] = response.get("url", "")
         base_item["domain"] = domain
         base_item["agency"] = agency
+        if seller: base_item["seller"] = seller
+        if tree_category: base_item["tree_category"] = tree_category
         base_item["clean_name"] = ExtractorService.handle_get_clean_name(
             response.get("name", "")
         ).strip()
@@ -187,7 +191,7 @@ class ExtractorService(object):
             # base_item['voucher_info'] = None
             base_item["description"] = [response.get("short_description", "")]
 
-        if domain == "shopee.vn":
+        if domain == "1shopee.vn":
             official_shop = list(
                 filter(
                     lambda x: x.get("shopid", "") == response.get("shopid", None),

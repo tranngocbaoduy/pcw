@@ -4,8 +4,7 @@ from modules.crawler.models import (
     Parser,
     RawProduct,
     Product,
-    Brand,
-    Shop,
+    Brand, 
     GroupProduct,
 )
 from modules.crawler.forms import ParserInlineFormSet, ProductInlineFormSet

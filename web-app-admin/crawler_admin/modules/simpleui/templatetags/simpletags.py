@@ -310,7 +310,7 @@ def get_icon(obj, name=None):
         "GroupProduct": "fas fa-tags",
         "Spider": "fas fa-spider",
         "Brand": "fas fa-cloud",
-        "Shop": "fas fa-shop",
+        "Seller": "fas fa-shop",
     }
 
     temp = _dict.get(obj)

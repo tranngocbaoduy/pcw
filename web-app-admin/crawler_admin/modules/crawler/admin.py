@@ -1,7 +1,7 @@
 from gettext import ngettext
 from django.contrib import admin, messages
 from import_export.admin import ImportExportModelAdmin
-from mptt.admin import DraggableMPTTAdmin
+from mptt.admin import DraggableMPTTAdmin, MPTTModelAdmin
 
 from modules.crawler.css_mixin import CSSAdminMixin
 from modules.crawler.apps import scheduler
@@ -15,7 +15,7 @@ from modules.crawler.models import (
     RawProduct,
     Product,
     Brand,
-    Shop,
+    Seller,
     GroupProduct,
     ParserWaitUntil
 )
@@ -133,48 +133,6 @@ class RawProductAdmin(ImportExportModelAdmin, JsonAdmin, admin.ModelAdmin):
         for query in queryset:
             query.extract_data_from_raw(request, query)
 
-        # self.message_user(
-        #     request,
-        #     ngettext(
-        #         "%d was successfully running.",
-        #         "%d were successfully running.",
-        #         len(queryset),
-        #     )
-        #     % len(queryset),
-        #     messages.SUCCESS,
-        # )
-
-
-@admin.register(Product)
-class ProductAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ["id", "name", "agency", "category", "price", "updated_at"]
-    search_fields = ("name", "agency", "category")
-    list_filter = (
-        FilterByCategory,
-        FilterByAgency,
-    )
-
-@admin.register(ParserWaitUntil)
-class ProductAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ["name", "selector_type", "selector"] 
-
-admin.site.register(Brand) 
-admin.site.register(Shop)
-admin.site.site_header = "Meteor System"
-admin.site.site_title = "Meteor System"
-
-
-@admin.register(Category)
-class CategoryAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ["id", "name", "updated_at"]
-    search_fields = ("name", "id")
-    actions = ["group_product_by_code"]
-
-    @admin.action(description="Group Product By Code")
-    def group_product_by_code(self, request, queryset):
-        for query in queryset:
-            query.group_product_by_code()
-
         self.message_user(
             request,
             ngettext(
@@ -185,6 +143,58 @@ class CategoryAdmin(ImportExportModelAdmin, admin.ModelAdmin):
             % len(queryset),
             messages.SUCCESS,
         )
+
+
+@admin.register(Product)
+class ProductAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    list_display = ["id", "name", "agency","price", "updated_at"]
+    search_fields = ("name", "agency")
+    list_filter = (
+        FilterByCategory,
+        FilterByAgency,
+    )
+
+@admin.register(ParserWaitUntil)
+class ProductAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    list_display = ["name", "selector_type", "selector"] 
+
+
+@admin.register(Seller)
+class ProductAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    list_display = ["name", "address", "url", "agency", "created_at"] 
+    list_filter = ( 
+        FilterByAgency,
+    )
+
+admin.site.register(Brand)  
+admin.site.site_header = "Meteor System"
+admin.site.site_title = "Meteor System"
+
+
+admin.site.register(Category, DraggableMPTTAdmin)
+
+
+# @admin.register(Category)
+# class CategoryAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+#     list_display = ["id", "name", "updated_at"]
+#     search_fields = ("name", "id")
+#     actions = ["group_product_by_code"]
+
+#     @admin.action(description="Group Product By Code")
+#     def group_product_by_code(self, request, queryset):
+#         for query in queryset:
+#             query.group_product_by_code()
+
+#         self.message_user(
+#             request,
+#             ngettext(
+#                 "%d was successfully running.",
+#                 "%d were successfully running.",
+#                 len(queryset),
+#             )
+#             % len(queryset),
+#             messages.SUCCESS,
+#         )
 
 
 @admin.register(GroupProduct)
