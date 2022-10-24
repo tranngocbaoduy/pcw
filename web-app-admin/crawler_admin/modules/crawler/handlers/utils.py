@@ -22,28 +22,17 @@ class Encoder(JSONEncoder):
 
 class SettingService(object):
     @staticmethod
-    def get_all_brand_dirs():
-        settings_file_dir = os.path.join(
-            root_dir, "product_crawler/spiders/setting/brands"
-        )
-        _dirs = os.listdir(settings_file_dir)
-        return [os.path.join(settings_file_dir, _dir) for _dir in _dirs]
-
-    @staticmethod
     def get_setting_brand(path):
         with open(path, "r") as f:
             return [i.replace("\n", "") for i in f.readlines()]
 
     @staticmethod
     def get_all_setting_brand_items():
+        settings_file_dir = os.path.join(file_dir, "config_file/brand_can_known.txt")
         setting_brands = {}
-        setting_brand_dirs = SettingService.get_all_brand_dirs()
-
-        for setting_brand_dir in setting_brand_dirs:
-            setting_brand_name = setting_brand_dir.split("/")[-1]
-            setting_brands[setting_brand_name] = SettingService.get_setting_brand(
-                setting_brand_dir
-            )
+        setting_brands["brand_can_known"] = SettingService.get_setting_brand(
+            settings_file_dir
+        )
         return setting_brands
 
     @staticmethod
@@ -165,6 +154,13 @@ class CrawlingHelper(object):
     @staticmethod
     def create_unique_id_from_time():
         return datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+
+    @staticmethod
+    def get_random_from_list(number=2, list_item=[]):
+        if len(list_item) == 0:
+            return []
+        random.shuffle(list_item)
+        return list_item[:number]
 
     @staticmethod
     def uniqueid():

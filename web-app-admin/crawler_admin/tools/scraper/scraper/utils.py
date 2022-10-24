@@ -7,10 +7,9 @@ import re
 import uuid
 import random
 
+from price_parser import Price
 from urllib.parse import urljoin, urlparse
 from json import JSONEncoder
-
-# from product_crawler.extractor import ExtractorService
 
 file_dir = os.path.dirname(os.path.realpath(__file__))
 root_dir = os.path.abspath(file_dir + "/..")
@@ -19,17 +18,21 @@ sys.path.append(os.path.normpath(root_dir))
 from io import StringIO
 from html.parser import HTMLParser
 
+
 class MLStripper(HTMLParser):
     def __init__(self):
         super().__init__()
         self.reset()
         self.strict = False
-        self.convert_charrefs= True
+        self.convert_charrefs = True
         self.text = StringIO()
+
     def handle_data(self, d):
         self.text.write(d)
+
     def get_data(self):
         return self.text.getvalue()
+
 
 class Encoder(JSONEncoder):
     def default(self, o):
@@ -183,8 +186,22 @@ class CrawlingHelper(object):
         return datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 
     @staticmethod
+    def get_random_from_list(number=2, list_item=[]):
+        if len(list_item) == 0:
+            return []
+        random.shuffle(list_item)
+        return list_item[:number]
+
+    @staticmethod
     def uniqueid():
         seed = random.getrandbits(32)
         while True:
             yield seed
             seed += 1
+
+    @staticmethod
+    def get_currency_from_text(text):
+        price = Price.fromstring("".join(text).strip())
+        if price.amount_float and price.amount_float > float(999):
+            return price.amount_float
+        return None

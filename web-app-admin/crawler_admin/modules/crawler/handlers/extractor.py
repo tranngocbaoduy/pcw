@@ -17,7 +17,7 @@ from price_parser import Price
 from bs4 import BeautifulSoup
 from lxml import etree
 from django.forms.models import model_to_dict
-from utils import SettingService
+from modules.crawler.handlers.utils import SettingService, CrawlingHelper
 
 file_dir = os.path.dirname(os.path.realpath(__file__))
 root_dir = os.path.abspath(file_dir + "/..")
@@ -43,28 +43,70 @@ class ExtractorService(object):
         return old_item
 
     @staticmethod
+    def handle_brand_name(brand, product_name):
+        setting_brand_items = SettingService.get_all_setting_brand_items()
+        brand_from_title = SettingService.get_brand_from_name(
+            product_name, setting_brand_items
+        )
+        if brand == brand_from_title:
+            return brand
+        if brand == "" and brand_from_title != "":
+            return brand_from_title
+        if not brand and brand_from_title != "":
+            return brand_from_title
+        return brand
+
+    @staticmethod
+    def handle_get_slug_id_from_name(name):
+        slug_id = "/" + CrawlingHelper.no_accent_vietnamese(name)
+        slug_id = slug_id.replace("[", "(")
+        slug_id = slug_id.replace("]", ")")
+        slug_id = slug_id.replace("-", "")
+        slug_id = slug_id.replace(" ", "-")
+        return slug_id
+
+    @staticmethod
     def handle_extract_information_from_json(response):
+
         domain = response.get("domain", " ")
         agency = response.get("agency", " ")
+        seller = response.get("seller", None)
+        tree_category = response.get("tree_category", None)
 
         base_item = dict()
-        # base_item['id_pcw'] = response.get('id_pcw',"")
-        base_item["name"] = response.get("name","").strip()
-        base_item["url"] = response.get("url","")
+        base_item["id_pcw"] = CrawlingHelper.create_uuid(digits=6)
+        base_item["name"] = response.get("name", "").strip()
+        base_item["url"] = response.get("url", "")
         base_item["domain"] = domain
         base_item["agency"] = agency
+        if seller: base_item["seller"] = seller
+        if tree_category: base_item["tree_category"] = tree_category
         base_item["clean_name"] = ExtractorService.handle_get_clean_name(
-            response.get("name","")
+            response.get("name", "")
         ).strip()
-        base_item["category"] = response.get("category_code","")
-        # base_item['category_code_from_title'] = ExtractorService.handle_get_category(response.get('name',""))
+        base_item["category"] = response.get("category_code", "")
+        base_item["brand"] = ExtractorService.handle_brand_name(
+            response.get("brand", ""), response.get("name", "")
+        )
+        base_item["product_code"] = ExtractorService.handle_get_code(
+            response.get("name", ""),
+            response.get("category_code", ""),
+            base_item["brand"].lower(),
+        )
+        base_item["image"] = json.dumps(response.get("image", []))
+        base_item["slug_id"] = ExtractorService.handle_get_slug_id_from_name(
+            response.get("name", "")
+        )
+        base_item["price"] = response.get("price", "")
+        base_item["list_price"] = response.get("list_price", "")
+        base_item["scraper_type"] = response.get("scraper_type", "")
 
         if domain == "lazada.vn":
-            base_item["slug_id"] = response.get("itemUrl","").replace(
+            base_item["slug_id"] = response.get("itemUrl", "").replace(
                 "//www.lazada.vn/products", ""
             )
-            base_item["brand"] = response.get("brandName","").strip()
-            base_item["image"] = [response.get("image","").strip()]
+            base_item["brand"] = response.get("brandName", "").strip()
+            base_item["image"] = [response.get("image", "").strip()]
             if response.get("sellerName", ""):
                 base_item["shop"] = {
                     "shop_id": response.get("sellerId", ""),
@@ -76,7 +118,7 @@ class ExtractorService(object):
             base_item["list_price"] = response.get(
                 "originalPrice", response.get("price", 0)
             )
-            base_item["stock"] = 10 if response.get("inStock","") else 0
+            base_item["stock"] = 10 if response.get("inStock", "") else 0
             base_item["historical_sold"] = 0
             base_item["liked_count"] = 0
             base_item["item_rating"] = {
@@ -94,9 +136,6 @@ class ExtractorService(object):
                 ),
                 "rcount_with_image": 0,
             }
-            base_item["product_code"] = ExtractorService.handle_get_code(
-                response.get("name",""), response.get("category_code",""), base_item["brand"].lower()
-            )
             # base_item['content'] = response.get('short_description',"").strip()
             # base_item['voucher_info'] = None
             base_item["description"] = response.get("description", [])
@@ -119,39 +158,40 @@ class ExtractorService(object):
                 official_shop = None
                 base_item["shop"] = None
 
-            base_item["slug_id"] = "/{}".format(response.get("url_key",""))
-            base_item["brand"] = response.get("brand_name","").strip()
-            base_item["image"] = [response.get("thumbnail_url","").strip()]
-            base_item["price"] = response.get("price","")
-            base_item["list_price"] = response.get("list_price","")
+            base_item["slug_id"] = "/{}".format(response.get("url_key", ""))
+            base_item["brand"] = response.get("brand_name", "").strip()
+            base_item["image"] = [response.get("thumbnail_url", "").strip()]
+            base_item["price"] = response.get("price", "")
+            base_item["list_price"] = response.get("list_price", "")
             base_item["stock"] = (
-                response.get("stock_item","")["qty"] if response.get("stock_item","") else 0
+                response.get("stock_item", "")["qty"]
+                if response.get("stock_item", "")
+                else 0
             )
             base_item["historical_sold"] = (
-                response.get("quantity_sold","")["value"] if response.get("quantity_sold","") else 0
+                response.get("quantity_sold", "")["value"]
+                if response.get("quantity_sold", "")
+                else 0
             )
             base_item["liked_count"] = 0
             base_item["item_rating"] = {
-                "rating_star": int(response.get("rating_average","")),
+                "rating_star": int(response.get("rating_average", "")),
                 "rating_count": [
-                    response.get("review_count",""),
-                    response.get("review_count",""),
+                    response.get("review_count", ""),
+                    response.get("review_count", ""),
                     0,
                     0,
                     0,
                     0,
                 ],
-                "rcount_with_context": response.get("review_count",""),
+                "rcount_with_context": response.get("review_count", ""),
                 "rcount_with_image": 0,
             }
-            base_item["product_code"] = ExtractorService.handle_get_code(
-                response.get("name",""), response.get("category_code",""), base_item["brand"].lower()
-            )
             # base_item['content'] = response.get('short_description',"").strip()
             # base_item['voucher_info'] = None
             base_item["description"] = [response.get("short_description", "")]
 
-        if domain == "shopee.vn":
+        if domain == "1shopee.vn":
             official_shop = list(
                 filter(
                     lambda x: x.get("shopid", "") == response.get("shopid", None),
@@ -169,21 +209,21 @@ class ExtractorService(object):
                 official_shop = None
                 base_item["shop"] = None
 
-            url_obj = urlparse(response.get("url",""))
+            url_obj = urlparse(response.get("url", ""))
             slug_arr = url_obj.path.split(".")
             base_item["slug_id"] = ".".join(slug_arr[:-2])
-            base_item["brand"] = response.get("brand","")
+            base_item["brand"] = response.get("brand", "")
             base_item["image"] = [
                 "https://cf.shopee.vn/file/{}".format(image)
-                for image in response.get("images","")
+                for image in response.get("images", "")
             ]
-            base_item["stock"] = response.get("stock","")
-            base_item["item_rating"] = response.get("item_rating","")
-            base_item["historical_sold"] = response.get("historical_sold","")
-            base_item["liked_count"] = response.get("liked_count","")
-            base_item["price"] = int(response.get("price","")) / 100000
-            base_item["list_price"] = int(response.get("price_max","")) / 100000
-            base_item["slug_id"] = response.get("slug_id","")
+            base_item["stock"] = response.get("stock", "")
+            base_item["item_rating"] = response.get("item_rating", "")
+            base_item["historical_sold"] = response.get("historical_sold", "")
+            base_item["liked_count"] = response.get("liked_count", "")
+            base_item["price"] = int(response.get("price", "")) / 100000
+            base_item["list_price"] = int(response.get("price_max", "")) / 100000
+            base_item["slug_id"] = response.get("slug_id", "")
             # base_item['voucher_info'] = response.get('voucher_info',"")
 
             not_allow_brand = [
@@ -206,12 +246,9 @@ class ExtractorService(object):
                 and len(base_item["brand_from_title"]) != 0
             ):
                 base_item["brand"] = base_item["brand_from_title"]
-            base_item["product_code"] = ExtractorService.handle_get_code(
-                response.get("name",""), response.get("category_code",""), base_item["brand"].lower()
-            )
+
             base_item["description"] = []
 
-        base_item["image"] = json.dumps(base_item.get("image", []))
         return base_item
 
     @staticmethod
@@ -258,6 +295,8 @@ class ExtractorService(object):
         remove_word = ["/intel", "/", "-"]
         list_keep_word = []
         allowed_brand = []
+        list_stop_word = []
+        is_allowed_2_digits = False
         dict_replace_word = {}
         if category == "ELECTRIC_STOVE":
             list_stop_word = ["papa", "cook"]

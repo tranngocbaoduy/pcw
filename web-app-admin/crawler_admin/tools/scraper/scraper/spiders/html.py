@@ -11,6 +11,7 @@ file_dir = os.path.dirname(os.path.realpath(__file__))
 root_dir = os.path.abspath(file_dir + "/..")
 sys.path.append(os.path.normpath(root_dir))
 
+from functools import reduce
 from bs4 import BeautifulSoup
 from django.utils import timezone
 from urllib.parse import urlparse
@@ -18,10 +19,10 @@ from scrapy.linkextractors import LinkExtractor
 from scrapy.spidermiddlewares.httperror import HttpError
 from twisted.internet.error import DNSLookupError, TCPTimedOutError, TimeoutError
 from decimal import Decimal
-from scrapy_selenium import SeleniumRequest
+from tools.scraper.scrapy_selenium import SeleniumRequest
 from scrapy.utils.log import configure_logging
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support import expected_conditions as EC 
 from shutil import which
 
 from tools.scraper.scraper.items import RawProductItem, ProductItem
@@ -30,20 +31,22 @@ from tools.scraper.scraper.proxy import ProxyService
 
 
 class HtmlSpider(scrapy.Spider):
-    configure_logging(install_root_handler=False)
-    logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.INFO)
+    # configure_logging(install_root_handler=False)
+    # logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.INFO)
     name = "html"
     start_request_time = None
     url_timeout = []
     custom_settings = {
+        "DOWNLOAD_DELAY": 10,
         "SELENIUM_DRIVER_NAME": "firefox",
-        "SELENIUM_DRIVER_EXECUTABLE_PATH": which("geckodriver"),
-        "SELENIUM_BROWSER_EXECUTABLE_PATH": which("firefox"),
-        "SELENIUM_DRIVER_ARGUMENTS": [],  # '--headless' if using chrome instead of firefox
+        "SELENIUM_DRIVER_EXECUTABLE_PATH": which(os.path.join(root_dir, "geckodriver")),
+        "SELENIUM_BROWSER_EXECUTABLE_PATH": which('/Applications/Firefox.app/Contents/MacOS/firefox'),
+        # "SELENIUM_DRIVER_ARGUMENTS": [],  # '--headless' if using chrome instead of firefox
     }
 
-    def __init__(self, *a, **kwargs):
+    def __init__(self, *a, **kwargs): 
         super(HtmlSpider, self).__init__(*a, **kwargs)
+
         self.spider = kwargs.get("spider")
         self.parsers = self.spider.spider.parser_set.all()
         self.count_err = 0
@@ -51,6 +54,8 @@ class HtmlSpider(scrapy.Spider):
         self.proxy_item = None
         self.retry = 0
 
+        self.CLASS_PARENT = self.spider.spider.class_parent
+        self.CLASS_CHILD = self.spider.spider.class_child
         self.START_URL = self.spider.spider.url
         self.LIMIT = int(self.spider.spider.limit_per_request)
         self.FILE_PROXY_PATH = os.path.join(file_dir, "../proxy_list.json")
@@ -59,6 +64,9 @@ class HtmlSpider(scrapy.Spider):
         self.END_PAGE = int(self.spider.spider.end_page)
         self.ALLOWED_DOMAINS = [self.spider.spider.domain]
         self.BASE_URL_ITEM = self.spider.spider.base_url_item
+        self.IS_HEADLESS = self.spider.spider.is_headless
+        self.PARSER_WAIT_UNTIL_PARENT = self.spider.spider.parser_wait_until_parent
+        self.PARSER_WAIT_UNTIL_CHILD = self.spider.spider.parser_wait_until_child
 
     def start_requests(self):
         yield self.get_new_request()
@@ -81,15 +89,28 @@ class HtmlSpider(scrapy.Spider):
                 "X-Requested-With": "XMLHttpRequest",
                 "Referer": "https://www.google.com/search?q=tiki&rlz=1C5CHFA_enVN972VN972&oq=tiki&aqs=chrome..69i57j0i67l4j69i60l3.1346j0j7&sourceid=chrome&ie=UTF-8",
             },
-            "callback": self.parse_product_item if is_child else self.parse,
-            "errback": self.errbacktest,
             "meta": {
                 "max_retry_times": 1,
                 "download_timeout": 20,
                 "download_latency": 4,
             },
+            "callback": self.parse_product_item if is_child else self.parse,
+            "errback": self.errbacktest, 
             "dont_filter": True,
+            "wait_time": 30,
+            "wait_loaded": 2,
         }
+
+        if not self.IS_HEADLESS and not is_child:
+            params["is_scroll_to_end_page"] = True
+            tag = (self.PARSER_WAIT_UNTIL_PARENT.selector_type, self.PARSER_WAIT_UNTIL_PARENT.selector)
+            params["wait_until"] = EC.presence_of_element_located(tag) 
+
+        if not self.IS_HEADLESS and is_child:
+            params["is_scroll_to_end_page"] = True
+            tag = (self.PARSER_WAIT_UNTIL_CHILD.selector_type, self.PARSER_WAIT_UNTIL_CHILD.selector)
+            params["wait_until"] = EC.visibility_of_element_located(tag)
+
         if self.IS_USING_PROXY:
             self.proxy_item = ProxyService.get_proxy_high_confident(
                 self.FILE_PROXY_PATH, self.count_err
@@ -101,7 +122,7 @@ class HtmlSpider(scrapy.Spider):
         else:
             CrawlingHelper.log("=== Start request: {0} === ".format(url))
         self.start_urls.append(url)
-        request = scrapy.Request(**params)
+        request = SeleniumRequest(**params)
         return request
 
     def errbacktest(self, failure):
@@ -132,34 +153,79 @@ class HtmlSpider(scrapy.Spider):
             )
         yield self.get_new_request()
 
-    def save_html(self, response):
-        with open("index.html", "w") as f:
+    def save_html(self, response, name):
+        data_crawler_file_dir = "raw_html/{}".format(name)
+        if not os.path.exists(data_crawler_file_dir):
+            os.makedirs(data_crawler_file_dir)
+        with open("{}/index.html".format(data_crawler_file_dir), "w") as f:
             f.write(response.text)
             f.close()
-
-    def parse(self, response):
+    
+    def extractor_url(self, response):
+        
         iframe_links = LinkExtractor(
             allow=("^" + re.escape(self.BASE_URL_ITEM)),
             allow_domains=self.ALLOWED_DOMAINS,
         ).extract_links(response)
         list_url = [_i.url for _i in iframe_links]
-        list_url = list(set(list_url))
+        return list_url
+    
+    def extractor_url_from_html(self, html_page):
+        # from bs4 import BeautifulSoup
+        soup = BeautifulSoup(html_page)
+        hrefs = []
+        for link in soup.findAll('a'):
+            hrefs.append(link.get('href'))
+        return hrefs
 
+    def concat_url(self, path):
+        import urllib
+        url = urllib.parse.urljoin(self.BASE_URL_ITEM, path)
+        url = url.split('?')[0]
+        return url
+
+    def parse(self, response):
+        list_url = []
+        if self.CLASS_CHILD:
+            sel_item_urls = response.css('.{}'.format(self.CLASS_CHILD))
+            for sel_item in sel_item_urls:   
+                a_tags = sel_item.xpath('//a[@href]').getall() 
+                links = [ self.extractor_url_from_html(a_tag) for a_tag in a_tags]
+                links = reduce(lambda xs, ys: xs + ys, links)
+                links = list(set(links)) 
+                if 'shopee.vn' in self.ALLOWED_DOMAINS:
+                    links = list(filter(lambda x: self.BASE_URL_ITEM not in x and len(x) > 70 and len(x.split('/')) == 2 and len(x.split('.')) == 3, links)) 
+                    links = list(map(lambda x: self.concat_url(x), links))
+                list_url.extend(links)
+        elif self.CLASS_PARENT: 
+            sel_item_urls = response.css('.{}'.format(self.CLASS_PARENT))   
+            for sel_item in sel_item_urls:
+                links = response.xpath('//a[@href]') 
+                links = [ i.get() for i in links]
+                list_url.extend([links])
+        else:
+            list_url = self.extractor_url(response)
+        
+        logging.debug(list_url)
+        list_url = list(set(list_url))
+        print("[GET TOTAL ITEMS] => ", len(list_url))
+        
         if list_url and len(list_url) != 0:
-            for url in list_url:
+            for url in list_url[:2]:
                 if url:
                     encoded_url = CrawlingHelper.urlsafre_encode(url)
                     if encoded_url in self.encoded_urls:
                         continue
-                    self.encoded_urls.append(encoded_url)
+                    self.encoded_urls.append(encoded_url) 
+                    time.sleep(3)
                     yield self.get_new_request(url=url, is_child=True)
         else:
             logging.debug("Products empty")
             self.retry += 1
 
-        if self.CURRENT_PAGE < self.END_PAGE and self.retry < 4:
-            self.CURRENT_PAGE += 1
-            yield self.get_new_request()
+        # if self.CURRENT_PAGE < self.END_PAGE and self.retry < 4:
+        #     self.CURRENT_PAGE += 1
+        #     yield self.get_new_request()
 
     def strip_tags(self, html):
         try:
@@ -177,19 +243,41 @@ class HtmlSpider(scrapy.Spider):
         merged_item["name"] = response.request.url.replace(base_url, "")
         merged_item["domain"] = self.spider.spider.domain
         merged_item["agency"] = self.spider.spider.agency
+        merged_item["scraper_type"] = "html"
         merged_item["created_date"] = CrawlingHelper.get_now()
         merged_item["category_code"] = self.spider.category.name
 
         info_from_parser = dict()
         for parser in self.parsers:
-            # Get value from tag html
-            tags = self._parse_attribute(
-                response, parser.selector_type, parser.selector
-            ).getall()
-            str_tags = " ".join([ self.strip_tags(html) for html in tags if html])
-            if str_tags:
-                info_from_parser[parser.name] = str_tags
 
+            # Get value from tag html
+            if parser.name == "image" or parser.name == "img":
+                # handle for image
+                img_tags = self._parse_attribute(
+                    response, parser.selector_type, parser.selector
+                )
+                list_url_images = self.handle_get_list_image(response, img_tags)
+                info_from_parser["image"] = list_url_images
+            else:
+                tags = self._parse_attribute(
+                    response, parser.selector_type, parser.selector
+                ).getall()
+                str_tags = " ".join([self.strip_tags(html) for html in tags if html])
+                if parser.name == "name":
+                    print('[URL] =>', merged_item["url"])
+                    print('[NAME] =>', str_tags)
+                if str_tags:
+                    if "price" in parser.name:
+                        # handle for currency
+                        info_from_parser[
+                            parser.name
+                        ] = CrawlingHelper.get_currency_from_text(str_tags)
+                    else:
+                        # handle for value of parser
+                        info_from_parser[parser.name] = str_tags
+                else:
+                    info_from_parser[parser.name] = ''
+        self.save_html(response, merged_item["name"])
         merged_item.update(info_from_parser)
         if self.IS_USING_PROXY:
             ProxyService.update_count_ip(
@@ -197,10 +285,24 @@ class HtmlSpider(scrapy.Spider):
             )
         return merged_item
 
-    def _parse_attribute(self, response, selector_type, selector):
+    def handle_get_list_image(self, dom, selector_items):
+        image_urls = []
+        for selector in selector_items:
+            try:
+                image_element_items = selector.css("img").xpath("@src").getall()
+                for img_element in image_element_items:
+                    if "https://" in img_element:
+                        image_urls.append(img_element)
+            except:
+                print("not image")
+        image_urls = list(set(image_urls))
+        image_urls = CrawlingHelper.get_random_from_list(4, image_urls)
+        return image_urls
+
+    def _parse_attribute(self, dom, selector_type, selector):
         attribute = ""
         if selector_type == "xpath":
-            attribute = response.xpath(selector)
+            attribute = dom.xpath(selector)
         if selector_type == "css":
-            attribute = response.css(selector)
+            attribute = dom.css(selector)
         return attribute

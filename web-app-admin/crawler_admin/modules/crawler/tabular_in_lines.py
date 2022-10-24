@@ -4,8 +4,7 @@ from modules.crawler.models import (
     Parser,
     RawProduct,
     Product,
-    Brand,
-    Shop,
+    Brand, 
     GroupProduct,
 )
 from modules.crawler.forms import ParserInlineFormSet, ProductInlineFormSet
@@ -26,4 +25,5 @@ class ProductTabularInline(admin.TabularInline):
 
 class ScraperSpiderTabularInline(admin.TabularInline):
     model = ScraperSpider
+    fields = ["spider", "category"]
     extra = 0
