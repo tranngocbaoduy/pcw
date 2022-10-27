@@ -1,0 +1,114 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 14.5
+-- Dumped by pg_dump version 14.5
+
+-- Started on 2022-10-28 01:05:58 JST
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- TOC entry 229 (class 1259 OID 19228)
+-- Name: crawler_spider; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.crawler_spider (
+    id uuid NOT NULL,
+    name character varying(256) NOT NULL,
+    url character varying(512) NOT NULL,
+    is_using_proxy boolean NOT NULL,
+    limit_per_request integer NOT NULL,
+    start_page integer NOT NULL,
+    end_page integer NOT NULL,
+    base_url_item character varying(256) NOT NULL,
+    domain character varying(256) NOT NULL,
+    agency character varying(256) NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    is_running boolean NOT NULL,
+    class_parent character varying(256) NOT NULL,
+    class_child character varying(256) NOT NULL,
+    is_headless boolean NOT NULL,
+    parser_wait_until_parent_id uuid,
+    parser_wait_until_child_id uuid
+);
+
+
+ALTER TABLE public.crawler_spider OWNER TO postgres;
+
+--
+-- TOC entry 3643 (class 0 OID 19228)
+-- Dependencies: 229
+-- Data for Name: crawler_spider; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.crawler_spider (id, name, url, is_using_proxy, limit_per_request, start_page, end_page, base_url_item, domain, agency, created_at, updated_at, is_running, class_parent, class_child, is_headless, parser_wait_until_parent_id, parser_wait_until_child_id) VALUES ('6c9cca9a-e632-411c-a02c-75bf2f200016', 'Tiki Phone', 'https://tiki.vn/api/personalish/v1/blocks/listings?limit={0}&category=1795&page={1}&sort=newest', true, 30, 1, 2, '', 'tiki.vn', 'Tiki', '2022-10-01 14:19:57.795764+09', '2022-10-22 22:27:07.290863+09', false, '', '', true, NULL, NULL);
+INSERT INTO public.crawler_spider (id, name, url, is_using_proxy, limit_per_request, start_page, end_page, base_url_item, domain, agency, created_at, updated_at, is_running, class_parent, class_child, is_headless, parser_wait_until_parent_id, parser_wait_until_child_id) VALUES ('f8439a9e-cbe5-48c1-8cd7-38c175437177', 'Hải Triều - Watch', 'https://donghohaitrieu.com/brand/seiko/page/{0}', false, 0, 1, 1, 'https://donghohaitrieu.com/san-pham', 'donghohaitrieu.com', 'donghohaitrieu', '2022-10-01 14:19:57.791948+09', '2022-10-23 02:30:18.918355+09', true, '', '', true, NULL, NULL);
+INSERT INTO public.crawler_spider (id, name, url, is_using_proxy, limit_per_request, start_page, end_page, base_url_item, domain, agency, created_at, updated_at, is_running, class_parent, class_child, is_headless, parser_wait_until_parent_id, parser_wait_until_child_id) VALUES ('704c06a8-45d3-498b-a9be-33d37dfab72f', 'Shopee - Laptop', 'https://shopee.vn/Laptop-cat.11035954.11036015?page={}', false, 30, 0, 10, 'https://shopee.vn/', 'shopee.vn', 'shopee', '2022-10-24 21:40:12.971967+09', '2022-10-28 00:08:48.988948+09', false, 'shopee-search-item-result', 'shopee-search-item-result__item', true, '9e8d05c5-071f-45d3-9fdc-36e13dbfe790', '5492a068-c3d5-425e-8f44-88553114fe67');
+INSERT INTO public.crawler_spider (id, name, url, is_using_proxy, limit_per_request, start_page, end_page, base_url_item, domain, agency, created_at, updated_at, is_running, class_parent, class_child, is_headless, parser_wait_until_parent_id, parser_wait_until_child_id) VALUES ('a263160f-ad6e-4d67-824f-c58169f41513', 'Shopee - Thiết bị điện tử', 'https://shopee.vn/Thi%E1%BA%BFt-B%E1%BB%8B-%C4%90i%E1%BB%87n-T%E1%BB%AD-cat.11036132?page={0}', false, 30, 0, 2, 'https://shopee.vn/', 'shopee.vn', 'shopee', '2022-10-20 20:38:42.041405+09', '2022-10-24 21:38:13.853259+09', false, 'shopee-search-item-result', 'shopee-search-item-result__item', false, '9e8d05c5-071f-45d3-9fdc-36e13dbfe790', '5492a068-c3d5-425e-8f44-88553114fe67');
+
+
+--
+-- TOC entry 3501 (class 2606 OID 19234)
+-- Name: crawler_spider crawler_spider_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.crawler_spider
+    ADD CONSTRAINT crawler_spider_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3498 (class 1259 OID 30554)
+-- Name: crawler_spider_parser_wait_until_child_id_0d99c196; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX crawler_spider_parser_wait_until_child_id_0d99c196 ON public.crawler_spider USING btree (parser_wait_until_child_id);
+
+
+--
+-- TOC entry 3499 (class 1259 OID 30548)
+-- Name: crawler_spider_parser_wait_until_parent_id_9fbf7737; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX crawler_spider_parser_wait_until_parent_id_9fbf7737 ON public.crawler_spider USING btree (parser_wait_until_parent_id);
+
+
+--
+-- TOC entry 3503 (class 2606 OID 30549)
+-- Name: crawler_spider crawler_spider_parser_wait_until_ch_0d99c196_fk_crawler_p; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.crawler_spider
+    ADD CONSTRAINT crawler_spider_parser_wait_until_ch_0d99c196_fk_crawler_p FOREIGN KEY (parser_wait_until_child_id) REFERENCES public.crawler_parserwaituntil(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- TOC entry 3502 (class 2606 OID 30542)
+-- Name: crawler_spider crawler_spider_parser_wait_until_pa_9fbf7737_fk_crawler_p; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.crawler_spider
+    ADD CONSTRAINT crawler_spider_parser_wait_until_pa_9fbf7737_fk_crawler_p FOREIGN KEY (parser_wait_until_parent_id) REFERENCES public.crawler_parserwaituntil(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+-- Completed on 2022-10-28 01:05:58 JST
+
+--
+-- PostgreSQL database dump complete
+--
+
