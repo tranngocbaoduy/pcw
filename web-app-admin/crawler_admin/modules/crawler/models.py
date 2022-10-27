@@ -23,6 +23,10 @@ from tools.scraper.scraper.spiders.html import HtmlSpider
 from tools.scraper.scraper.spiders.html_shopee import HtmlShopeeSpider
 from modules.crawler.handlers.extractor import ExtractorService
 
+def id_gen(ID_LENGTH=6) -> str: 
+    """Generates random string whose length is `ID_LENGTH`"""
+    return str(uuid.uuid4().int)[:ID_LENGTH]
+
 class ParserWaitUntil(models.Model):
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False, unique=True
@@ -72,8 +76,8 @@ class Spider(models.Model):
 
 
 class Category(MPTTModel):
-    id = models.UUIDField(
-        primary_key=True, default=uuid.uuid4, editable=False, unique=True
+    id = models.CharField(
+        primary_key=True, default=id_gen, editable=False, unique=True, max_length=12
     )
     name = models.CharField(max_length=250)
     parent = TreeForeignKey(
@@ -157,8 +161,8 @@ class Seller(models.Model):
 
 
 class GroupProduct(models.Model):
-    id = models.UUIDField(
-        primary_key=True, default=uuid.uuid4, editable=False, unique=True
+    id = models.CharField(
+        primary_key=True, default=id_gen, editable=False, unique=True, max_length=12
     )
     name = models.CharField(max_length=50, blank=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
@@ -170,22 +174,30 @@ class GroupProduct(models.Model):
         ),
         size=100,
         default=list,
-    )
-    product_ids = ArrayField(
-        ArrayField(
-            models.CharField(max_length=10, blank=True),
-            size=8,
-            blank=True,
-        ),
-        size=1000,
-        default=list,
-    )
+    ) 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "{} - {}".format(self.name, str(len(self.product_ids)))
+        return "{}".format(self.name)
 
+def create_or_update(model, query, query_data, data):
+    params = {}
+    params[query] = query_data
+    result = model.objects.filter(**params).first()
+    if result:
+        print("Update ...")
+        for k, v in data.items():
+            foreign_model = model._meta.get_field(k).related_model
+            if foreign_model:
+                continue
+            else:
+                setattr(result, k, v)
+        result.save()
+    else:
+        print("Create new ...") 
+        result = model.objects.create(**data)
+    return result
 
 class RawProduct(models.Model):
     class ScraperType(models.TextChoices):
@@ -193,8 +205,8 @@ class RawProduct(models.Model):
         HTML = "html", _("HTML")
         HTML_SHOPEE = "html_shopee", _("HTML_SHOPEE")
  
-    id = models.UUIDField(
-        primary_key=True, default=uuid.uuid4, editable=False, unique=True
+    id = models.CharField(
+        primary_key=True, default=id_gen, editable=False, unique=True, max_length=12
     )
     url = models.CharField("URL", max_length=512)
     name = models.CharField("Name", max_length=512, blank=True)
@@ -212,69 +224,53 @@ class RawProduct(models.Model):
         return self.name
 
     def extract_data_from_raw(self, request, query):
-        print("[REQUEST]=>", request)
+        print("[REQUEST]=>", id_gen())
         info_product = ExtractorService.handle_extract_information_from_json(self.data)
         print("info_product", info_product)
         info_product["base_encoded_url"] = self.base_encoded_url
         if info_product.get("product_code") == "NONE":
             return
-        print(1)
+        
         if info_product.get("category"):
             if info_product.get("category") and type(info_product.get("category")) == dict: 
                 name_category = info_product.get("category").name
             if info_product.get("category") and type(info_product.get("category")) == str: 
                 name_category = info_product.get("category")
-            try:
-                info_category, created = Category.objects.get_or_create(
-                    name=name_category
-                )
-            except:
-                info_category = Category.objects.filter(name=name_category)[0]
-                created = True
-
-            print('info_category',info_category)
-            if not created:
-                for attr, value in model_to_dict(info_category).items():
-                    if attr == 'parent': continue
-                    setattr(info_category, attr, value)
-                info_category.save()
             
+            info_category, created = Category.objects.get_or_create(**{'name__exact': name_category })
+            print('info_category',info_category)
             info_product["category"] = info_category
 
-        print(3)
+        # print(3)
         if info_product.get("tree_category"):
             tree_category = info_product.get("tree_category", [])
             for category in tree_category: 
-                name_category_parent = category.get('parent')
-                name_category_child = category.get('parent')
-                if name_category_parent and name_category_child: 
-                    print('name_category_parent',name_category_parent)
-                    
-                    info_category_parent, created = Category.objects.get_or_create(
-                        **{"name":name_category_parent}
-                    )
-                    info_category_child = {
-                        "name": category.get('name'),
-                        "parent": info_category_parent
-                    }
-                    print('info_category_child',info_category_child)
-                    info_category, created = Category.objects.get_or_create(
-                        **info_category_child
-                    ) 
+                name_category_parent = category.get('parent', '')
+                name_category_current = category.get('name') 
+                name_category_child = category.get('child')
+                if name_category_child:
+                    if name_category_current and name_category_parent == '':
+                        Category.objects.get_or_create(**{"name": name_category_current})
+                    elif name_category_current and name_category_parent:
+                        info_child = Category.objects.filter(**{"name": name_category_current}).first()
+                        if info_child == None:
+                            info_child = Category.objects.create(**{"name": name_category_current})
+
+                        info_parent = Category.objects.filter(**{"name": name_category_parent}).first()
+                        if info_parent:
+                            info_child.parent = info_parent
+                            info_child.save()
+                        else:
+                            info_parent = Category.objects.create(**{"name": name_category_parent})
+                            info_child.parent = info_parent
+                            info_child.save() 
+                print("==\n")
             del info_product['tree_category']
-            
-        print(4)
+             
         if info_product.get("brand"):
-            info_brand = {"name": info_product.get("brand"), "category": info_category}
-            info_brand, created = Brand.objects.get_or_create(**info_brand)
-            if not created:
-                for attr, value in model_to_dict(info_brand).items():
-                    if attr == "id": continue
-                    if attr == "category":
-                        setattr(info_brand, attr, info_category)
-                    else:
-                        setattr(info_brand, attr, value)
-                info_brand.save()
+            name_brand = info_product.get("brand")
+            info_brand = {"name": name_brand, "category": info_category}
+            info_brand = create_or_update(Brand, 'name', name_brand, info_brand)
             info_product["brand"] = info_brand
 
         product_code = info_product.get("product_code")
@@ -292,25 +288,18 @@ class RawProduct(models.Model):
             info_group_product = {
                 "name": product_code,
                 "category": info_category,
-                "agencies": [info_product.get("agency", "")],
-                "product_ids": [],
+                "agencies": [info_product.get("agency", "")], 
             }
             print("[CREATE] =>", info_group_product)
             info_group_product, created = GroupProduct.objects.get_or_create(
                 **info_group_product
             )
         
-        if info_product.get('seller'):
-            seller = info_product.get('seller') 
-            seller['agency'] = info_product.get('domain', '') 
-            seller, created = Seller.objects.get_or_create(**seller)
-            if not created:
-                for attr, value in model_to_dict(seller).items(): 
-                    if attr == "id": continue
-                    setattr(seller, attr, value)
-                seller.save()
-            print('seller', seller)
-            info_product["seller"] = seller
+        if info_product.get("seller"):
+            info_seller = info_product.get('seller')  
+            info_seller['agency'] = info_product.get('domain', '') 
+            info_seller = create_or_update(Seller, 'name', info_seller['name'], info_seller)            
+            info_product["seller"] = info_seller
 
 
         info_product["group_product"] = info_group_product
@@ -340,29 +329,10 @@ class RawProduct(models.Model):
             try:
                 info_product_db, created = Product.objects.get_or_create(**info_product)
                 print("CREATE PRODUCT", created)
-            except:
+            except Exception as err:
                 info_product_db = None
-                print("CREATE PRODUCT ERR", info_product)
-
-        if info_product_db:
-            product_id = str(info_product_db.id)
-            if product_id not in info_group_product.product_ids:
-                info_group_product.product_ids = info_group_product.product_ids + [
-                    product_id
-                ]
-                info_group_product.save()
-
-            messages.add_message(
-                request,
-                messages.SUCCESS,
-                "Save {} was successfully.".format(info_group_product.name),
-            )
-        else:
-            messages.add_message(
-                request,
-                messages.SUCCESS,
-                "Save {} was failed.".format(info_group_product.name),
-            )
+                print("CREATE PRODUCT ERR", err)
+ 
 
 
 class Product(models.Model):
@@ -371,10 +341,9 @@ class Product(models.Model):
         HTML = "html", _("HTML")
         HTML_SHOPEE = "html_shopee", _("HTML_SHOPEE")
     
-    id = models.UUIDField(
-        primary_key=True, default=uuid.uuid4, editable=False, unique=True
-    )
-    id_pcw = models.CharField(max_length=20, default="")
+    id = models.CharField(
+        primary_key=True, default=id_gen, editable=False, unique=True, max_length=12
+    ) 
     name = models.CharField("Name", max_length=256)
     clean_name = models.CharField("Clean Name", max_length=256)
     url = models.CharField("URL", max_length=512)
