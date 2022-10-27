@@ -205,6 +205,7 @@ class GroupProductAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     inlines = (ProductTabularInline,)
 
     def total_items(self, obj):
-        return len(obj.product_ids)
+        products = Product.objects.filter(group_product=obj)
+        return len(products)
 
     total_items.short_description = "Total Items"

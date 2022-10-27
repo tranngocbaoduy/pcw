@@ -12,7 +12,36 @@ def read_html_page(path):
     return None 
 
 def get_basic_info(res_info):
-    return {}
+    basic_info = {}
+    basic_info['name'] = res_info.get('name', '')
+    basic_info['description'] = res_info.get('description', '')
+    basic_info['url'] = res_info.get('url', '')
+    basic_info['image'] = res_info.get('image', '')
+    basic_info['brand'] = res_info.get('brand', '')
+
+    if res_info.get('offers'):
+        basic_info['price'] = res_info['offers'].get('price', '')
+        if basic_info['price'] == '':
+            basic_info['price'] = res_info['offers'].get('lowPrice', '')
+            basic_info['list_price'] = res_info['offers'].get('highPrice', '')
+        else:
+            basic_info['list_price'] = basic_info['price']
+        
+        if res_info['offers'].get('seller'):
+            basic_info['seller'] = {
+                "name": res_info['offers']['seller'].get('name', ''),
+                "url": res_info['offers']['seller'].get('url', ''),
+                "image": res_info['offers']['seller'].get('image', ''), 
+            }
+            if res_info['offers']['seller'].get('aggregateRating'):
+                basic_info["seller"]["star"] = res_info['offers']['seller']['aggregateRating'].get('ratingValue', '')
+                basic_info["seller"]["review"] = res_info['offers']['seller']['aggregateRating'].get('ratingCount', '')
+        
+    if res_info.get('aggregateRating'):
+        basic_info['star'] = res_info['aggregateRating'].get('ratingValue', '')
+        basic_info['review'] = res_info['aggregateRating'].get('ratingCount', '')
+        
+    return basic_info
 
 def urlsafre_encode(url):
     return (
@@ -40,7 +69,6 @@ def get_basic_category(res_info):
                 "name": item.get('name', ''),
             }
             if index > 1 and index - 1 <= len(tree_category):
-                print(index - 1)
                 prev_item = tree_category[index - 1].get('item', None)
                 params['parent'] =  urlsafre_encode(prev_item.get('@id', ''))
             
@@ -63,14 +91,16 @@ def main():
     for i in tag:
         if i.get('type') == 'application/ld+json':
             res_info = json.loads(i.text)
-            if res_info.get('@type') == 'Product':
+            if res_info.get('@type') == 'Product': 
                 basic_info.update(get_basic_info(res_info)) 
             if res_info.get("@type") == "BreadcrumbList":
+                tree_category = get_basic_category(res_info)
                 basic_info.update({
-                    "tree_category":get_basic_category(res_info)
+                    "tree_category": tree_category,
+                    "category": tree_category[-2]
                 }) 
 
-            print('basic_info', basic_info)
+    print('basic_info', basic_info)
     # print(tag)
     # name = dom.xpath('/html/body/div[1]/div/div[2]/div[1]/div/div/div/div[2]/div[3]/div/div[1]/span/text()')
     # list_price = dom.xpath('/html/body/div[1]/div/div[2]/div[1]/div/div/div/div[2]/div[3]/div/div[3]/div/div/div/div/div/div/text()')
