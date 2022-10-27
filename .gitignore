@@ -7,6 +7,8 @@ web-app/.env*
 web-app-admin/crawler_admin/data-*
 web-app-admin/.env
 
+web-app-admin/crawler_admin/raw_html
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

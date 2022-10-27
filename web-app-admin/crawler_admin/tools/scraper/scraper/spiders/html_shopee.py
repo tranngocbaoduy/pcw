@@ -360,7 +360,7 @@ class HtmlShopeeSpider(scrapy.Spider):
                         info_from_parser[parser.name] = str_tags
                 else:
                     info_from_parser[parser.name] = ''
-        self.save_html(response, merged_item["name"])
+        # self.save_html(response, merged_item["name"])
         merged_item.update(info_from_parser)
         merged_item.update(basic_info)
 
