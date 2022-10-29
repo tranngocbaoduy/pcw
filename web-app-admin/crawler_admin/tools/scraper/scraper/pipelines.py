@@ -17,7 +17,8 @@ from itemadapter import ItemAdapter
 from scrapy.exceptions import DropItem
 from dateutil import parser
 from validators.url import url
-from modules.crawler.models import RawProduct, Spider
+from modules.crawler.models.model_raw_product import RawProduct
+from modules.crawler.models.model_spider import Spider
 from tools.scraper.scraper.utils import CrawlingHelper
 
 
@@ -68,7 +69,7 @@ class ScraperPipeline:
     def convert_raw_product_db(self, item):
         return {
             "url": item.get("url"),
-            "base_encoded_url": CrawlingHelper.urlsafre_encode(item.get("url")),
+            "base_encoded_url": CrawlingHelper.urlsafe_encode(item.get("url")),
             "agency": item.get("agency"),
             "name": item.get("name", ""),
             "data": item,
@@ -78,15 +79,27 @@ class ScraperPipeline:
     def handle_category_for_shopee(self, tree_category):
         pass
 
+    def get_spider(self, spider):
+        print('spider.spider',spider.spider, type(spider.spider))
+        try:
+            if spider.spider.spider: return spider.spider.spider
+        except:
+            return spider.spider
+
     def process_item(self, item, spider):
         info_raw_product = self.convert_raw_product_db(item)
+
+        spider = self.get_spider(spider)
+        spider_db = Spider.objects.get(id=spider.id)
+        info_raw_product['spider'] = spider_db
         try:
             info_raw_product_db = RawProduct.objects.get(
                 base_encoded_url=info_raw_product["base_encoded_url"]
             )
             logging.info({"message": "[UPDATE PRODUCT]", "data": info_raw_product})
+            print({"message": "[UPDATE PRODUCT]", "base_encoded_url": info_raw_product['base_encoded_url']})
             for attr, value in info_raw_product.items():
-                setattr(info_raw_product_db, attr, value)
+                if value: setattr(info_raw_product_db, attr, value)
             setattr(
                 info_raw_product_db,
                 "count_update",
@@ -101,13 +114,16 @@ class ScraperPipeline:
                 logging.error(
                     {"message": "[CREATE PRODUCT ERROR]", "data": info_raw_product}
                 )
+                print({"message": "[CREATE PRODUCT ERROR]", "base_encoded_url": info_raw_product['base_encoded_url']})
+
             else:
                 logging.info({"message": "[CREATE PRODUCT]", "data": info_raw_product})
+                print({"message": "[CREATE PRODUCT]", "base_encoded_url": info_raw_product['base_encoded_url']})
 
         return info_raw_product_db
 
     def close_spider(self, spider):
-        spider = spider.spider.spider
+        spider = self.get_spider(spider)
         try:
             spider_db = Spider.objects.get(id=spider.id)
             spider_db.is_running = False

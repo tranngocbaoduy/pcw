@@ -103,7 +103,7 @@ class SeleniumMiddleware:
                     if (i < document.body.scrollHeight) {
                         setTimeout(() => {
                         window.scrollTo(0, i);
-                            smoothScroll(i + document.body.scrollHeight * 0.001);
+                            smoothScroll(i + document.body.scrollHeight * 0.005);
                         }, 10);
                     }
                 }
@@ -114,12 +114,10 @@ class SeleniumMiddleware:
 
         if request.wait_until:
             WebDriverWait(self.driver, request.wait_time)
-            # .until(
-            #     request.wait_until
-            # )
-        print('wait until completed')
-        if request.is_scroll_to_end_page and request.wait_loaded: time.sleep(request.wait_loaded)
-        print('wait scroll completed')
+
+        if request.is_scroll_to_end_page and request.wait_loaded: 
+            time.sleep(request.wait_loaded)
+
         if request.screenshot:
             request.meta['screenshot'] = self.driver.get_screenshot_as_png()
 

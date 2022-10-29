@@ -79,7 +79,7 @@ class ApiSpider(scrapy.Spider):
                 # "Referer": "https://www.google.com/search?q=tiki&rlz=1C5CHFA_enVN972VN972&oq=tiki&aqs=chrome..69i57j0i67l4j69i60l3.1346j0j7&sourceid=chrome&ie=UTF-8"
             },
             "callback": self.parse,
-            "errback": self.errbacktest,
+            "errback": self.err_callback,
             "meta": {
                 "max_retry_times": 1,
                 "download_timeout": 20,
@@ -100,7 +100,7 @@ class ApiSpider(scrapy.Spider):
         request = scrapy.Request(**params)
         return request
 
-    def errbacktest(self, failure):
+    def err_callback(self, failure):
         if failure.check(HttpError):
             # these exceptions come from HttpError spider middleware
             # you can get the non-200 response
@@ -134,7 +134,7 @@ class ApiSpider(scrapy.Spider):
         if product_items:
             for product_item in product_items:
                 if product_item:
-                    encoded_url = CrawlingHelper.urlsafre_encode(
+                    encoded_url = CrawlingHelper.urlsafe_encode(
                         "https://{}/{}".format(
                             self.spider.spider.domain, product_item["url_key"]
                         )

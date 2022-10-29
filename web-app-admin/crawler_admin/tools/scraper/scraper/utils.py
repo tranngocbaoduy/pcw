@@ -6,6 +6,7 @@ import base64
 import re
 import uuid
 import random
+import requests
 
 from price_parser import Price
 from urllib.parse import urljoin, urlparse
@@ -112,21 +113,12 @@ class CrawlingHelper(object):
             datetime.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
         ).replace(":", "_")
 
-    @staticmethod
-    def urlsafre_encode(url):
-        return (
-            base64.urlsafe_b64encode(url.encode("utf-8")).decode("utf-8").rstrip("=")
-            if url
-            else ""
-        )
-
-    @staticmethod
-    def urlsafre_decode(encoded_str):
-        return (
-            base64.urlsafe_b64decode(encoded_str + "===").decode("utf-8")
-            if encoded_str
-            else ""
-        )
+    
+    @staticmethod 
+    def urlsafe_encode(url):
+        if url: url = requests.utils.unquote(url)
+        else: return ""
+        return base64.urlsafe_b64encode(url.encode("utf-8")).decode("utf-8").rstrip("=")
 
     @staticmethod
     def get_clean_url(url):

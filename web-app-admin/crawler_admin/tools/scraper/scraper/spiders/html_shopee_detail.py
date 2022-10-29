@@ -32,10 +32,10 @@ from tools.scraper.scraper.utils import CrawlingHelper, MLStripper
 from tools.scraper.scraper.proxy import ProxyService
 
 
-class HtmlShopeeSpider(scrapy.Spider):
+class HtmlShopeeDetailSpider(scrapy.Spider):
     # configure_logging(install_root_handler=False)
     # logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.INFO)
-    name = "html_shopee"
+    name = "html_shopee_detail"
     start_request_time = None
     url_timeout = []
     custom_settings = {
@@ -47,28 +47,28 @@ class HtmlShopeeSpider(scrapy.Spider):
     }
 
     def __init__(self, *a, **kwargs): 
-        super(HtmlShopeeSpider, self).__init__(*a, **kwargs)
+        super(HtmlShopeeDetailSpider, self).__init__(*a, **kwargs)
     
         self.spider = kwargs.get("spider")
-        self.parsers = self.spider.spider.parser_set.all()
+        self.parsers = self.spider.parser_set.all()
         self.count_err = 0
         self.encoded_urls = []
         self.proxy_item = None
         self.retry = 0
 
-        self.CLASS_PARENT = self.spider.spider.class_parent
-        self.CLASS_CHILD = self.spider.spider.class_child
-        self.START_URL = self.spider.spider.url
-        self.LIMIT = int(self.spider.spider.limit_per_request)
+        self.CLASS_PARENT = self.spider.class_parent
+        self.CLASS_CHILD = self.spider.class_child
+        self.START_URL = kwargs.get("url")
+        self.LIMIT = int(self.spider.limit_per_request)
         self.FILE_PROXY_PATH = os.path.join(file_dir, "../proxy_list.json")
-        self.IS_USING_PROXY = self.spider.spider.is_using_proxy
-        self.CURRENT_PAGE = int(self.spider.spider.start_page)
-        self.END_PAGE = int(self.spider.spider.end_page)
-        self.ALLOWED_DOMAINS = [self.spider.spider.domain]
-        self.BASE_URL_ITEM = self.spider.spider.base_url_item
-        self.IS_HEADLESS = self.spider.spider.is_headless
-        self.PARSER_WAIT_UNTIL_PARENT = self.spider.spider.parser_wait_until_parent
-        self.PARSER_WAIT_UNTIL_CHILD = self.spider.spider.parser_wait_until_child
+        self.IS_USING_PROXY = self.spider.is_using_proxy
+        self.CURRENT_PAGE = int(self.spider.start_page)
+        self.END_PAGE = int(self.spider.end_page)
+        self.ALLOWED_DOMAINS = [self.spider.domain]
+        self.BASE_URL_ITEM = self.spider.base_url_item
+        self.IS_HEADLESS = self.spider.is_headless
+        self.PARSER_WAIT_UNTIL_PARENT = self.spider.parser_wait_until_parent
+        self.PARSER_WAIT_UNTIL_CHILD = self.spider.parser_wait_until_child
 
     def start_requests(self):
         yield self.get_new_request()
@@ -82,8 +82,8 @@ class HtmlShopeeSpider(scrapy.Spider):
             self.start_request_time = time.time()
             return diff
 
-    def get_new_request(self, url=None, is_child=False):
-        url = url if url else self.START_URL.format(self.CURRENT_PAGE)
+    def get_new_request(self):
+        url = self.START_URL
         params = {
             "url": url,
             "headers": {
@@ -96,19 +96,14 @@ class HtmlShopeeSpider(scrapy.Spider):
                 "download_timeout": 20,
                 "download_latency": 4,
             },
-            "callback": self.parse_product_item if is_child else self.parse,
+            "callback": self.parse_product_item,
             "errback": self.err_callback, 
             "dont_filter": True,
             "wait_time": 30,
-            "wait_loaded": 3,
+            "wait_loaded": 4,
         }
 
-        if not self.IS_HEADLESS and not is_child:
-            params["is_scroll_to_end_page"] = True
-            tag = (self.PARSER_WAIT_UNTIL_PARENT.selector_type, self.PARSER_WAIT_UNTIL_PARENT.selector)
-            params["wait_until"] = EC.presence_of_element_located(tag) 
-
-        if not self.IS_HEADLESS and is_child:
+        if not self.IS_HEADLESS:
             params["is_scroll_to_end_page"] = True
             tag = (self.PARSER_WAIT_UNTIL_CHILD.selector_type, self.PARSER_WAIT_UNTIL_CHILD.selector)
             params["wait_until"] = EC.visibility_of_element_located(tag)
@@ -124,7 +119,6 @@ class HtmlShopeeSpider(scrapy.Spider):
         else:
             CrawlingHelper.log("=== Start request: {0} === ".format(url))
         self.start_urls.append(url)
-        print('params',params)
         request = SeleniumRequest(**params)
         return request
 
@@ -163,72 +157,7 @@ class HtmlShopeeSpider(scrapy.Spider):
         with open("{}/index.html".format(data_crawler_file_dir), "w") as f:
             f.write(response.text)
             f.close()
-    
-    def extractor_url(self, response):
-        
-        iframe_links = LinkExtractor(
-            allow=("^" + re.escape(self.BASE_URL_ITEM)),
-            allow_domains=self.ALLOWED_DOMAINS,
-        ).extract_links(response)
-        list_url = [_i.url for _i in iframe_links]
-        return list_url
-    
-    def extractor_url_from_html(self, html_page): 
-        soup = BeautifulSoup(html_page)
-        hrefs = []
-        for link in soup.findAll('a'):
-            hrefs.append(link.get('href'))
-        return hrefs
-
-    def concat_url(self, path):
-        import urllib
-        url = urllib.parse.urljoin(self.BASE_URL_ITEM, path)
-        url = url.split('?')[0]
-        return url
-
-    def parse(self, response):
-        list_url = []
-        if self.CLASS_CHILD:
-            sel_item_urls = response.css('.{}'.format(self.CLASS_CHILD))
-            for sel_item in sel_item_urls:   
-                a_tags = sel_item.xpath('//a[@href]').getall() 
-                links = [ self.extractor_url_from_html(a_tag) for a_tag in a_tags]
-                links = reduce(lambda xs, ys: xs + ys, links)
-                links = list(set(links)) 
-                if 'shopee.vn' in self.ALLOWED_DOMAINS:
-                    links = list(filter(lambda x: self.BASE_URL_ITEM not in x and len(x) > 70 and len(x.split('/')) == 2 and len(x.split('.')) == 3, links)) 
-                    links = list(map(lambda x: self.concat_url(x), links))
-                list_url.extend(links)
-        elif self.CLASS_PARENT: 
-            sel_item_urls = response.css('.{}'.format(self.CLASS_PARENT))   
-            for sel_item in sel_item_urls:
-                links = response.xpath('//a[@href]') 
-                links = [ i.get() for i in links]
-                list_url.extend([links])
-        else:
-            list_url = self.extractor_url(response)
-        
-        logging.debug(list_url)
-        list_url = list(set(list_url))
-        print("[GET TOTAL ITEMS] => ", len(list_url))
-        
-        if list_url and len(list_url) != 0:
-            for url in list_url[:2]:
-                if url:
-                    encoded_url = CrawlingHelper.urlsafe_encode(url)
-                    if encoded_url in self.encoded_urls:
-                        continue
-                    self.encoded_urls.append(encoded_url) 
-                    time.sleep(3)
-                    yield self.get_new_request(url=url, is_child=True)
-        else:
-            logging.debug("Products empty")
-            self.retry += 1
-
-        if self.CURRENT_PAGE < self.END_PAGE and self.retry < 4:
-            self.CURRENT_PAGE += 1
-            yield self.get_new_request()
-
+      
     def strip_tags(self, html):
         try:
             s = MLStripper()
@@ -323,11 +252,9 @@ class HtmlShopeeSpider(scrapy.Spider):
         merged_item = dict()
         merged_item["url"] = response.request.url
         merged_item["name"] = response.request.url.replace(base_url, "")
-        merged_item["domain"] = self.spider.spider.domain
-        merged_item["agency"] = self.spider.spider.agency
-        merged_item["scraper_type"] = "html_shopee"
-        merged_item["created_date"] = CrawlingHelper.get_now()
-        merged_item["category_code"] = self.spider.category.name
+        merged_item["domain"] = self.spider.domain
+        merged_item["agency"] = self.spider.agency
+        merged_item["scraper_type"] = "html_shopee" 
         print("[URL]=>", merged_item["url"])
         basic_info = self.extract_tag_script_basic_info_shopee(response.text)
 
@@ -361,6 +288,7 @@ class HtmlShopeeSpider(scrapy.Spider):
         # self.save_html(response, merged_item["name"])
         merged_item.update(info_from_parser)
         merged_item.update(basic_info)
+        print('[basic_info] =>', basic_info)
 
         if self.IS_USING_PROXY:
             ProxyService.update_count_ip(

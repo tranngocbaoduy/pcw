@@ -95,7 +95,7 @@ class HtmlSpider(scrapy.Spider):
                 "download_latency": 4,
             },
             "callback": self.parse_product_item if is_child else self.parse,
-            "errback": self.errbacktest, 
+            "errback": self.err_callback, 
             "dont_filter": True,
             "wait_time": 30,
             "wait_loaded": 2,
@@ -125,7 +125,7 @@ class HtmlSpider(scrapy.Spider):
         request = SeleniumRequest(**params)
         return request
 
-    def errbacktest(self, failure):
+    def err_callback(self, failure):
         if failure.check(HttpError):
             # these exceptions come from HttpError spider middleware
             # you can get the non-200 response
@@ -213,7 +213,7 @@ class HtmlSpider(scrapy.Spider):
         if list_url and len(list_url) != 0:
             for url in list_url[:2]:
                 if url:
-                    encoded_url = CrawlingHelper.urlsafre_encode(url)
+                    encoded_url = CrawlingHelper.urlsafe_encode(url)
                     if encoded_url in self.encoded_urls:
                         continue
                     self.encoded_urls.append(encoded_url) 

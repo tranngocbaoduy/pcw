@@ -624,6 +624,7 @@ class ExtractorService(object):
 
     @staticmethod
     def handle_get_code(text, category, brand):
+        init_text = text
         (
             _,
             _,
@@ -636,7 +637,9 @@ class ExtractorService(object):
             text = ExtractorService.replace_word_consistent(
                 text.lower(), dict_replace_word
             )
-            text = ExtractorService.handle_clean_code(text)
+            text = ExtractorService.handle_clean_code_v1(text)
+            print("[init_text] =>", init_text)
+            print("[handle_clean_code] =>", text)
             text = re.sub(" +", " ", text)
             if brand == "apple":
                 brand = "iphone"
@@ -652,7 +655,18 @@ class ExtractorService(object):
         return "NONE"
 
     @staticmethod
-    def handle_clean_code(text):
+    def get_keep_word(name):
+        with open(os.path.join(file_dir,'dictionary.txt'), 'r') as f:
+            dictionary =  f.read().split('\n')
+        list_word = name.split()
+        list_keep_word = []
+        for word in list_word:
+            if word not in dictionary and not word.isnumeric():
+                list_keep_word.append(word)
+        return ' '.join(list_keep_word)
+
+    @staticmethod
+    def handle_clean_code_v1(text):
         text = "".join(text).strip().lower()
         text = re.sub(
             "/[^a-z0-9A-Z_ÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễếệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵỷỹ]/u",
@@ -673,6 +687,23 @@ class ExtractorService(object):
             if unicode_text == t:
                 response.append(unicode_text)
         return " ".join(response)
+
+    @staticmethod
+    def handle_clean_code(str_content): 
+        
+        str_content = str_content.lower()
+        count = 0
+        while count < 2:
+            str_content = ExtractorService.remove_string_in_splash(str_content)
+            str_content = ExtractorService.remove_string_in_square_splash(str_content)
+            count += 1
+
+        str_content = re.sub('/[^a-z0-9A-Z_ÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễếệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵỷỹ]+/u', '', str_content)
+        str_content = re.sub(r'[^\w\s]',' ', str_content)
+        str_content = str_content.replace('\n', ' ')
+        str_content = str_content.replace('\t', ' ')
+        str_content = re.sub("\s\s+", " ", str_content) 
+        return ExtractorService.get_keep_word(str_content)
 
     @staticmethod
     def no_accent_vietnamese(s):

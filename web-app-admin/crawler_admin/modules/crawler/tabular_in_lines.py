@@ -1,14 +1,12 @@
 from django.contrib import admin, messages
-from modules.crawler.models import (
-    ScraperSpider,
-    Parser,
-    RawProduct,
-    Product,
-    Brand, 
-    GroupProduct,
-)
-from modules.crawler.forms import ParserInlineFormSet, ProductInlineFormSet
 
+from modules.crawler.models.model_parser import Parser
+from modules.crawler.models.model_spider import ScraperSpider
+from modules.crawler.models.model_raw_product import RawProduct
+from modules.crawler.models.model_product import Product
+from modules.crawler.models.model_group_product import GroupProduct
+ 
+from modules.crawler.forms import ParserInlineFormSet, ProductInlineFormSet
 
 class ParserTabularInline(admin.TabularInline):
     model = Parser

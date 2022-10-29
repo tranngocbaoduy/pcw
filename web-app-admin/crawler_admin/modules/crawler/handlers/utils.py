@@ -6,6 +6,7 @@ import base64
 import re
 import uuid
 import random
+import requests
 
 from urllib.parse import urljoin, urlparse
 from json import JSONEncoder
@@ -83,12 +84,10 @@ class CrawlingHelper(object):
         ).replace(":", "_")
 
     @staticmethod
-    def urlsafre_encode(url):
-        return (
-            base64.urlsafe_b64encode(url.encode("utf-8")).decode("utf-8").rstrip("=")
-            if url
-            else ""
-        )
+    def urlsafe_encode(url):
+        if url: url = requests.utils.unquote(url)
+        else: return ""
+        return base64.urlsafe_b64encode(url.encode("utf-8")).decode("utf-8").rstrip("=")
 
     @staticmethod
     def urlsafre_decode(encoded_str):
