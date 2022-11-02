@@ -32,24 +32,6 @@ from tools.scraper.scraper.utils import CrawlingHelper, MLStripper
 from tools.scraper.scraper.proxy import ProxyService
 from sys import platform
 
-def get_driver():
-    if platform == "linux" or platform == "linux2": # linux
-        return which(os.path.join(root_dir, "geckodriver"))
-    elif platform == "darwin": # OS X
-        return which(os.path.join(root_dir, "geckodriver"))
-    elif platform == "win32": # WIN
-        return which(os.path.join(root_dir, "geckodriver.exe"))
-    return which(os.path.join(root_dir, "geckodriver"))
-
-def get_browser():
-    if platform == "linux" or platform == "linux2": # linux
-        return which('/Applications/Firefox.app/Contents/MacOS/firefox')
-    elif platform == "darwin": # OS X
-        return which('/Applications/Firefox.app/Contents/MacOS/firefox')
-    elif platform == "win32": # WIN
-        return which('C:\Program Files\Mozilla Firefox\firefox')
-    return which('/Applications/Firefox.app/Contents/MacOS/firefox')
-
 class HtmlShopeeDetailSpider(scrapy.Spider):
     # configure_logging(install_root_handler=False)
     # logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.INFO)
@@ -59,10 +41,11 @@ class HtmlShopeeDetailSpider(scrapy.Spider):
     custom_settings = {
         "DOWNLOAD_DELAY": 10,
         "SELENIUM_DRIVER_NAME": "firefox",
-        "SELENIUM_DRIVER_EXECUTABLE_PATH": get_driver(),
-        "SELENIUM_BROWSER_EXECUTABLE_PATH": get_browser(),
-        "SELENIUM_DRIVER_ARGUMENTS": [],  # '--headless' if using chrome instead of firefox 
+        "SELENIUM_DRIVER_EXECUTABLE_PATH": which(os.path.join(root_dir, "geckodriver.exe")) if platform == "win32" else which(os.path.join(root_dir, "geckodriver")),
+        "SELENIUM_BROWSER_EXECUTABLE_PATH": which('C:\Program Files\Mozilla Firefox\firefox') if platform == "win32" else which('/Applications/Firefox.app/Contents/MacOS/firefox'),
+        "SELENIUM_DRIVER_ARGUMENTS": [],  # '--headless' if using chrome instead of firefox
     }
+
 
     def __init__(self, *a, **kwargs): 
         super(HtmlShopeeDetailSpider, self).__init__(*a, **kwargs)

@@ -26,19 +26,18 @@ from shutil import which
 from tools.scraper.scraper.items import RawProductItem, ProductItem
 from tools.scraper.scraper.utils import CrawlingHelper
 from tools.scraper.scraper.proxy import ProxyService
-
+from sys import platform 
 
 class ApiSpider(scrapy.Spider):
     name = "api"
     start_request_time = None
     url_timeout = []
     custom_settings = {
+        "DOWNLOAD_DELAY": 10,
         "SELENIUM_DRIVER_NAME": "firefox",
-        "SELENIUM_DRIVER_EXECUTABLE_PATH": which("geckodriver"),
-        "SELENIUM_BROWSER_EXECUTABLE_PATH": which("firefox"),
-        "SELENIUM_DRIVER_ARGUMENTS": [
-            "--headless"
-        ],  # '--headless' if using chrome instead of firefox
+        "SELENIUM_DRIVER_EXECUTABLE_PATH": which(os.path.join(root_dir, "geckodriver.exe")) if platform == "win32" else which(os.path.join(root_dir, "geckodriver")),
+        "SELENIUM_BROWSER_EXECUTABLE_PATH": which('C:\Program Files\Mozilla Firefox\firefox') if platform == "win32" else which('/Applications/Firefox.app/Contents/MacOS/firefox'),
+        "SELENIUM_DRIVER_ARGUMENTS": ['--headless'],  # '--headless' if using chrome instead of firefox
     }
 
     def __init__(self, *a, **kwargs):
