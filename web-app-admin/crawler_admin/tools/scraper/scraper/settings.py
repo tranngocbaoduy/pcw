@@ -32,7 +32,7 @@ SPIDER_MODULES = ["tools.scraper.scraper.spiders"]
 SPIRDER_MODULE = "tools.scraper.scraper.spiders"
 
 LOG_FILE = os.path.join(
-    "tools/scraper/scraper/log", "{}.log".format(CrawlingHelper.get_name_by_time())
+    "crawler_admin/tools/scraper/scraper/log", "{}.log".format(CrawlingHelper.get_name_by_time())
 )
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent

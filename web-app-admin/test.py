@@ -43,7 +43,7 @@ def get_basic_info(res_info):
         
     return basic_info
 
-def urlsafre_encode(url):
+def urlsafe_encode(url):
     return (
         base64.urlsafe_b64encode(url.encode("utf-8")).decode("utf-8").rstrip("=")
         if url
@@ -64,17 +64,17 @@ def get_basic_category(res_info):
             item = category.get('item', None)
             if item == None: continue 
             params = {
-                "id": urlsafre_encode(item.get('@id', '')),
+                "id": urlsafe_encode(item.get('@id', '')),
                 "url": item.get('@id', ''),
                 "name": item.get('name', ''),
             }
             if index > 1 and index - 1 <= len(tree_category):
                 prev_item = tree_category[index - 1].get('item', None)
-                params['parent'] =  urlsafre_encode(prev_item.get('@id', ''))
+                params['parent'] =  urlsafe_encode(prev_item.get('@id', ''))
             
             if index + 1 < len(tree_category):
                 next_item = tree_category[index + 1].get('item', None)
-                params['child'] =  urlsafre_encode(next_item.get('@id', ''))
+                params['child'] =  urlsafe_encode(next_item.get('@id', ''))
 
             list_category.append(params)
             index += 1

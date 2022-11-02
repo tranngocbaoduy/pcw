@@ -18,6 +18,7 @@ from bs4 import BeautifulSoup
 from lxml import etree
 from django.forms.models import model_to_dict
 from modules.crawler.handlers.utils import SettingService, CrawlingHelper
+from pyvi import ViTokenizer, ViPosTagger
 
 file_dir = os.path.dirname(os.path.realpath(__file__))
 root_dir = os.path.abspath(file_dir + "/..")
@@ -83,7 +84,8 @@ class ExtractorService(object):
         base_item["clean_name"] = ExtractorService.handle_get_clean_name(
             response.get("name", "")
         ).strip()
-        base_item["category"] = response.get("category_code", "")
+        base_item["category"] = response.get("category", "")
+        base_item["category_code"] = response.get("category_code", "")
         base_item["brand"] = ExtractorService.handle_brand_name(
             response.get("brand", ""), response.get("name", "")
         )
@@ -623,87 +625,55 @@ class ExtractorService(object):
         return last_n_word
 
     @staticmethod
+    def get_stop_word(category):
+        with open(os.path.join(file_dir,'stop_word/common.txt'), 'r') as f:
+            common_stop_word =  f.read().split('\n')
+        stop_word_of_category_dir = os.path.join(file_dir,'stop_word/{}.txt'.format(category))
+        category_stop_word = []
+        if os.path.isfile(stop_word_of_category_dir):
+            with open(stop_word_of_category_dir, 'r') as f2:
+                category_stop_word = f2.read().split('\n') 
+        else:
+            with open(stop_word_of_category_dir, 'w') as f:
+                f.write('')
+        return common_stop_word + category_stop_word
+
+    @staticmethod
+    def get_keep_word(category):
+        with open(os.path.join(file_dir,'keep_word/common.txt'), 'r') as f:
+            common_keep_word =  f.read().split('\n')
+        keep_word_of_category_dir = os.path.join(file_dir,'keep_word/{}.txt'.format(category))
+        category_keep_word = []
+        if os.path.isfile(keep_word_of_category_dir):
+            with open(keep_word_of_category_dir, 'r') as f2:
+                category_keep_word = f2.read().split('\n') 
+        else:
+            with open(keep_word_of_category_dir, 'w') as f:
+                f.write('') 
+        return common_keep_word + category_keep_word
+
+    @staticmethod
     def handle_get_code(text, category, brand):
-        init_text = text
-        (
-            _,
-            _,
-            _,
-            _,
-            dict_replace_word,
-            allowed_brand,
-        ) = ExtractorService.get_config_filter_of_category(category)
-        if brand in allowed_brand or len(allowed_brand) == 0:
-            text = ExtractorService.replace_word_consistent(
-                text.lower(), dict_replace_word
-            )
-            text = ExtractorService.handle_clean_code_v1(text)
-            print("[init_text] =>", init_text)
-            print("[handle_clean_code] =>", text)
-            text = re.sub(" +", " ", text)
-            if brand == "apple":
-                brand = "iphone"
-            split_str_name = text.split(" ")
-            if brand in split_str_name:
-                index_of_brand = split_str_name.index(brand)
-                last_n_word = ExtractorService.get_last_n_word(
-                    split_str_name, index_of_brand, category, n=1
-                )
-                if len(last_n_word) == 0:
-                    return "NONE"
-                return brand + " " + " ".join(last_n_word)
+        NUMBER_WORD_KEEPER = 2
+        STOP_WORD = ExtractorService.get_stop_word(category)
+        KEEP_WORD = ExtractorService.get_keep_word(category)
+        text = ExtractorService.handle_get_clean_name(text)
+        sents, postagging = ViPosTagger.postagging(ViTokenizer.tokenize(u"{}".format(text)))
+        final_code = [brand] 
+        for index, pos in enumerate(postagging):
+            tags = sents[index].split('_')
+            flag = True
+            for m in tags:
+                if m in STOP_WORD:
+                    flag = False
+            if sents[index] and sents[index] != '':
+                if sents[index] in KEEP_WORD: 
+                    final_code.append(sents[index])
+                elif (pos == 'N' or pos == 'V' or (pos == 'M' and len(pos) <= 2)) and flag and sents[index] not in final_code: 
+                    final_code.append(sents[index]) 
+        if NUMBER_WORD_KEEPER < len(final_code) and final_code[NUMBER_WORD_KEEPER].isnumeric(): return " ".join(final_code[:NUMBER_WORD_KEEPER + 1])
+        if len(final_code) != 1: return " ".join(final_code[:NUMBER_WORD_KEEPER])
         return "NONE"
-
-    @staticmethod
-    def get_keep_word(name):
-        with open(os.path.join(file_dir,'dictionary.txt'), 'r') as f:
-            dictionary =  f.read().split('\n')
-        list_word = name.split()
-        list_keep_word = []
-        for word in list_word:
-            if word not in dictionary and not word.isnumeric():
-                list_keep_word.append(word)
-        return ' '.join(list_keep_word)
-
-    @staticmethod
-    def handle_clean_code_v1(text):
-        text = "".join(text).strip().lower()
-        text = re.sub(
-            "/[^a-z0-9A-Z_ÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễếệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵỷỹ]/u",
-            "",
-            text,
-        )
-        text = re.sub(" +", " ", text)
-        count = 0
-        while count < 2:
-            text = ExtractorService.remove_string_in_splash(text)
-            text = ExtractorService.remove_string_in_square_splash(text)
-            count += 1
-
-        text = text.split(" ")
-        response = []
-        for t in text:
-            unicode_text = t.encode("ascii", errors="ignore").strip().decode("ascii")
-            if unicode_text == t:
-                response.append(unicode_text)
-        return " ".join(response)
-
-    @staticmethod
-    def handle_clean_code(str_content): 
-        
-        str_content = str_content.lower()
-        count = 0
-        while count < 2:
-            str_content = ExtractorService.remove_string_in_splash(str_content)
-            str_content = ExtractorService.remove_string_in_square_splash(str_content)
-            count += 1
-
-        str_content = re.sub('/[^a-z0-9A-Z_ÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễếệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵỷỹ]+/u', '', str_content)
-        str_content = re.sub(r'[^\w\s]',' ', str_content)
-        str_content = str_content.replace('\n', ' ')
-        str_content = str_content.replace('\t', ' ')
-        str_content = re.sub("\s\s+", " ", str_content) 
-        return ExtractorService.get_keep_word(str_content)
 
     @staticmethod
     def no_accent_vietnamese(s):
@@ -721,100 +691,8 @@ class ExtractorService(object):
         s = re.sub(r"[ỲÝỴỶỸ]", "Y", s)
         s = re.sub(r"[Đ]", "D", s)
         s = re.sub(r"[đ]", "d", s)
-        return s
-
-    @staticmethod
-    def handle_get_clean_code(text):
-        text = text.strip().lower().split(" ")
-        with open("product_crawler/spiders/setting/common.txt") as f:
-            common_words = [f.replace("\n", "").strip() for f in f.readlines()]
-        words1 = set(text)
-        return " ".join(
-            list(filter(lambda x: len(x) > 4, list(words1.difference(common_words))))
-        )
-
-    @staticmethod
-    def handle_compare_list_price_and_price(item):
-        if item["price"] is None and item["list_price"]:
-            item["price"] = item["list_price"]
-            item["list_price"] = None
-        elif (
-            item["price"] and item["list_price"] and item["price"] > item["list_price"]
-        ):
-            item["list_price"], item["price"] = item["price"], item["list_price"]
-        return item
-
-    @staticmethod
-    def handle_get_list_image(dom, selector_items):
-        # CrawlingHelper.log('selector: {}'.format(','.join(selector_items)))
-        image_urls = []
-        for selector in selector_items:
-            try:
-                image_parent_element = dom.xpath("{}".format(selector))[0]
-                image_element_items = list(image_parent_element.iter("img"))
-                for img_element in image_element_items:
-                    src = img_element.attrib.get("src")
-                    if src:
-                        if "https:" not in src:
-                            src = "https:{}".format(src)
-                        image_urls.append(src)
-            except:
-                print("not image")
-        # CrawlingHelper.log('\n'.join(image_urls))
-        return image_urls
-
-    @staticmethod
-    def handle_get_currency(dom, selector):
-        for sel in selector:
-            content = dom.xpath("{}//text()".format(sel))
-            price = ExtractorService.get_currency_from_text(content)
-            if price:
-                return price
-        return None
-
-    @staticmethod
-    def get_currency_from_text(text):
-        price = Price.fromstring("".join(text).strip())
-        if price.amount_float and price.amount_float > float(999):
-            return price.amount_float
-        return None
-
-    @staticmethod
-    def handle_get_category(text):
-        text = "".join(text).strip().lower()
-        file_dir = os.path.join(root_dir, "handlers/config_file/product_type")
-        with open(
-            os.path.join(root_dir, "handlers/config_file/category_code_priority.json")
-        ) as f:
-            category_code_files = json.load(f)
-            f.close()
-        product_type_file_dirs = os.listdir(file_dir)
-        product_types = []
-        for _dir in product_type_file_dirs:
-            if ".txt" not in _dir:
-                continue
-            else:
-                product_type = _dir.split(".")[0]
-                words2 = [
-                    i.replace("\n", "").lower()
-                    for i in open(os.path.join(file_dir, _dir)).readlines()
-                ]
-                is_exist = False
-                for word in words2:
-                    if word in text:
-                        is_exist = True
-                        break
-                if is_exist:
-                    product_types.append(product_type)
-        if len(product_types) != 0:
-            type_items = []
-            for product_type in product_types:
-                if product_type in category_code_files.keys():
-                    type_items.append(category_code_files[product_type])
-            type_items = sorted(type_items, key=lambda x: x["priority"], reverse=True)
-            return type_items[0]["code"]
-        return "OTHER"
-
+        return s 
+        
     @staticmethod
     def read_data_json(path):
         with open(path, "r") as f:
@@ -826,61 +704,4 @@ class ExtractorService(object):
         with open(path, "w", encoding="utf8") as f:
             json.dump(data, f, ensure_ascii=True, indent=4, cls=Encoder)
             f.close()
-
-    @staticmethod
-    def calculate_score(base_item):
-        total_score = 0
-        # base score
-        base_score = 0
-        # keys = ['url', 'base_encoded_url', 'stock', 'item_rating', 'domain', 'created_date', 'is_api', 'id_pcw', 'name', 'product_code', 'category_code', 'brand', 'image', 'price', 'list_price', 'content']
-        # for key in keys:
-        #     if key in base_item.keys() and base_item[key]:
-        #         base_score += 1
-        # base_score = base_score / len(keys)
-
-        # score for rating
-        if (
-            base_item["item_rating"]
-            and str(base_item["item_rating"]["rating_star"]) != "0"
-        ):
-            base_score += 2
-        if base_item["price"] != base_item["list_price"]:
-            base_score += 0.5
-        if base_item["historical_sold"] and str(base_item["historical_sold"]) != "0":
-            base_score += 0.5
-        if base_item["liked_count"] and str(base_item["liked_count"]) != "0":
-            base_score += 0.5
-        if base_item["stock"] and str(base_item["stock"]) != "0":
-            base_score += 0.5
-        if base_item["agency"] in ["mall", "tiki", "lazmall"]:
-            base_score += 2
-        if base_item["agency"] in ["shopee"]:
-            base_score += 1
-
-        if (
-            base_item["shop"] != None
-            and base_item["shop"].get("store_level", "") == "TRUSTED_STORE"
-        ):
-            base_score += 6
-        elif (
-            base_item["shop"] != None
-            and base_item["shop"].get("store_level", "") == "OFFICAL_STORE"
-        ):
-            if base_item["category_code"] == "FRIDGE":
-                base_score += 5
-            if base_item["category_code"] == "TELEVISION":
-                base_score += 5
-            if base_item["category_code"] == "PHONE":
-                base_score += 4
-        elif base_item["shop"] != None:
-            if base_item["category_code"] == "FRIDGE":
-                base_score += 4
-            if base_item["category_code"] == "TELEVISION":
-                base_score += 4
-            if base_item["category_code"] == "PHONE":
-                base_score += 3
-        else:
-            base_score += 2
-        # print(base_score , rating_score , stock_score, (base_score + rating_score + stock_score) / 3)
-        return base_score / 12
  

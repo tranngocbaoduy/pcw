@@ -12,6 +12,7 @@ from scrapy.utils.log import configure_logging
 
 from tools.scraper.scraper.spiders.api import ApiSpider
 from tools.scraper.scraper.spiders.html import HtmlSpider
+from tools.scraper.scraper.spiders.html_detail import HtmlSpiderDetail
 from tools.scraper.scraper.spiders.html_shopee_detail import HtmlShopeeDetailSpider
 
 from modules.crawler.models.model_spider import Spider
@@ -79,13 +80,15 @@ class RawProduct(models.Model):
             
         # if self.scraper_type == "api":
         #     runner.crawl(ApiSpider, spider=_spider)
-        # if self.scraper_type == "html":
-        #     runner.crawl(HtmlSpider, spider=_spider)
+        if self.scraper_type == "html":
+            runner.crawl(HtmlSpiderDetail, url=self.url, spider=_spider)
         if self.scraper_type == "html_shopee":
             runner.crawl(HtmlShopeeDetailSpider, url=self.url, spider=_spider)
 
     def extract_data_from_raw(self, request, query):
         print("[REQUEST]=>", self.id)
+
+        from modules.crawler.models.model_product import Product
         info_product = ExtractorService.handle_extract_information_from_json(self.data)
         print("[info_product]=>", info_product)
         info_product["base_encoded_url"] = self.base_encoded_url
@@ -97,14 +100,16 @@ class RawProduct(models.Model):
             )
             return
         
-        if info_product.get("category"):
+        print('info_category',info_product.get("category"), info_product.get("category_code"))
+        if info_product.get("category") or info_product.get("category_code"):
             if info_product.get("category") and type(info_product.get("category")) == dict: 
-                name_category = info_product.get("category").name
-            if info_product.get("category") and type(info_product.get("category")) == str: 
-                name_category = info_product.get("category")
+                print('info_product.get("category")',info_product.get("category"))
+                name_category = info_product.get("category").get('name', '')
+            if info_product.get("category_code") and type(info_product.get("category_code")) == str: 
+                name_category = info_product.get("category_code")
             
             info_category, created = Category.objects.get_or_create(**{'name__exact': name_category })
-            print('info_category',info_category)
+            
             info_product["category"] = info_category
 
         # print(3)
@@ -174,7 +179,7 @@ class RawProduct(models.Model):
             info_product_db = Product.objects.get(
                 base_encoded_url=info_product.get("base_encoded_url")
             )
-            # print("UPDATE PRODUCT", info_product)
+            print("UPDATE PRODUCT", info_product)
 
             for attr, value in info_product.items():
                 if attr == "id": continue
@@ -200,7 +205,7 @@ class RawProduct(models.Model):
         except: 
             try:
                 info_product_db, created = Product.objects.get_or_create(**info_product)
-                # print("CREATE PRODUCT", created)
+                print("CREATE PRODUCT", created)
                 messages.add_message(
                     request,
                     messages.SUCCESS,
@@ -208,7 +213,7 @@ class RawProduct(models.Model):
                 )
             except Exception as err:
                 info_product_db = None
-                # print("CREATE PRODUCT ERR", err)
+                print("CREATE PRODUCT ERR", err)
                 messages.add_message(
                     request,
                     messages.WARNING,
