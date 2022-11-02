@@ -28,7 +28,25 @@ from shutil import which
 from tools.scraper.scraper.items import RawProductItem, ProductItem
 from tools.scraper.scraper.utils import CrawlingHelper, MLStripper
 from tools.scraper.scraper.proxy import ProxyService
+from sys import platform
 
+def get_driver():
+    if platform == "linux" or platform == "linux2": # linux
+        return which(os.path.join(root_dir, "geckodriver"))
+    elif platform == "darwin": # OS X
+        return which(os.path.join(root_dir, "geckodriver"))
+    elif platform == "win32": # WIN
+        return which(os.path.join(root_dir, "geckodriver.exe"))
+    return which(os.path.join(root_dir, "geckodriver"))
+
+def get_browser():
+    if platform == "linux" or platform == "linux2": # linux
+        return which('/Applications/Firefox.app/Contents/MacOS/firefox')
+    elif platform == "darwin": # OS X
+        return which('/Applications/Firefox.app/Contents/MacOS/firefox')
+    elif platform == "win32": # WIN
+        return which('C:\Program Files\Mozilla Firefox\firefox')
+    return which('/Applications/Firefox.app/Contents/MacOS/firefox')
 
 class HtmlSpiderDetail(scrapy.Spider):
     # configure_logging(install_root_handler=False)
@@ -39,8 +57,8 @@ class HtmlSpiderDetail(scrapy.Spider):
     custom_settings = {
         "DOWNLOAD_DELAY": 10,
         "SELENIUM_DRIVER_NAME": "firefox",
-        "SELENIUM_DRIVER_EXECUTABLE_PATH": which(os.path.join(root_dir, "geckodriver")),
-        "SELENIUM_BROWSER_EXECUTABLE_PATH": which('/Applications/Firefox.app/Contents/MacOS/firefox'),
+        "SELENIUM_DRIVER_EXECUTABLE_PATH": get_driver(),
+        "SELENIUM_BROWSER_EXECUTABLE_PATH":get_browser(),
         "SELENIUM_DRIVER_ARGUMENTS": ['--headless'],  # '--headless' if using chrome instead of firefox
     }
 
