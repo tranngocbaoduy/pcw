@@ -8,6 +8,10 @@ web-app-admin/crawler_admin/data-*
 web-app-admin/.env
 
 web-app-admin/crawler_admin/raw_html
+web-app-admin/crawler_admin/static/admin
+web-app-admin/crawler_admin/static/import_export
+web-app-admin/crawler_admin/static/mptt
+web-app-admin/crawler_admin/static/rest_framework
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
