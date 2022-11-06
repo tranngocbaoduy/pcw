@@ -277,7 +277,7 @@ class HtmlSpider(scrapy.Spider):
                         info_from_parser[parser.name] = str_tags
                 else:
                     info_from_parser[parser.name] = ''
-        self.save_html(response, merged_item["name"])
+        # self.save_html(response, merged_item["name"])
         merged_item.update(info_from_parser)
         if self.IS_USING_PROXY:
             ProxyService.update_count_ip(
