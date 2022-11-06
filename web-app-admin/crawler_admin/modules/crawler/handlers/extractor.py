@@ -628,14 +628,14 @@ class ExtractorService(object):
 
     @staticmethod
     def get_stop_word(category):
-        with open(os.path.join(file_dir, "stop_word/common.txt"), "r") as f:
+        with open(os.path.join(file_dir, "stop_word/common.txt"), "r", encoding="utf8") as f:
             common_stop_word = f.read().split("\n")
         stop_word_of_category_dir = os.path.join(
             file_dir, "stop_word/{}.txt".format(category)
         )
         category_stop_word = []
         if os.path.isfile(stop_word_of_category_dir):
-            with open(stop_word_of_category_dir, "r") as f2:
+            with open(stop_word_of_category_dir, "r", encoding="utf8") as f2:
                 category_stop_word = f2.read().split("\n")
         else:
             with open(stop_word_of_category_dir, "w") as f:
@@ -644,14 +644,14 @@ class ExtractorService(object):
 
     @staticmethod
     def get_keep_word(category):
-        with open(os.path.join(file_dir, "keep_word/common.txt"), "r") as f:
+        with open(os.path.join(file_dir, "keep_word/common.txt"), "r", encoding="utf8") as f:
             common_keep_word = f.read().split("\n")
         keep_word_of_category_dir = os.path.join(
             file_dir, "keep_word/{}.txt".format(category)
         )
         category_keep_word = []
         if os.path.isfile(keep_word_of_category_dir):
-            with open(keep_word_of_category_dir, "r") as f2:
+            with open(keep_word_of_category_dir, "r", encoding="utf8") as f2:
                 category_keep_word = f2.read().split("\n")
         else:
             with open(keep_word_of_category_dir, "w") as f:
@@ -712,7 +712,7 @@ class ExtractorService(object):
 
     @staticmethod
     def read_data_json(path):
-        with open(path, "r") as f:
+        with open(path, "r", encoding="utf8") as f:
             data = json.load(f)
             return data
 
