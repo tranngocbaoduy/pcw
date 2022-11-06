@@ -46,7 +46,6 @@ class HtmlShopeeDetailSpider(scrapy.Spider):
         "SELENIUM_DRIVER_ARGUMENTS": [],  # '--headless' if using chrome instead of firefox
     }
 
-
     def __init__(self, *a, **kwargs): 
         super(HtmlShopeeDetailSpider, self).__init__(*a, **kwargs)
     
