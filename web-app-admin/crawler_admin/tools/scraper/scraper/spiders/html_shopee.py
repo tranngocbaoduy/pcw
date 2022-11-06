@@ -30,7 +30,7 @@ from shutil import which
 from tools.scraper.scraper.items import RawProductItem, ProductItem
 from tools.scraper.scraper.utils import CrawlingHelper, MLStripper
 from tools.scraper.scraper.proxy import ProxyService
-
+from sys import platform
 
 class HtmlShopeeSpider(scrapy.Spider):
     # configure_logging(install_root_handler=False)
@@ -38,16 +38,18 @@ class HtmlShopeeSpider(scrapy.Spider):
     name = "html_shopee"
     start_request_time = None
     url_timeout = []
+    
     custom_settings = {
         "DOWNLOAD_DELAY": 10,
         "SELENIUM_DRIVER_NAME": "firefox",
-        "SELENIUM_DRIVER_EXECUTABLE_PATH": which(os.path.join(root_dir, "geckodriver")),
-        "SELENIUM_BROWSER_EXECUTABLE_PATH": which('/Applications/Firefox.app/Contents/MacOS/firefox'),
+        "SELENIUM_DRIVER_EXECUTABLE_PATH": which(os.path.join(root_dir, "geckodriver.exe")) if platform == "win32" else which(os.path.join(root_dir, "geckodriver")),
+        "SELENIUM_BROWSER_EXECUTABLE_PATH": which('C:\Program Files\Mozilla Firefox\firefox') if platform == "win32" else which('/Applications/Firefox.app/Contents/MacOS/firefox'),
         "SELENIUM_DRIVER_ARGUMENTS": [],  # '--headless' if using chrome instead of firefox
-    }
+    } 
 
     def __init__(self, *a, **kwargs): 
         super(HtmlShopeeSpider, self).__init__(*a, **kwargs)
+        print('custom_settings',self.custom_settings)
     
         self.spider = kwargs.get("spider")
         self.parsers = self.spider.spider.parser_set.all()

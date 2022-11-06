@@ -27,7 +27,7 @@ class RawProductAdmin(ImportExportModelAdmin, JsonAdmin, admin.ModelAdmin):
     list_filter = (FilterByAgency,)
 
     def is_running(self, obj):
-        return obj.spider.is_running
+        return True #obj.spider.is_running
 
     actions = ["extract_info", "re_crawl"]
 
