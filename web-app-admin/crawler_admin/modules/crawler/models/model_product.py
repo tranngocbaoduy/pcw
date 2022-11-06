@@ -7,15 +7,16 @@ from modules.crawler.models.model_raw_product import RawProduct
 from modules.crawler.models.model_group_product import GroupProduct
 from modules.crawler.models.model_seller import Seller
 
+
 class Product(models.Model):
     class ScraperType(models.TextChoices):
         API = "api", _("API")
         HTML = "html", _("HTML")
         HTML_SHOPEE = "html_shopee", _("HTML_SHOPEE")
-    
+
     id = models.CharField(
         primary_key=True, default=id_gen, editable=False, unique=True, max_length=12
-    ) 
+    )
     name = models.CharField("Name", max_length=256)
     clean_name = models.CharField("Clean Name", max_length=256)
     url = models.CharField("URL", max_length=512)
@@ -35,7 +36,7 @@ class Product(models.Model):
     )
     group_product = models.ForeignKey(
         GroupProduct, blank=True, null=True, on_delete=models.CASCADE
-    ) 
+    )
     seller = models.ForeignKey(Seller, on_delete=models.CASCADE, null=True, blank=True)
     count_update = models.IntegerField("Count Update", default=0)
 
@@ -43,7 +44,7 @@ class Product(models.Model):
     image = models.TextField(
         default="",
         blank=True,
-    ) 
+    )
     item_rating = models.TextField(
         default="",
         blank=True,

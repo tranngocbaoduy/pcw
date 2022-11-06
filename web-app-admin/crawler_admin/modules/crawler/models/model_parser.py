@@ -2,6 +2,7 @@ import uuid
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+
 class ParserWaitUntil(models.Model):
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False, unique=True
@@ -21,6 +22,7 @@ class ParserWaitUntil(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class Parser(models.Model):
     from modules.crawler.models.model_spider import Spider

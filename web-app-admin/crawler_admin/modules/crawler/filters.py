@@ -46,7 +46,7 @@ class FilterByAgency(admin.SimpleListFilter):
         if self.value():
             list_fields = [
                 str(_f).split(".")[-1] for _f in queryset.model._meta.get_fields()
-            ]  
+            ]
             if "agency" in list_fields:
                 return queryset.filter(agency=self.value())
             else:

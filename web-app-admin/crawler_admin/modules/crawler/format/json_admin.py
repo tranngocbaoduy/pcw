@@ -7,6 +7,7 @@ from django.forms import widgets
 
 logger = logging.getLogger(__name__)
 
+
 class PrettyJSONWidget(widgets.Textarea):
     def format_value(self, value):
         try:

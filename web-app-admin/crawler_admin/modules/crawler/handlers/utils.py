@@ -85,8 +85,10 @@ class CrawlingHelper(object):
 
     @staticmethod
     def urlsafe_encode(url):
-        if url: url = requests.utils.unquote(url)
-        else: return ""
+        if url:
+            url = requests.utils.unquote(url)
+        else:
+            return ""
         return base64.urlsafe_b64encode(url.encode("utf-8")).decode("utf-8").rstrip("=")
 
     @staticmethod

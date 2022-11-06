@@ -7,13 +7,17 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('crawler', '0031_remove_groupproduct_product_ids'),
+        ("crawler", "0031_remove_groupproduct_product_ids"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='rawproduct',
-            name='spider',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='crawler.spider'),
+            model_name="rawproduct",
+            name="spider",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="crawler.spider",
+            ),
         ),
     ]

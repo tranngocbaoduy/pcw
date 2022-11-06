@@ -3,6 +3,7 @@ from mptt.models import MPTTModel
 from mptt.fields import TreeForeignKey
 from django.db import models
 
+
 class Category(MPTTModel):
     id = models.CharField(
         primary_key=True, default=id_gen, editable=False, unique=True, max_length=12
@@ -11,8 +12,8 @@ class Category(MPTTModel):
     parent = TreeForeignKey(
         "self", on_delete=models.CASCADE, null=True, blank=True, related_name="children"
     )
-    vi_name = models.CharField(max_length=250, default='', blank=True, null=True)
-    en_name = models.CharField(max_length=250, default='', blank=True, null=True)
+    vi_name = models.CharField(max_length=250, default="", blank=True, null=True)
+    en_name = models.CharField(max_length=250, default="", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

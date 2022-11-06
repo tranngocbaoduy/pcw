@@ -3,6 +3,7 @@ from django.db import models
 from modules.crawler.models.model_category import Category
 from django.contrib.postgres.fields import ArrayField
 
+
 class GroupProduct(models.Model):
     id = models.CharField(
         primary_key=True, default=id_gen, editable=False, unique=True, max_length=12
@@ -17,7 +18,7 @@ class GroupProduct(models.Model):
         ),
         size=100,
         default=list,
-    ) 
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -6,13 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('crawler', '0011_auto_20221002_0430'),
+        ("crawler", "0011_auto_20221002_0430"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='spider',
-            name='class_parent',
-            field=models.CharField(blank=True, max_length=256, verbose_name='Class Parent'),
+            model_name="spider",
+            name="class_parent",
+            field=models.CharField(
+                blank=True, max_length=256, verbose_name="Class Parent"
+            ),
         ),
     ]

@@ -20,7 +20,8 @@ from modules.crawler.models.model_brand import Brand
 from modules.crawler.models.model_group_product import GroupProduct
 from modules.crawler.models.model_seller import Seller
 
-from django.contrib import  messages
+from django.contrib import messages
+
 
 def create_or_update(model, query, query_data, data):
     params = {}
@@ -36,16 +37,17 @@ def create_or_update(model, query, query_data, data):
                 setattr(result, k, v)
         result.save()
     else:
-        print("Create new ...") 
+        print("Create new ...")
         result = model.objects.create(**data)
     return result
+
 
 class RawProduct(models.Model):
     class ScraperType(models.TextChoices):
         API = "api", _("API")
         HTML = "html", _("HTML")
         HTML_SHOPEE = "html_shopee", _("HTML_SHOPEE")
- 
+
     id = models.CharField(
         primary_key=True, default=id_gen, editable=False, unique=True, max_length=12
     )
@@ -75,9 +77,9 @@ class RawProduct(models.Model):
         _spider = self.spider
         self.spider.is_running = True
         self.spider.save()
-      
+
         runner = CrawlerRunner(crawl_settings)
-            
+
         # if self.scraper_type == "api":
         #     runner.crawl(ApiSpider, spider=_spider)
         if self.scraper_type == "html":
@@ -89,6 +91,7 @@ class RawProduct(models.Model):
         print("[REQUEST]=>", self.id)
 
         from modules.crawler.models.model_product import Product
+
         info_product = ExtractorService.handle_extract_information_from_json(self.data)
         print("[info_product]=>", info_product)
         info_product["base_encoded_url"] = self.base_encoded_url
@@ -99,54 +102,76 @@ class RawProduct(models.Model):
                 "Get product code {} was failed.".format(self.id),
             )
             return
-        
-        print('info_category',info_product.get("category"), info_product.get("category_code"))
+
+        print(
+            "info_category",
+            info_product.get("category"),
+            info_product.get("category_code"),
+        )
         if info_product.get("category") or info_product.get("category_code"):
-            if info_product.get("category") and type(info_product.get("category")) == dict: 
-                print('info_product.get("category")',info_product.get("category"))
-                name_category = info_product.get("category").get('name', '')
-            if info_product.get("category_code") and type(info_product.get("category_code")) == str: 
+            if (
+                info_product.get("category")
+                and type(info_product.get("category")) == dict
+            ):
+                print('info_product.get("category")', info_product.get("category"))
+                name_category = info_product.get("category").get("name", "")
+            if (
+                info_product.get("category_code")
+                and type(info_product.get("category_code")) == str
+            ):
                 name_category = info_product.get("category_code")
-            
-            info_category, created = Category.objects.get_or_create(**{'name__exact': name_category })
-            
+
+            info_category, created = Category.objects.get_or_create(
+                **{"name__exact": name_category}
+            )
+
             info_product["category"] = info_category
 
         # print(3)
         if info_product.get("tree_category"):
             tree_category = info_product.get("tree_category", [])
-            for category in tree_category: 
-                name_category_parent = category.get('parent', '')
-                name_category_current = category.get('name') 
-                name_category_child = category.get('child')
+            for category in tree_category:
+                name_category_parent = category.get("parent", "")
+                name_category_current = category.get("name")
+                name_category_child = category.get("child")
                 if name_category_child:
-                    if name_category_current and name_category_parent == '':
-                        Category.objects.get_or_create(**{"name": name_category_current})
+                    if name_category_current and name_category_parent == "":
+                        Category.objects.get_or_create(
+                            **{"name": name_category_current}
+                        )
                     elif name_category_current and name_category_parent:
-                        info_child = Category.objects.filter(**{"name": name_category_current}).first()
+                        info_child = Category.objects.filter(
+                            **{"name": name_category_current}
+                        ).first()
                         if info_child == None:
-                            info_child = Category.objects.create(**{"name": name_category_current})
+                            info_child = Category.objects.create(
+                                **{"name": name_category_current}
+                            )
 
-                        info_parent = Category.objects.filter(**{"name": name_category_parent}).first()
+                        info_parent = Category.objects.filter(
+                            **{"name": name_category_parent}
+                        ).first()
                         if info_parent:
                             info_child.parent = info_parent
                             info_child.save()
                         else:
-                            info_parent = Category.objects.create(**{"name": name_category_parent})
+                            info_parent = Category.objects.create(
+                                **{"name": name_category_parent}
+                            )
                             info_child.parent = info_parent
-                            info_child.save() 
+                            info_child.save()
                 print("==\n")
-            del info_product['tree_category']
-             
+            del info_product["tree_category"]
+
         if info_product.get("brand"):
             name_brand = info_product.get("brand")
             info_brand = {"name": name_brand, "category": info_category}
-            info_brand = create_or_update(Brand, 'name', name_brand, info_brand)
+            info_brand = create_or_update(Brand, "name", name_brand, info_brand)
             info_product["brand"] = info_brand
 
         product_code = info_product.get("product_code")
         agency = info_product.get("agency")
-       
+
         try:
             info_group_product_db = GroupProduct.objects.get(name__exact=product_code)
             if agency not in info_group_product_db.agencies:
@@ -159,19 +184,20 @@ class RawProduct(models.Model):
             info_group_product = {
                 "name": product_code,
                 "category": info_category,
-                "agencies": [info_product.get("agency", "")], 
+                "agencies": [info_product.get("agency", "")],
             }
             # print("[CREATE] =>", info_group_product)
             info_group_product, created = GroupProduct.objects.get_or_create(
                 **info_group_product
             )
-        
-        if info_product.get("seller"):
-            info_seller = info_product.get('seller')  
-            info_seller['agency'] = info_product.get('domain', '') 
-            info_seller = create_or_update(Seller, 'name', info_seller['name'], info_seller)            
-            info_product["seller"] = info_seller
 
+        if info_product.get("seller"):
+            info_seller = info_product.get("seller")
+            info_seller["agency"] = info_product.get("domain", "")
+            info_seller = create_or_update(
+                Seller, "name", info_seller["name"], info_seller
+            )
+            info_product["seller"] = info_seller
 
         info_product["group_product"] = info_group_product
         info_product["id_raw_product"] = query
@@ -182,7 +208,8 @@ class RawProduct(models.Model):
             print("UPDATE PRODUCT", info_product)
 
             for attr, value in info_product.items():
-                if attr == "id": continue
+                if attr == "id":
+                    continue
                 elif attr == "category":
                     setattr(info_product_db, attr, info_category)
                 elif attr == "brand":
@@ -193,7 +220,7 @@ class RawProduct(models.Model):
                     print("query", query)
                     setattr(info_product_db, attr, query)
                 else:
-                    print('a', attr, value)
+                    print("a", attr, value)
                     setattr(info_product_db, attr, value if value else "1")
             info_product_db.save()
 
@@ -201,8 +228,8 @@ class RawProduct(models.Model):
                 request,
                 messages.SUCCESS,
                 "Update {} was success.".format(info_group_product.name),
-            )   
-        except: 
+            )
+        except:
             try:
                 info_product_db, created = Product.objects.get_or_create(**info_product)
                 print("CREATE PRODUCT", created)
@@ -217,5 +244,5 @@ class RawProduct(models.Model):
                 messages.add_message(
                     request,
                     messages.WARNING,
-                    "Create {} was failed.".format(info_product['name']),
+                    "Create {} was failed.".format(info_product["name"]),
                 )

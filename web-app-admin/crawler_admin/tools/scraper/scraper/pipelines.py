@@ -80,9 +80,10 @@ class ScraperPipeline:
         pass
 
     def get_spider(self, spider):
-        print('spider.spider',spider.spider, type(spider.spider))
+        print("spider.spider", spider.spider, type(spider.spider))
         try:
-            if spider.spider.spider: return spider.spider.spider
+            if spider.spider.spider:
+                return spider.spider.spider
         except:
             return spider.spider
 
@@ -91,15 +92,21 @@ class ScraperPipeline:
 
         spider = self.get_spider(spider)
         spider_db = Spider.objects.get(id=spider.id)
-        info_raw_product['spider'] = spider_db
+        info_raw_product["spider"] = spider_db
         try:
             info_raw_product_db = RawProduct.objects.get(
                 base_encoded_url=info_raw_product["base_encoded_url"]
             )
             logging.info({"message": "[UPDATE PRODUCT]", "data": info_raw_product})
-            print({"message": "[UPDATE PRODUCT]", "base_encoded_url": info_raw_product['base_encoded_url']})
+            print(
+                {
+                    "message": "[UPDATE PRODUCT]",
+                    "base_encoded_url": info_raw_product["base_encoded_url"],
+                }
+            )
             for attr, value in info_raw_product.items():
-                if value: setattr(info_raw_product_db, attr, value)
+                if value:
+                    setattr(info_raw_product_db, attr, value)
             setattr(
                 info_raw_product_db,
                 "count_update",
@@ -114,11 +121,21 @@ class ScraperPipeline:
                 logging.error(
                     {"message": "[CREATE PRODUCT ERROR]", "data": info_raw_product}
                 )
-                print({"message": "[CREATE PRODUCT ERROR]", "base_encoded_url": info_raw_product['base_encoded_url']})
+                print(
+                    {
+                        "message": "[CREATE PRODUCT ERROR]",
+                        "base_encoded_url": info_raw_product["base_encoded_url"],
+                    }
+                )
 
             else:
                 logging.info({"message": "[CREATE PRODUCT]", "data": info_raw_product})
-                print({"message": "[CREATE PRODUCT]", "base_encoded_url": info_raw_product['base_encoded_url']})
+                print(
+                    {
+                        "message": "[CREATE PRODUCT]",
+                        "base_encoded_url": info_raw_product["base_encoded_url"],
+                    }
+                )
 
         return info_raw_product_db
 

@@ -5,6 +5,7 @@ from django.forms import BaseInlineFormSet
 # Create your forms here.
 from modules.crawler.models.model_spider import Spider
 
+
 class ParserInlineFormSet(BaseInlineFormSet):
     pass
 

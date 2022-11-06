@@ -6,7 +6,17 @@ from scrapy import Request
 class SeleniumRequest(Request):
     """Scrapy ``Request`` subclass providing additional arguments"""
 
-    def __init__(self, wait_time=None, wait_loaded=None, wait_until=None, screenshot=False, script=None, is_scroll_to_end_page=False, *args, **kwargs):
+    def __init__(
+        self,
+        wait_time=None,
+        wait_loaded=None,
+        wait_until=None,
+        screenshot=False,
+        script=None,
+        is_scroll_to_end_page=False,
+        *args,
+        **kwargs
+    ):
         """Initialize a new selenium request
 
         Parameters

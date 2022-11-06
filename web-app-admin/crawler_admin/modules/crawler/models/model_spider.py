@@ -1,4 +1,3 @@
-
 import uuid
 from django.db import models
 
@@ -17,6 +16,7 @@ from modules.crawler.models.model_category import Category
 from modules.crawler.models.model_parser import ParserWaitUntil
 from django.utils.translation import gettext_lazy as _
 
+
 class Spider(models.Model):
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False, unique=True
@@ -31,12 +31,26 @@ class Spider(models.Model):
     end_page = models.IntegerField("End page", default=100)
     base_url_item = models.CharField(
         "Base url item", default="", max_length=256, blank=True
-    ) 
+    )
     is_headless = models.BooleanField("Not using browser", default=True, editable=True)
     domain = models.CharField("Domain", default="", max_length=256)
     agency = models.CharField("Agency", default="", max_length=256)
-    parser_wait_until_parent = models.ForeignKey(ParserWaitUntil, on_delete=models.CASCADE, editable=True, null=True, blank=True, related_name='spirder_parser_parent')
-    parser_wait_until_child = models.ForeignKey(ParserWaitUntil, on_delete=models.CASCADE, editable=True, null=True, blank=True, related_name='spirder_parser_child')
+    parser_wait_until_parent = models.ForeignKey(
+        ParserWaitUntil,
+        on_delete=models.CASCADE,
+        editable=True,
+        null=True,
+        blank=True,
+        related_name="spirder_parser_parent",
+    )
+    parser_wait_until_child = models.ForeignKey(
+        ParserWaitUntil,
+        on_delete=models.CASCADE,
+        editable=True,
+        null=True,
+        blank=True,
+        related_name="spirder_parser_child",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_running = models.BooleanField("Is running", default=False, editable=False)
@@ -98,11 +112,12 @@ class Scraper(models.Model):
             spider_db = _spider.spider
             params = {}
             if spider_db.is_headless:
-                params["SELENIUM_DRIVER_ARGUMENTS"] = ['--headless']
-            else: params["SELENIUM_DRIVER_ARGUMENTS"] = []
+                params["SELENIUM_DRIVER_ARGUMENTS"] = ["--headless"]
+            else:
+                params["SELENIUM_DRIVER_ARGUMENTS"] = []
             crawl_settings.update(params)
             runner = CrawlerRunner(crawl_settings)
-            
+
             spider_db.is_running = True
             spider_db.save()
             if self.scraper_type == "api":
@@ -161,4 +176,3 @@ class ScraperSpider(models.Model):
 
     def __str__(self):
         return "{} - {}".format(self.spider.name, self.spider.is_running)
-

@@ -74,13 +74,15 @@ class ExtractorService(object):
         seller = response.get("seller", None)
         tree_category = response.get("tree_category", None)
 
-        base_item = dict() 
+        base_item = dict()
         base_item["name"] = response.get("name", "").strip()
         base_item["url"] = response.get("url", "")
         base_item["domain"] = domain
         base_item["agency"] = agency
-        if seller: base_item["seller"] = seller
-        if tree_category: base_item["tree_category"] = tree_category
+        if seller:
+            base_item["seller"] = seller
+        if tree_category:
+            base_item["tree_category"] = tree_category
         base_item["clean_name"] = ExtractorService.handle_get_clean_name(
             response.get("name", "")
         ).strip()
@@ -626,30 +628,34 @@ class ExtractorService(object):
 
     @staticmethod
     def get_stop_word(category):
-        with open(os.path.join(file_dir,'stop_word/common.txt'), 'r') as f:
-            common_stop_word =  f.read().split('\n')
-        stop_word_of_category_dir = os.path.join(file_dir,'stop_word/{}.txt'.format(category))
+        with open(os.path.join(file_dir, "stop_word/common.txt"), "r") as f:
+            common_stop_word = f.read().split("\n")
+        stop_word_of_category_dir = os.path.join(
+            file_dir, "stop_word/{}.txt".format(category)
+        )
         category_stop_word = []
         if os.path.isfile(stop_word_of_category_dir):
-            with open(stop_word_of_category_dir, 'r') as f2:
-                category_stop_word = f2.read().split('\n') 
+            with open(stop_word_of_category_dir, "r") as f2:
+                category_stop_word = f2.read().split("\n")
         else:
-            with open(stop_word_of_category_dir, 'w') as f:
-                f.write('')
+            with open(stop_word_of_category_dir, "w") as f:
+                f.write("")
         return common_stop_word + category_stop_word
 
     @staticmethod
     def get_keep_word(category):
-        with open(os.path.join(file_dir,'keep_word/common.txt'), 'r') as f:
-            common_keep_word =  f.read().split('\n')
-        keep_word_of_category_dir = os.path.join(file_dir,'keep_word/{}.txt'.format(category))
+        with open(os.path.join(file_dir, "keep_word/common.txt"), "r") as f:
+            common_keep_word = f.read().split("\n")
+        keep_word_of_category_dir = os.path.join(
+            file_dir, "keep_word/{}.txt".format(category)
+        )
         category_keep_word = []
         if os.path.isfile(keep_word_of_category_dir):
-            with open(keep_word_of_category_dir, 'r') as f2:
-                category_keep_word = f2.read().split('\n') 
+            with open(keep_word_of_category_dir, "r") as f2:
+                category_keep_word = f2.read().split("\n")
         else:
-            with open(keep_word_of_category_dir, 'w') as f:
-                f.write('') 
+            with open(keep_word_of_category_dir, "w") as f:
+                f.write("")
         return common_keep_word + category_keep_word
 
     @staticmethod
@@ -658,21 +664,32 @@ class ExtractorService(object):
         STOP_WORD = ExtractorService.get_stop_word(category)
         KEEP_WORD = ExtractorService.get_keep_word(category)
         text = ExtractorService.handle_get_clean_name(text)
-        sents, postagging = ViPosTagger.postagging(ViTokenizer.tokenize(u"{}".format(text)))
-        final_code = [brand] 
+        sents, postagging = ViPosTagger.postagging(
+            ViTokenizer.tokenize("{}".format(text))
+        )
+        final_code = [brand]
         for index, pos in enumerate(postagging):
-            tags = sents[index].split('_')
+            tags = sents[index].split("_")
             flag = True
             for m in tags:
                 if m in STOP_WORD:
                     flag = False
-            if sents[index] and sents[index] != '':
-                if sents[index] in KEEP_WORD: 
+            if sents[index] and sents[index] != "":
+                if sents[index] in KEEP_WORD:
                     final_code.append(sents[index])
-                elif (pos == 'N' or pos == 'V' or (pos == 'M' and len(pos) <= 2)) and flag and sents[index] not in final_code: 
-                    final_code.append(sents[index]) 
-        if NUMBER_WORD_KEEPER < len(final_code) and final_code[NUMBER_WORD_KEEPER].isnumeric(): return " ".join(final_code[:NUMBER_WORD_KEEPER + 1])
-        if len(final_code) != 1: return " ".join(final_code[:NUMBER_WORD_KEEPER])
+                elif (
+                    (pos == "N" or pos == "V" or (pos == "M" and len(pos) <= 2))
+                    and flag
+                    and sents[index] not in final_code
+                ):
+                    final_code.append(sents[index])
+        if (
+            NUMBER_WORD_KEEPER < len(final_code)
+            and final_code[NUMBER_WORD_KEEPER].isnumeric()
+        ):
+            return " ".join(final_code[: NUMBER_WORD_KEEPER + 1])
+        if len(final_code) != 1:
+            return " ".join(final_code[:NUMBER_WORD_KEEPER])
         return "NONE"
 
     @staticmethod
@@ -691,8 +708,8 @@ class ExtractorService(object):
         s = re.sub(r"[ỲÝỴỶỸ]", "Y", s)
         s = re.sub(r"[Đ]", "D", s)
         s = re.sub(r"[đ]", "d", s)
-        return s 
-        
+        return s
+
     @staticmethod
     def read_data_json(path):
         with open(path, "r") as f:
@@ -704,4 +721,3 @@ class ExtractorService(object):
         with open(path, "w", encoding="utf8") as f:
             json.dump(data, f, ensure_ascii=True, indent=4, cls=Encoder)
             f.close()
- 

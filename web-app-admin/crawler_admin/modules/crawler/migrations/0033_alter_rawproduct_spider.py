@@ -7,13 +7,17 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('crawler', '0032_rawproduct_spider'),
+        ("crawler", "0032_rawproduct_spider"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='rawproduct',
-            name='spider',
-            field=models.ForeignKey(blank=True, on_delete=django.db.models.deletion.CASCADE, to='crawler.spider'),
+            model_name="rawproduct",
+            name="spider",
+            field=models.ForeignKey(
+                blank=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="crawler.spider",
+            ),
         ),
     ]

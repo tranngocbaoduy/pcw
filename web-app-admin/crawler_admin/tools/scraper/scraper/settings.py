@@ -83,7 +83,7 @@ CONCURRENT_REQUESTS = 8
 # }
 DOWNLOADER_MIDDLEWARES = {
     # 'scraper.middlewares.ScraperDownloaderMiddleware': 543,
-    'tools.scraper.scrapy_selenium.SeleniumMiddleware': 1000
+    "tools.scraper.scrapy_selenium.SeleniumMiddleware": 1000
 }
 
 

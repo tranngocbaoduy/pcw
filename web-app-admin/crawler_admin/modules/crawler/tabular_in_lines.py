@@ -5,8 +5,9 @@ from modules.crawler.models.model_spider import ScraperSpider
 from modules.crawler.models.model_raw_product import RawProduct
 from modules.crawler.models.model_product import Product
 from modules.crawler.models.model_group_product import GroupProduct
- 
+
 from modules.crawler.forms import ParserInlineFormSet, ProductInlineFormSet
+
 
 class ParserTabularInline(admin.TabularInline):
     model = Parser

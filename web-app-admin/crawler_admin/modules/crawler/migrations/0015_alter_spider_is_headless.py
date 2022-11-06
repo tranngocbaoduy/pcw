@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('crawler', '0014_spider_is_headless'),
+        ("crawler", "0014_spider_is_headless"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='spider',
-            name='is_headless',
-            field=models.BooleanField(default=True, verbose_name='Not using browser'),
+            model_name="spider",
+            name="is_headless",
+            field=models.BooleanField(default=True, verbose_name="Not using browser"),
         ),
     ]

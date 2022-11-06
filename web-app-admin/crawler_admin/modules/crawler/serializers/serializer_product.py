@@ -1,12 +1,13 @@
 from rest_framework import serializers
 from modules.crawler.models.model_product import Product
 
+
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = [
             "id",
-            "name", 
+            "name",
             "clean_name",
             "url",
             "base_encoded_url",
@@ -25,4 +26,3 @@ class ProductSerializer(serializers.ModelSerializer):
             "list_price",
             "updated_at",
         ]
-    

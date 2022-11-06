@@ -11,8 +11,8 @@ import base64
 file_dir = os.path.dirname(os.path.realpath(__file__))
 root_dir = os.path.abspath(file_dir + "/..")
 sys.path.append(os.path.normpath(root_dir))
-  
-from lxml import etree 
+
+from lxml import etree
 from functools import reduce
 from bs4 import BeautifulSoup
 from django.utils import timezone
@@ -24,7 +24,7 @@ from decimal import Decimal
 from tools.scraper.scrapy_selenium import SeleniumRequest
 from scrapy.utils.log import configure_logging
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC 
+from selenium.webdriver.support import expected_conditions as EC
 from shutil import which
 
 from tools.scraper.scraper.items import RawProductItem, ProductItem
@@ -32,25 +32,34 @@ from tools.scraper.scraper.utils import CrawlingHelper, MLStripper
 from tools.scraper.scraper.proxy import ProxyService
 from sys import platform
 
+
 class HtmlShopeeSpider(scrapy.Spider):
     # configure_logging(install_root_handler=False)
     # logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.INFO)
     name = "html_shopee"
     start_request_time = None
     url_timeout = []
-    
+
     custom_settings = {
         "DOWNLOAD_DELAY": 10,
         "SELENIUM_DRIVER_NAME": "firefox",
-        "SELENIUM_DRIVER_EXECUTABLE_PATH": which(os.path.join(root_dir, "geckodriver.exe")) if platform == "win32" else which(os.path.join(root_dir, "geckodriver")),
-        "SELENIUM_BROWSER_EXECUTABLE_PATH": which('C:\Program Files\Mozilla Firefox\firefox') if platform == "win32" else which('/Applications/Firefox.app/Contents/MacOS/firefox'),
+        "SELENIUM_DRIVER_EXECUTABLE_PATH": which(
+            os.path.join(root_dir, "geckodriver.exe")
+        )
+        if platform == "win32"
+        else which(os.path.join(root_dir, "geckodriver")),
+        "SELENIUM_BROWSER_EXECUTABLE_PATH": which(
+            "C:\Program Files\Mozilla Firefox\firefox"
+        )
+        if platform == "win32"
+        else which("/Applications/Firefox.app/Contents/MacOS/firefox"),
         "SELENIUM_DRIVER_ARGUMENTS": [],  # '--headless' if using chrome instead of firefox
-    } 
+    }
 
-    def __init__(self, *a, **kwargs): 
+    def __init__(self, *a, **kwargs):
         super(HtmlShopeeSpider, self).__init__(*a, **kwargs)
-        print('custom_settings',self.custom_settings)
-    
+        print("custom_settings", self.custom_settings)
+
         self.spider = kwargs.get("spider")
         self.parsers = self.spider.spider.parser_set.all()
         self.count_err = 0
@@ -99,7 +108,7 @@ class HtmlShopeeSpider(scrapy.Spider):
                 "download_latency": 4,
             },
             "callback": self.parse_product_item if is_child else self.parse,
-            "errback": self.err_callback, 
+            "errback": self.err_callback,
             "dont_filter": True,
             "wait_time": 30,
             "wait_loaded": 3,
@@ -107,12 +116,18 @@ class HtmlShopeeSpider(scrapy.Spider):
 
         if not self.IS_HEADLESS and not is_child:
             params["is_scroll_to_end_page"] = True
-            tag = (self.PARSER_WAIT_UNTIL_PARENT.selector_type, self.PARSER_WAIT_UNTIL_PARENT.selector)
-            params["wait_until"] = EC.presence_of_element_located(tag) 
+            tag = (
+                self.PARSER_WAIT_UNTIL_PARENT.selector_type,
+                self.PARSER_WAIT_UNTIL_PARENT.selector,
+            )
+            params["wait_until"] = EC.presence_of_element_located(tag)
 
         if not self.IS_HEADLESS and is_child:
             params["is_scroll_to_end_page"] = True
-            tag = (self.PARSER_WAIT_UNTIL_CHILD.selector_type, self.PARSER_WAIT_UNTIL_CHILD.selector)
+            tag = (
+                self.PARSER_WAIT_UNTIL_CHILD.selector_type,
+                self.PARSER_WAIT_UNTIL_CHILD.selector,
+            )
             params["wait_until"] = EC.visibility_of_element_located(tag)
 
         if self.IS_USING_PROXY:
@@ -126,7 +141,7 @@ class HtmlShopeeSpider(scrapy.Spider):
         else:
             CrawlingHelper.log("=== Start request: {0} === ".format(url))
         self.start_urls.append(url)
-        print('params',params)
+        print("params", params)
         request = SeleniumRequest(**params)
         return request
 
@@ -165,62 +180,71 @@ class HtmlShopeeSpider(scrapy.Spider):
         with open("{}/index.html".format(data_crawler_file_dir), "w") as f:
             f.write(response.text)
             f.close()
-    
+
     def extractor_url(self, response):
-        
+
         iframe_links = LinkExtractor(
             allow=("^" + re.escape(self.BASE_URL_ITEM)),
             allow_domains=self.ALLOWED_DOMAINS,
         ).extract_links(response)
         list_url = [_i.url for _i in iframe_links]
         return list_url
-    
-    def extractor_url_from_html(self, html_page): 
+
+    def extractor_url_from_html(self, html_page):
         soup = BeautifulSoup(html_page)
         hrefs = []
-        for link in soup.findAll('a'):
-            hrefs.append(link.get('href'))
+        for link in soup.findAll("a"):
+            hrefs.append(link.get("href"))
         return hrefs
 
     def concat_url(self, path):
         import urllib
+
         url = urllib.parse.urljoin(self.BASE_URL_ITEM, path)
-        url = url.split('?')[0]
+        url = url.split("?")[0]
         return url
 
     def parse(self, response):
         list_url = []
         if self.CLASS_CHILD:
-            sel_item_urls = response.css('.{}'.format(self.CLASS_CHILD))
-            for sel_item in sel_item_urls:   
-                a_tags = sel_item.xpath('//a[@href]').getall() 
-                links = [ self.extractor_url_from_html(a_tag) for a_tag in a_tags]
+            sel_item_urls = response.css(".{}".format(self.CLASS_CHILD))
+            for sel_item in sel_item_urls:
+                a_tags = sel_item.xpath("//a[@href]").getall()
+                links = [self.extractor_url_from_html(a_tag) for a_tag in a_tags]
                 links = reduce(lambda xs, ys: xs + ys, links)
-                links = list(set(links)) 
-                if 'shopee.vn' in self.ALLOWED_DOMAINS:
-                    links = list(filter(lambda x: self.BASE_URL_ITEM not in x and len(x) > 70 and len(x.split('/')) == 2 and len(x.split('.')) == 3, links)) 
+                links = list(set(links))
+                if "shopee.vn" in self.ALLOWED_DOMAINS:
+                    links = list(
+                        filter(
+                            lambda x: self.BASE_URL_ITEM not in x
+                            and len(x) > 70
+                            and len(x.split("/")) == 2
+                            and len(x.split(".")) == 3,
+                            links,
+                        )
+                    )
                     links = list(map(lambda x: self.concat_url(x), links))
                 list_url.extend(links)
-        elif self.CLASS_PARENT: 
-            sel_item_urls = response.css('.{}'.format(self.CLASS_PARENT))   
+        elif self.CLASS_PARENT:
+            sel_item_urls = response.css(".{}".format(self.CLASS_PARENT))
             for sel_item in sel_item_urls:
-                links = response.xpath('//a[@href]') 
-                links = [ i.get() for i in links]
+                links = response.xpath("//a[@href]")
+                links = [i.get() for i in links]
                 list_url.extend([links])
         else:
             list_url = self.extractor_url(response)
-        
+
         logging.debug(list_url)
         list_url = list(set(list_url))
         print("[GET TOTAL ITEMS] => ", len(list_url))
-        
+
         if list_url and len(list_url) != 0:
             for url in list_url[:2]:
                 if url:
                     encoded_url = CrawlingHelper.urlsafe_encode(url)
                     if encoded_url in self.encoded_urls:
                         continue
-                    self.encoded_urls.append(encoded_url) 
+                    self.encoded_urls.append(encoded_url)
                     time.sleep(3)
                     yield self.get_new_request(url=url, is_child=True)
         else:
@@ -240,82 +264,88 @@ class HtmlShopeeSpider(scrapy.Spider):
             return html
 
     def get_basic_category(self, res_info):
-        tree_category = res_info.get('itemListElement', [])
+        tree_category = res_info.get("itemListElement", [])
         list_category = []
-        if tree_category and len(tree_category) != 0: 
-            tree_category = sorted(tree_category, key=lambda x: x.get('position', 1), reverse=False)
+        if tree_category and len(tree_category) != 0:
+            tree_category = sorted(
+                tree_category, key=lambda x: x.get("position", 1), reverse=False
+            )
             index = 0
-            for category in tree_category: 
-                if category.get('position') == 1: 
+            for category in tree_category:
+                if category.get("position") == 1:
                     index += 1
                     continue
-                item = category.get('item', None)
-                if item == None: continue 
+                item = category.get("item", None)
+                if item == None:
+                    continue
                 params = {
-                    "id": CrawlingHelper.urlsafe_encode(item.get('@id', '')),
-                    "url": item.get('@id', ''),
-                    "name": item.get('name', ''),
+                    "id": CrawlingHelper.urlsafe_encode(item.get("@id", "")),
+                    "url": item.get("@id", ""),
+                    "name": item.get("name", ""),
                 }
                 if index > 1 and index - 1 <= len(tree_category):
-                    prev_item = tree_category[index - 1].get('item', None)
-                    params['parent'] = prev_item.get('name', '')
-                
+                    prev_item = tree_category[index - 1].get("item", None)
+                    params["parent"] = prev_item.get("name", "")
+
                 if index + 1 < len(tree_category):
-                    next_item = tree_category[index + 1].get('item', None)
-                    params['child'] = next_item.get('name', '')
+                    next_item = tree_category[index + 1].get("item", None)
+                    params["child"] = next_item.get("name", "")
 
                 list_category.append(params)
                 index += 1
         return list_category
-        
+
     def get_basic_info(self, res_info):
         basic_info = {}
-        basic_info['name'] = res_info.get('name', '')
-        basic_info['description'] = res_info.get('description', '')
-        basic_info['url'] = res_info.get('url', '')
-        basic_info['image'] = res_info.get('image', '')
-        basic_info['brand'] = res_info.get('brand', '')
+        basic_info["name"] = res_info.get("name", "")
+        basic_info["description"] = res_info.get("description", "")
+        basic_info["url"] = res_info.get("url", "")
+        basic_info["image"] = res_info.get("image", "")
+        basic_info["brand"] = res_info.get("brand", "")
 
-        if res_info.get('offers'):
-            basic_info['price'] = res_info['offers'].get('price', '')
-            if basic_info['price'] == '':
-                basic_info['price'] = res_info['offers'].get('lowPrice', '')
-                basic_info['list_price'] = res_info['offers'].get('highPrice', '')
+        if res_info.get("offers"):
+            basic_info["price"] = res_info["offers"].get("price", "")
+            if basic_info["price"] == "":
+                basic_info["price"] = res_info["offers"].get("lowPrice", "")
+                basic_info["list_price"] = res_info["offers"].get("highPrice", "")
             else:
-                basic_info['list_price'] = basic_info['price']
-            
-            if res_info['offers'].get('seller'):
-                basic_info['seller'] = {
-                    "name": res_info['offers']['seller'].get('name', ''),
-                    "url": res_info['offers']['seller'].get('url', ''),
-                    "image": res_info['offers']['seller'].get('image', ''), 
+                basic_info["list_price"] = basic_info["price"]
+
+            if res_info["offers"].get("seller"):
+                basic_info["seller"] = {
+                    "name": res_info["offers"]["seller"].get("name", ""),
+                    "url": res_info["offers"]["seller"].get("url", ""),
+                    "image": res_info["offers"]["seller"].get("image", ""),
                 }
-                if res_info['offers']['seller'].get('aggregateRating'):
-                    basic_info["seller"]["star"] = res_info['offers']['seller']['aggregateRating'].get('ratingValue', '')
-                    basic_info["seller"]["review"] = res_info['offers']['seller']['aggregateRating'].get('ratingCount', '')
-            
-        if res_info.get('aggregateRating'):
-            basic_info['star'] = res_info['aggregateRating'].get('ratingValue', '')
-            basic_info['review'] = res_info['aggregateRating'].get('ratingCount', '')
-            
+                if res_info["offers"]["seller"].get("aggregateRating"):
+                    basic_info["seller"]["star"] = res_info["offers"]["seller"][
+                        "aggregateRating"
+                    ].get("ratingValue", "")
+                    basic_info["seller"]["review"] = res_info["offers"]["seller"][
+                        "aggregateRating"
+                    ].get("ratingCount", "")
+
+        if res_info.get("aggregateRating"):
+            basic_info["star"] = res_info["aggregateRating"].get("ratingValue", "")
+            basic_info["review"] = res_info["aggregateRating"].get("ratingCount", "")
+
         return basic_info
 
     def extract_tag_script_basic_info_shopee(self, html_page):
         soup = BeautifulSoup(html_page, "html.parser")
         dom = etree.HTML(str(soup))
-        tag = dom.getiterator(tag='script')
+        tag = dom.getiterator(tag="script")
         basic_info = {}
         for i in tag:
-            if i.get('type') == 'application/ld+json':
+            if i.get("type") == "application/ld+json":
                 res_info = json.loads(i.text)
-                if res_info.get('@type') == 'Product': 
-                    basic_info.update(self.get_basic_info(res_info)) 
+                if res_info.get("@type") == "Product":
+                    basic_info.update(self.get_basic_info(res_info))
                 if res_info.get("@type") == "BreadcrumbList":
                     tree_category = self.get_basic_category(res_info)
-                    basic_info.update({
-                        "tree_category": tree_category,
-                        "category": tree_category[-2]
-                    }) 
+                    basic_info.update(
+                        {"tree_category": tree_category, "category": tree_category[-2]}
+                    )
         # print('[basic_info] =>',basic_info)
         return basic_info
 
@@ -359,7 +389,7 @@ class HtmlShopeeSpider(scrapy.Spider):
                         # handle for value of parser
                         info_from_parser[parser.name] = str_tags
                 else:
-                    info_from_parser[parser.name] = ''
+                    info_from_parser[parser.name] = ""
         # self.save_html(response, merged_item["name"])
         merged_item.update(info_from_parser)
         merged_item.update(basic_info)

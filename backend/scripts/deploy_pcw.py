@@ -7,36 +7,42 @@ import subprocess
 import sys
 import time
 
-import boto3 
+import boto3
 
 # import deploy_dynamodb_tables
 # import deploy_waf
 
 file_dir = os.path.dirname(os.path.realpath(__file__))
-root_dir = os.path.abspath(file_dir + '/..')
-sys.path.append(os.path.normpath(root_dir)) 
+root_dir = os.path.abspath(file_dir + "/..")
+sys.path.append(os.path.normpath(root_dir))
 
 from utils.AWSHelper import AWSHelper
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--force', action='store_true')
-parser.add_argument('env_name',
-                    type=lambda x, pattern=r'^[a-z]{1,32}$': x if re.compile(pattern).match(x) else (_ for _ in ()).throw(argparse.ArgumentTypeError('must match ' + pattern)))
-parser.add_argument('--project-name', default='pcw')
-parser.add_argument('--profile', default='pcw-admin')
-parser.add_argument('--template-filename', default='pcw.template')
-parser.add_argument('--dynamodb-tables-template-filename', default='dynamodb-tables.template')
+parser.add_argument("--force", action="store_true")
+parser.add_argument(
+    "env_name",
+    type=lambda x, pattern=r"^[a-z]{1,32}$": x
+    if re.compile(pattern).match(x)
+    else (_ for _ in ()).throw(argparse.ArgumentTypeError("must match " + pattern)),
+)
+parser.add_argument("--project-name", default="pcw")
+parser.add_argument("--profile", default="pcw-admin")
+parser.add_argument("--template-filename", default="pcw.template")
+parser.add_argument(
+    "--dynamodb-tables-template-filename", default="dynamodb-tables.template"
+)
 # parser.add_argument('--use-container', action='store_true')
 # parser.add_argument('--skip-build', action='store_true')
 # parser.add_argument('--skip-build-layer', action='store_true')
 # parser.add_argument('--skip-deploy-source-bucket', action='store_true')
-parser.add_argument('--detach-vpc', action='store_true')
+parser.add_argument("--detach-vpc", action="store_true")
 # parser.add_argument('--update-function-code', action='store_true')
 # parser.add_argument('--deploy-webapp', action='store_true')
 # parser.add_argument('--only-template', action='store_true')
 # parser.add_argument('--skip-default-layer', action='store_true')
 # parser.add_argument('--update-default-layer', action='store_true')
-parser.add_argument('--skip-version', action='store_true')
+parser.add_argument("--skip-version", action="store_true")
 # parser.add_argument('--deploy-layer', action='store_true')
 # parser.add_argument('--use-env-name-waf', action='store_true')
 # parser.add_argument('--update-waf', action='store_true')
@@ -54,7 +60,11 @@ args = vars(parser.parse_args())
 # if (args['update_default_layer']):
 #     args['skip_default_layer'] = False
 
-env_type = 'dev' if not args['env_name'] in ['prod', 'staging', 'canary', 'prestaging'] else args['env_name']
+env_type = (
+    "dev"
+    if not args["env_name"] in ["prod", "staging", "canary", "prestaging"]
+    else args["env_name"]
+)
 # if (env_type != 'dev'):
 #     args['update_waf'] = True
 
@@ -71,24 +81,28 @@ env_type = 'dev' if not args['env_name'] in ['prod', 'staging', 'canary', 'prest
 # #             args['env_name'] == 'canary' and not (branchname.startswith('hotfix') or branchname.startswith('release'))):
 # #         print('Invalid branch {} for deploy {}'.format(branchname, args['env_name']))
 # #         confirm('Are you sure you want to continue deploy {} from branch {}'.format(args['env_name'], branchname))
- 
+
 
 start_time = time.time()
 
-session = boto3.Session(profile_name=args['profile'])
-cloudformation_client = session.client('cloudformation')
+session = boto3.Session(profile_name=args["profile"])
+cloudformation_client = session.client("cloudformation")
 # apigateway_client = session.client('apigateway')
 # lambda_client = session.client('lambda')
-s3_client = session.client('s3')
+s3_client = session.client("s3")
 # ssm_client = session.client('ssm')
 
-main_stack_name = '{}-{}'.format(args['project_name'], args['env_name'])
-source_bucket_name = '{}-source-bucket'.format(main_stack_name)
+main_stack_name = "{}-{}".format(args["project_name"], args["env_name"])
+source_bucket_name = "{}-source-bucket".format(main_stack_name)
 
-cur_version = ''
+cur_version = ""
 try:
-    cur_stack_parameters = cloudformation_client.describe_stacks(StackName=main_stack_name)['Stacks'][0]['Parameters']
-    cur_version = next((x for x in cur_stack_parameters if x['ParameterKey'] == 'Version'), {}).get('ParameterValue', '')
+    cur_stack_parameters = cloudformation_client.describe_stacks(
+        StackName=main_stack_name
+    )["Stacks"][0]["Parameters"]
+    cur_version = next(
+        (x for x in cur_stack_parameters if x["ParameterKey"] == "Version"), {}
+    ).get("ParameterValue", "")
 except:
     pass
 
@@ -97,11 +111,13 @@ except:
 #     args['skip_default_layer'] = False
 #     args['skip_version'] = False
 
-version = ''
-if args['skip_version'] and cur_version:
+version = ""
+if args["skip_version"] and cur_version:
     version = cur_version
 else:
-    version = (datetime.datetime.utcnow().replace(microsecond=0).isoformat() + 'Z').replace(':', '_')
+    version = (
+        datetime.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
+    ).replace(":", "_")
 
 # stripe.api_key = ssm_client.get_parameter(Name='{}-stripe-secret-key-secure'.format(env_type), WithDecryption=True)['Parameter']['Value']
 
@@ -160,60 +176,91 @@ else:
 # #         'LayoutImageDiffFunctionLayerVersionArn': get_latest_layer_version_arn('{}-LayoutImageDiffFunctionLayer'.format(main_stack_name)),
 # #         'SpellingInconsistenciesFunctionLayerVersionArn': get_latest_layer_version_arn('{}-SpellingInconsistenciesFunctionLayer'.format(main_stack_name)),
 # #     }
-# #     return layers_map 
+# #     return layers_map
+
 
 def get_web_acl_arn():
-    waf_env_name = env_type if not args['use_env_name_waf'] else args['env_name']
+    waf_env_name = env_type if not args["use_env_name_waf"] else args["env_name"]
 
-    if (not args['update_waf']):
+    if not args["update_waf"]:
         try:
-            waf_stack_outputs = cloudformation_client.describe_stacks(StackName='{}-{}-waf-regional'.format(args['project_name'], waf_env_name))['Stacks'][0]['Outputs']
-            web_acl_arn = next((x for x in waf_stack_outputs if x['OutputKey'] == 'WebACLArn'), None)['OutputValue']
+            waf_stack_outputs = cloudformation_client.describe_stacks(
+                StackName="{}-{}-waf-regional".format(
+                    args["project_name"], waf_env_name
+                )
+            )["Stacks"][0]["Outputs"]
+            web_acl_arn = next(
+                (x for x in waf_stack_outputs if x["OutputKey"] == "WebACLArn"), None
+            )["OutputValue"]
             return web_acl_arn
         except:
             pass
 
-    deploy_waf.main({
-        'force': True,
-        'env_name': waf_env_name,
-        'project_name': args['project_name'],
-        'profile': args['profile'],
-    })
-    waf_stack_outputs = cloudformation_client.describe_stacks(StackName='{}-{}-waf-regional'.format(args['project_name'], waf_env_name))['Stacks'][0]['Outputs']
-    web_acl_arn = next((x for x in waf_stack_outputs if x['OutputKey'] == 'WebACLArn'), None)['OutputValue']
+    deploy_waf.main(
+        {
+            "force": True,
+            "env_name": waf_env_name,
+            "project_name": args["project_name"],
+            "profile": args["profile"],
+        }
+    )
+    waf_stack_outputs = cloudformation_client.describe_stacks(
+        StackName="{}-{}-waf-regional".format(args["project_name"], waf_env_name)
+    )["Stacks"][0]["Outputs"]
+    web_acl_arn = next(
+        (x for x in waf_stack_outputs if x["OutputKey"] == "WebACLArn"), None
+    )["OutputValue"]
     return web_acl_arn
 
 
-def deploy_template(): 
-    __version = 'latest'
+def deploy_template():
+    __version = "latest"
     template_parameters_map = {
-        'EnvName': args['env_name'],
-        'EnvType': env_type,
-        'DynamodbTablesStackName': '{}-dynamodb-tables'.format(main_stack_name), 
-        'SesRegion': 'us-east-1',
-        'VpcEnabled': 'true' if not args['detach_vpc'] else 'false',
-        'Version': __version, 
-        'StageName': 'dev',
+        "EnvName": args["env_name"],
+        "EnvType": env_type,
+        "DynamodbTablesStackName": "{}-dynamodb-tables".format(main_stack_name),
+        "SesRegion": "us-east-1",
+        "VpcEnabled": "true" if not args["detach_vpc"] else "false",
+        "Version": __version,
+        "StageName": "dev",
         # 'WebACLArn': get_web_acl_arn(),
         # **template_parameter_layers_map,
-    } 
-    template_parameters_str = ' '.join(['{}={}'.format(key, template_parameters_map[key]) for key in template_parameters_map])
-    ans = s3_client.put_object(Bucket=source_bucket_name, Key='template-parameters/{}/main.json'.format(version), Body=json.dumps(template_parameters_map, indent=2))
-    AWSHelper.run_command(' '.join([
-        "aws",
-        "cloudformation",
-        "deploy",
-        "--template-file={}".format(root_dir + '/templates/' + args['template_filename']),
-        "--s3-bucket={}-{}-source-bucket".format(args['project_name'], args['env_name']),  # nopep8
-        "--s3-prefix=templates/main/{}".format(version),
-        "--stack-name={}".format(main_stack_name),
-        "--parameter-overrides",
-        template_parameters_str,
-        "--capabilities=CAPABILITY_IAM",
-        "--tags",
-        "env={}".format(args['env_name']),
-        '--profile={}'.format(args['profile'])
-    ]))
+    }
+    template_parameters_str = " ".join(
+        [
+            "{}={}".format(key, template_parameters_map[key])
+            for key in template_parameters_map
+        ]
+    )
+    ans = s3_client.put_object(
+        Bucket=source_bucket_name,
+        Key="template-parameters/{}/main.json".format(version),
+        Body=json.dumps(template_parameters_map, indent=2),
+    )
+    AWSHelper.run_command(
+        " ".join(
+            [
+                "aws",
+                "cloudformation",
+                "deploy",
+                "--template-file={}".format(
+                    root_dir + "/templates/" + args["template_filename"]
+                ),
+                "--s3-bucket={}-{}-source-bucket".format(
+                    args["project_name"], args["env_name"]
+                ),  # nopep8
+                "--s3-prefix=templates/main/{}".format(version),
+                "--stack-name={}".format(main_stack_name),
+                "--parameter-overrides",
+                template_parameters_str,
+                "--capabilities=CAPABILITY_IAM",
+                "--tags",
+                "env={}".format(args["env_name"]),
+                "--profile={}".format(args["profile"]),
+            ]
+        )
+    )
+
 
 #     if (cur_version and cur_version < '2020-12-31T05_43_03.952Z'):
 #         deploy_dynamodb_tables.main({
@@ -304,7 +351,7 @@ deploy_template()
 # #         '--skip-build',
 # #         '--skip-upload',
 # #     ]))
- 
+
 # # if (env_type == 'dev'):
 # #     run_command(' '.join([
 # #         sys.executable,
@@ -334,4 +381,8 @@ deploy_template()
 # #     ]))
 
 
-print('Elapsed time: {} seconds -- {}'.format(int(time.time() - start_time), os.path.realpath(__file__)))  # nopep8
+print(
+    "Elapsed time: {} seconds -- {}".format(
+        int(time.time() - start_time), os.path.realpath(__file__)
+    )
+)  # nopep8

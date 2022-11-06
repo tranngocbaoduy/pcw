@@ -22,7 +22,7 @@ from decimal import Decimal
 from tools.scraper.scrapy_selenium import SeleniumRequest
 from scrapy.utils.log import configure_logging
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC 
+from selenium.webdriver.support import expected_conditions as EC
 from shutil import which
 
 from tools.scraper.scraper.items import RawProductItem, ProductItem
@@ -30,22 +30,33 @@ from tools.scraper.scraper.utils import CrawlingHelper, MLStripper
 from tools.scraper.scraper.proxy import ProxyService
 from sys import platform
 
+
 class HtmlSpider(scrapy.Spider):
     # configure_logging(install_root_handler=False)
     # logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.INFO)
     name = "html"
     start_request_time = None
-    url_timeout = [] 
+    url_timeout = []
 
     custom_settings = {
         "DOWNLOAD_DELAY": 10,
         "SELENIUM_DRIVER_NAME": "firefox",
-        "SELENIUM_DRIVER_EXECUTABLE_PATH": which(os.path.join(root_dir, "geckodriver.exe")) if platform == "win32" else which(os.path.join(root_dir, "geckodriver")),
-        "SELENIUM_BROWSER_EXECUTABLE_PATH": which('C:\Program Files\Mozilla Firefox\firefox') if platform == "win32" else which('/Applications/Firefox.app/Contents/MacOS/firefox'),
-        "SELENIUM_DRIVER_ARGUMENTS": ['--headless'],  # '--headless' if using chrome instead of firefox
+        "SELENIUM_DRIVER_EXECUTABLE_PATH": which(
+            os.path.join(root_dir, "geckodriver.exe")
+        )
+        if platform == "win32"
+        else which(os.path.join(root_dir, "geckodriver")),
+        "SELENIUM_BROWSER_EXECUTABLE_PATH": which(
+            "C:\Program Files\Mozilla Firefox\firefox"
+        )
+        if platform == "win32"
+        else which("/Applications/Firefox.app/Contents/MacOS/firefox"),
+        "SELENIUM_DRIVER_ARGUMENTS": [
+            "--headless"
+        ],  # '--headless' if using chrome instead of firefox
     }
 
-    def __init__(self, *a, **kwargs): 
+    def __init__(self, *a, **kwargs):
         super(HtmlSpider, self).__init__(*a, **kwargs)
 
         self.spider = kwargs.get("spider")
@@ -96,7 +107,7 @@ class HtmlSpider(scrapy.Spider):
                 "download_latency": 4,
             },
             "callback": self.parse_product_item if is_child else self.parse,
-            "errback": self.err_callback, 
+            "errback": self.err_callback,
             "dont_filter": True,
             "wait_time": 30,
             "wait_loaded": 2,
@@ -104,12 +115,18 @@ class HtmlSpider(scrapy.Spider):
 
         if not self.IS_HEADLESS and not is_child:
             params["is_scroll_to_end_page"] = True
-            tag = (self.PARSER_WAIT_UNTIL_PARENT.selector_type, self.PARSER_WAIT_UNTIL_PARENT.selector)
-            params["wait_until"] = EC.presence_of_element_located(tag) 
+            tag = (
+                self.PARSER_WAIT_UNTIL_PARENT.selector_type,
+                self.PARSER_WAIT_UNTIL_PARENT.selector,
+            )
+            params["wait_until"] = EC.presence_of_element_located(tag)
 
         if not self.IS_HEADLESS and is_child:
             params["is_scroll_to_end_page"] = True
-            tag = (self.PARSER_WAIT_UNTIL_CHILD.selector_type, self.PARSER_WAIT_UNTIL_CHILD.selector)
+            tag = (
+                self.PARSER_WAIT_UNTIL_CHILD.selector_type,
+                self.PARSER_WAIT_UNTIL_CHILD.selector,
+            )
             params["wait_until"] = EC.visibility_of_element_located(tag)
 
         if self.IS_USING_PROXY:
@@ -161,63 +178,72 @@ class HtmlSpider(scrapy.Spider):
         with open("{}/index.html".format(data_crawler_file_dir), "w") as f:
             f.write(response.text)
             f.close()
-    
+
     def extractor_url(self, response):
-        
+
         iframe_links = LinkExtractor(
             allow=("^" + re.escape(self.BASE_URL_ITEM)),
             allow_domains=self.ALLOWED_DOMAINS,
         ).extract_links(response)
         list_url = [_i.url for _i in iframe_links]
         return list_url
-    
+
     def extractor_url_from_html(self, html_page):
         # from bs4 import BeautifulSoup
         soup = BeautifulSoup(html_page)
         hrefs = []
-        for link in soup.findAll('a'):
-            hrefs.append(link.get('href'))
+        for link in soup.findAll("a"):
+            hrefs.append(link.get("href"))
         return hrefs
 
     def concat_url(self, path):
         import urllib
+
         url = urllib.parse.urljoin(self.BASE_URL_ITEM, path)
-        url = url.split('?')[0]
+        url = url.split("?")[0]
         return url
 
     def parse(self, response):
         list_url = []
         if self.CLASS_CHILD:
-            sel_item_urls = response.css('.{}'.format(self.CLASS_CHILD))
-            for sel_item in sel_item_urls:   
-                a_tags = sel_item.xpath('//a[@href]').getall() 
-                links = [ self.extractor_url_from_html(a_tag) for a_tag in a_tags]
+            sel_item_urls = response.css(".{}".format(self.CLASS_CHILD))
+            for sel_item in sel_item_urls:
+                a_tags = sel_item.xpath("//a[@href]").getall()
+                links = [self.extractor_url_from_html(a_tag) for a_tag in a_tags]
                 links = reduce(lambda xs, ys: xs + ys, links)
-                links = list(set(links)) 
-                if 'shopee.vn' in self.ALLOWED_DOMAINS:
-                    links = list(filter(lambda x: self.BASE_URL_ITEM not in x and len(x) > 70 and len(x.split('/')) == 2 and len(x.split('.')) == 3, links)) 
+                links = list(set(links))
+                if "shopee.vn" in self.ALLOWED_DOMAINS:
+                    links = list(
+                        filter(
+                            lambda x: self.BASE_URL_ITEM not in x
+                            and len(x) > 70
+                            and len(x.split("/")) == 2
+                            and len(x.split(".")) == 3,
+                            links,
+                        )
+                    )
                     links = list(map(lambda x: self.concat_url(x), links))
                 list_url.extend(links)
-        elif self.CLASS_PARENT: 
-            sel_item_urls = response.css('.{}'.format(self.CLASS_PARENT))   
+        elif self.CLASS_PARENT:
+            sel_item_urls = response.css(".{}".format(self.CLASS_PARENT))
             for sel_item in sel_item_urls:
-                links = response.xpath('//a[@href]') 
-                links = [ i.get() for i in links]
+                links = response.xpath("//a[@href]")
+                links = [i.get() for i in links]
                 list_url.extend([links])
         else:
             list_url = self.extractor_url(response)
-        
+
         logging.debug(list_url)
         list_url = list(set(list_url))
         print("[GET TOTAL ITEMS] => ", len(list_url))
-        
+
         if list_url and len(list_url) != 0:
             for url in list_url[:2]:
                 if url:
                     encoded_url = CrawlingHelper.urlsafe_encode(url)
                     if encoded_url in self.encoded_urls:
                         continue
-                    self.encoded_urls.append(encoded_url) 
+                    self.encoded_urls.append(encoded_url)
                     time.sleep(3)
                     yield self.get_new_request(url=url, is_child=True)
         else:
@@ -265,8 +291,8 @@ class HtmlSpider(scrapy.Spider):
                 ).getall()
                 str_tags = " ".join([self.strip_tags(html) for html in tags if html])
                 if parser.name == "name":
-                    print('[URL] =>', merged_item["url"])
-                    print('[NAME] =>', str_tags)
+                    print("[URL] =>", merged_item["url"])
+                    print("[NAME] =>", str_tags)
                 if str_tags:
                     if "price" in parser.name:
                         # handle for currency
@@ -277,7 +303,7 @@ class HtmlSpider(scrapy.Spider):
                         # handle for value of parser
                         info_from_parser[parser.name] = str_tags
                 else:
-                    info_from_parser[parser.name] = ''
+                    info_from_parser[parser.name] = ""
         # self.save_html(response, merged_item["name"])
         merged_item.update(info_from_parser)
         if self.IS_USING_PROXY:

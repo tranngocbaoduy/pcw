@@ -7,28 +7,56 @@ import modules.crawler.models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('crawler', '0028_auto_20221027_1405'),
+        ("crawler", "0028_auto_20221027_1405"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='category',
-            name='id',
-            field=models.CharField(default=modules.crawler.models.id_gen, editable=False, max_length=12, primary_key=True, serialize=False, unique=True),
+            model_name="category",
+            name="id",
+            field=models.CharField(
+                default=modules.crawler.models.id_gen,
+                editable=False,
+                max_length=12,
+                primary_key=True,
+                serialize=False,
+                unique=True,
+            ),
         ),
         migrations.AlterField(
-            model_name='groupproduct',
-            name='id',
-            field=models.CharField(default=modules.crawler.models.id_gen, editable=False, max_length=12, primary_key=True, serialize=False, unique=True),
+            model_name="groupproduct",
+            name="id",
+            field=models.CharField(
+                default=modules.crawler.models.id_gen,
+                editable=False,
+                max_length=12,
+                primary_key=True,
+                serialize=False,
+                unique=True,
+            ),
         ),
         migrations.AlterField(
-            model_name='product',
-            name='id',
-            field=models.CharField(default=modules.crawler.models.id_gen, editable=False, max_length=12, primary_key=True, serialize=False, unique=True),
+            model_name="product",
+            name="id",
+            field=models.CharField(
+                default=modules.crawler.models.id_gen,
+                editable=False,
+                max_length=12,
+                primary_key=True,
+                serialize=False,
+                unique=True,
+            ),
         ),
         migrations.AlterField(
-            model_name='rawproduct',
-            name='id',
-            field=models.CharField(default=modules.crawler.models.id_gen, editable=False, max_length=12, primary_key=True, serialize=False, unique=True),
+            model_name="rawproduct",
+            name="id",
+            field=models.CharField(
+                default=modules.crawler.models.id_gen,
+                editable=False,
+                max_length=12,
+                primary_key=True,
+                serialize=False,
+                unique=True,
+            ),
         ),
     ]

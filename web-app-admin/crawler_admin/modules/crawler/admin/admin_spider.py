@@ -5,30 +5,32 @@ from mptt.admin import DraggableMPTTAdmin
 from django.contrib import admin, messages
 from import_export.admin import ImportExportModelAdmin
 from modules.crawler.tabular_in_lines import (
-    ParserTabularInline, 
+    ParserTabularInline,
 )
 
 from modules.crawler.tabular_in_lines import (
     ScraperSpiderTabularInline,
 )
 
-from modules.crawler.models.model_spider import ( 
-    Spider,  
+from modules.crawler.models.model_spider import (
+    Spider,
     Scraper,
-    ScraperSpider, 
+    ScraperSpider,
 )
+
 
 @admin.register(Spider)
 class SpiderAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = [ "name", "domain", "url", "base_url_item", "updated_at"]
+    list_display = ["name", "domain", "url", "base_url_item", "updated_at"]
     search_fields = ("name", "domain")
     inlines = (ParserTabularInline,)
+
 
 @admin.register(Scraper)
 class ScraperAdmin(admin.ModelAdmin, CSSAdminMixin):
     inlines = (ScraperSpiderTabularInline,)
     actions = ["setup_crawler", "stop_crawler"]
-    list_display = [ 
+    list_display = [
         "name",
         "scraper_type",
         "scheduler_type",

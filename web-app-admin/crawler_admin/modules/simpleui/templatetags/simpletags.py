@@ -53,7 +53,7 @@ class LazyEncoder(DjangoJSONEncoder):
 
 
 @register.simple_tag(takes_context=True)
-def context_test(context): 
+def context_test(context):
     pass
 
 
@@ -106,7 +106,7 @@ def get_date_type(spec):
 
 
 @register.filter
-def test(obj): 
+def test(obj):
     # pass
     return ""
 

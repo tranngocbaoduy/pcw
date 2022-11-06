@@ -6,18 +6,26 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('crawler', '0019_auto_20221022_1623'),
+        ("crawler", "0019_auto_20221022_1623"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='rawproduct',
-            name='count_update',
-            field=models.IntegerField(default=1, verbose_name='Count Update'),
+            model_name="rawproduct",
+            name="count_update",
+            field=models.IntegerField(default=1, verbose_name="Count Update"),
         ),
         migrations.AlterField(
-            model_name='rawproduct',
-            name='scraper_type',
-            field=models.CharField(choices=[('api', 'API'), ('html', 'HTML'), ('html_shopee', 'HTML_SHOPEE')], default='api', max_length=50),
+            model_name="rawproduct",
+            name="scraper_type",
+            field=models.CharField(
+                choices=[
+                    ("api", "API"),
+                    ("html", "HTML"),
+                    ("html_shopee", "HTML_SHOPEE"),
+                ],
+                default="api",
+                max_length=50,
+            ),
         ),
     ]

@@ -6,13 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('crawler', '0026_alter_scraper_spiders'),
+        ("crawler", "0026_alter_scraper_spiders"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='scraper',
-            name='spiders',
-            field=models.ManyToManyField(through='crawler.ScraperSpider', to='crawler.Spider'),
+            model_name="scraper",
+            name="spiders",
+            field=models.ManyToManyField(
+                through="crawler.ScraperSpider", to="crawler.Spider"
+            ),
         ),
     ]

@@ -1,1 +1,1 @@
-from modules.crawler.serializers.serializer_product import ProductSerializer 
+from modules.crawler.serializers.serializer_product import ProductSerializer

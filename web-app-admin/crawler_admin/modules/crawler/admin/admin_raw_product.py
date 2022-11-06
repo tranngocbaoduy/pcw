@@ -1,16 +1,16 @@
-
 from gettext import ngettext
 from import_export.admin import ImportExportModelAdmin
-from modules.crawler.format.json_admin import JsonAdmin 
+from modules.crawler.format.json_admin import JsonAdmin
 from django.contrib import admin, messages
 
-from modules.crawler.filters import ( 
-    FilterByAgency, 
+from modules.crawler.filters import (
+    FilterByAgency,
 )
 from modules.crawler.models.model_brand import Brand
 from modules.crawler.models.model_category import Category
 from modules.crawler.models.model_raw_product import RawProduct
 from django.utils.html import mark_safe
+
 
 @admin.register(RawProduct)
 class RawProductAdmin(ImportExportModelAdmin, JsonAdmin, admin.ModelAdmin):
@@ -21,13 +21,13 @@ class RawProductAdmin(ImportExportModelAdmin, JsonAdmin, admin.ModelAdmin):
         "scraper_type",
         "count_update",
         "is_running",
-        "updated_at", 
+        "updated_at",
     ]
     search_fields = ("name", "agency")
     list_filter = (FilterByAgency,)
 
     def is_running(self, obj):
-        return True #obj.spider.is_running
+        return True  # obj.spider.is_running
 
     actions = ["extract_info", "re_crawl"]
 
@@ -48,7 +48,6 @@ class RawProductAdmin(ImportExportModelAdmin, JsonAdmin, admin.ModelAdmin):
         )
         for query in queryset:
             query.extract_data_from_raw(request, query)
-
 
     @admin.action(description="Re-crawl data")
     def re_crawl(self, request, queryset):

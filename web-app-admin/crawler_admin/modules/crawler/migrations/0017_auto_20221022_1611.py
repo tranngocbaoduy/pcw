@@ -7,18 +7,28 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('crawler', '0016_auto_20221022_1608'),
+        ("crawler", "0016_auto_20221022_1608"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='spider',
-            name='parser_wait_until_child',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='spirder_parser_child', to='crawler.parserwaituntil'),
+            model_name="spider",
+            name="parser_wait_until_child",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="spirder_parser_child",
+                to="crawler.parserwaituntil",
+            ),
         ),
         migrations.AlterField(
-            model_name='spider',
-            name='parser_wait_until_parent',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='spirder_parser_parent', to='crawler.parserwaituntil'),
+            model_name="spider",
+            name="parser_wait_until_parent",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="spirder_parser_parent",
+                to="crawler.parserwaituntil",
+            ),
         ),
     ]

@@ -1,47 +1,54 @@
 import json
 import base64
 from bs4 import BeautifulSoup
-from lxml import etree 
+from lxml import etree
+
 
 def read_html_page(path):
     try:
-        with open(path, 'r') as f:
+        with open(path, "r") as f:
             return f.read()
     except e as Exception:
         print(e)
-    return None 
+    return None
+
 
 def get_basic_info(res_info):
     basic_info = {}
-    basic_info['name'] = res_info.get('name', '')
-    basic_info['description'] = res_info.get('description', '')
-    basic_info['url'] = res_info.get('url', '')
-    basic_info['image'] = res_info.get('image', '')
-    basic_info['brand'] = res_info.get('brand', '')
+    basic_info["name"] = res_info.get("name", "")
+    basic_info["description"] = res_info.get("description", "")
+    basic_info["url"] = res_info.get("url", "")
+    basic_info["image"] = res_info.get("image", "")
+    basic_info["brand"] = res_info.get("brand", "")
 
-    if res_info.get('offers'):
-        basic_info['price'] = res_info['offers'].get('price', '')
-        if basic_info['price'] == '':
-            basic_info['price'] = res_info['offers'].get('lowPrice', '')
-            basic_info['list_price'] = res_info['offers'].get('highPrice', '')
+    if res_info.get("offers"):
+        basic_info["price"] = res_info["offers"].get("price", "")
+        if basic_info["price"] == "":
+            basic_info["price"] = res_info["offers"].get("lowPrice", "")
+            basic_info["list_price"] = res_info["offers"].get("highPrice", "")
         else:
-            basic_info['list_price'] = basic_info['price']
-        
-        if res_info['offers'].get('seller'):
-            basic_info['seller'] = {
-                "name": res_info['offers']['seller'].get('name', ''),
-                "url": res_info['offers']['seller'].get('url', ''),
-                "image": res_info['offers']['seller'].get('image', ''), 
+            basic_info["list_price"] = basic_info["price"]
+
+        if res_info["offers"].get("seller"):
+            basic_info["seller"] = {
+                "name": res_info["offers"]["seller"].get("name", ""),
+                "url": res_info["offers"]["seller"].get("url", ""),
+                "image": res_info["offers"]["seller"].get("image", ""),
             }
-            if res_info['offers']['seller'].get('aggregateRating'):
-                basic_info["seller"]["star"] = res_info['offers']['seller']['aggregateRating'].get('ratingValue', '')
-                basic_info["seller"]["review"] = res_info['offers']['seller']['aggregateRating'].get('ratingCount', '')
-        
-    if res_info.get('aggregateRating'):
-        basic_info['star'] = res_info['aggregateRating'].get('ratingValue', '')
-        basic_info['review'] = res_info['aggregateRating'].get('ratingCount', '')
-        
+            if res_info["offers"]["seller"].get("aggregateRating"):
+                basic_info["seller"]["star"] = res_info["offers"]["seller"][
+                    "aggregateRating"
+                ].get("ratingValue", "")
+                basic_info["seller"]["review"] = res_info["offers"]["seller"][
+                    "aggregateRating"
+                ].get("ratingCount", "")
+
+    if res_info.get("aggregateRating"):
+        basic_info["star"] = res_info["aggregateRating"].get("ratingValue", "")
+        basic_info["review"] = res_info["aggregateRating"].get("ratingCount", "")
+
     return basic_info
+
 
 def urlsafe_encode(url):
     return (
@@ -50,31 +57,35 @@ def urlsafe_encode(url):
         else ""
     )
 
+
 def get_basic_category(res_info):
-    tree_category = res_info.get('itemListElement', [])
+    tree_category = res_info.get("itemListElement", [])
     list_category = []
-    if tree_category and len(tree_category) != 0: 
-        tree_category = sorted(tree_category, key=lambda x: x.get('position', 1), reverse=False)
-        print('tree_category',tree_category)
+    if tree_category and len(tree_category) != 0:
+        tree_category = sorted(
+            tree_category, key=lambda x: x.get("position", 1), reverse=False
+        )
+        print("tree_category", tree_category)
         index = 0
-        for category in tree_category: 
-            if category.get('position') == 1: 
+        for category in tree_category:
+            if category.get("position") == 1:
                 index += 1
                 continue
-            item = category.get('item', None)
-            if item == None: continue 
+            item = category.get("item", None)
+            if item == None:
+                continue
             params = {
-                "id": urlsafe_encode(item.get('@id', '')),
-                "url": item.get('@id', ''),
-                "name": item.get('name', ''),
+                "id": urlsafe_encode(item.get("@id", "")),
+                "url": item.get("@id", ""),
+                "name": item.get("name", ""),
             }
             if index > 1 and index - 1 <= len(tree_category):
-                prev_item = tree_category[index - 1].get('item', None)
-                params['parent'] =  urlsafe_encode(prev_item.get('@id', ''))
-            
+                prev_item = tree_category[index - 1].get("item", None)
+                params["parent"] = urlsafe_encode(prev_item.get("@id", ""))
+
             if index + 1 < len(tree_category):
-                next_item = tree_category[index + 1].get('item', None)
-                params['child'] =  urlsafe_encode(next_item.get('@id', ''))
+                next_item = tree_category[index + 1].get("item", None)
+                params["child"] = urlsafe_encode(next_item.get("@id", ""))
 
             list_category.append(params)
             index += 1
@@ -82,25 +93,24 @@ def get_basic_category(res_info):
 
 
 def main():
-    path = 'crawler_admin/raw_html/1-C%E1%BA%B7p-B%E1%BB%8Dc-Ng%C3%B3n-Tay-Ch%C6%A1i-Game-Pubg-Si%C3%AAu-M%E1%BB%8Fng-Tho%C3%A1ng-Kh%C3%AD-i.293689217.16575434540/index.html'
-    html_page = read_html_page(path) 
+    path = "crawler_admin/raw_html/1-C%E1%BA%B7p-B%E1%BB%8Dc-Ng%C3%B3n-Tay-Ch%C6%A1i-Game-Pubg-Si%C3%AAu-M%E1%BB%8Fng-Tho%C3%A1ng-Kh%C3%AD-i.293689217.16575434540/index.html"
+    html_page = read_html_page(path)
     soup = BeautifulSoup(html_page, "html.parser")
     dom = etree.HTML(str(soup))
-    tag = dom.getiterator(tag='script')
+    tag = dom.getiterator(tag="script")
     basic_info = {}
     for i in tag:
-        if i.get('type') == 'application/ld+json':
+        if i.get("type") == "application/ld+json":
             res_info = json.loads(i.text)
-            if res_info.get('@type') == 'Product': 
-                basic_info.update(get_basic_info(res_info)) 
+            if res_info.get("@type") == "Product":
+                basic_info.update(get_basic_info(res_info))
             if res_info.get("@type") == "BreadcrumbList":
                 tree_category = get_basic_category(res_info)
-                basic_info.update({
-                    "tree_category": tree_category,
-                    "category": tree_category[-2]
-                }) 
+                basic_info.update(
+                    {"tree_category": tree_category, "category": tree_category[-2]}
+                )
 
-    print('basic_info', basic_info)
+    print("basic_info", basic_info)
     # print(tag)
     # name = dom.xpath('/html/body/div[1]/div/div[2]/div[1]/div/div/div/div[2]/div[3]/div/div[1]/span/text()')
     # list_price = dom.xpath('/html/body/div[1]/div/div[2]/div[1]/div/div/div/div[2]/div[3]/div/div[3]/div/div/div/div/div/div/text()')
@@ -128,5 +138,6 @@ def main():
     #     "description": description,
     # })
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

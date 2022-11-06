@@ -8,29 +8,57 @@ import uuid
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('crawler', '0015_alter_spider_is_headless'),
+        ("crawler", "0015_alter_spider_is_headless"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ParserWaitUntil',
+            name="ParserWaitUntil",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False, unique=True)),
-                ('name', models.CharField(max_length=256)),
-                ('selector_type', models.CharField(choices=[('xpath', 'XPATH'), ('css', 'CSS')], default='xpath', max_length=50)),
-                ('selector', models.CharField(max_length=256)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                        unique=True,
+                    ),
+                ),
+                ("name", models.CharField(max_length=256)),
+                (
+                    "selector_type",
+                    models.CharField(
+                        choices=[("xpath", "XPATH"), ("css", "CSS")],
+                        default="xpath",
+                        max_length=50,
+                    ),
+                ),
+                ("selector", models.CharField(max_length=256)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
         ),
         migrations.AddField(
-            model_name='spider',
-            name='parser_wait_until_child',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='spirder_parser_child', to='crawler.parserwaituntil'),
+            model_name="spider",
+            name="parser_wait_until_child",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="spirder_parser_child",
+                to="crawler.parserwaituntil",
+            ),
         ),
         migrations.AddField(
-            model_name='spider',
-            name='parser_wait_until_parent',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='spirder_parser_parent', to='crawler.parserwaituntil'),
+            model_name="spider",
+            name="parser_wait_until_parent",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="spirder_parser_parent",
+                to="crawler.parserwaituntil",
+            ),
         ),
     ]
