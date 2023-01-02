@@ -1,0 +1,2 @@
+from modules.crawler.tabular_in_lines.parser import ParserTabularInline
+from modules.crawler.tabular_in_lines.sitemap import PageInfoTabularInline
