@@ -112,7 +112,7 @@ class HtmlSpiderDetail(scrapy.Spider):
             "wait_loaded": 2,
         }
 
-        if not self.IS_HEADLESS and is_child:
+        if not self.IS_HEADLESS and self.PARSER_WAIT_UNTIL_PARENT and self.PARSER_WAIT_UNTIL_PARENT:
             params["is_scroll_to_end_page"] = True
             tag = (
                 self.PARSER_WAIT_UNTIL_CHILD.selector_type,
@@ -120,7 +120,7 @@ class HtmlSpiderDetail(scrapy.Spider):
             )
             params["wait_until"] = EC.visibility_of_element_located(tag)
 
-        if self.IS_USING_PROXY:
+        if self.IS_USING_PROXY and self.PARSER_WAIT_UNTIL_PARENT and self.PARSER_WAIT_UNTIL_PARENT:
             self.proxy_item = ProxyService.get_proxy_high_confident(
                 self.FILE_PROXY_PATH, self.count_err
             )

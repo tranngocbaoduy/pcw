@@ -86,6 +86,9 @@ class ExtractorService(object):
         base_item["clean_name"] = ExtractorService.handle_get_clean_name(
             response.get("name", "")
         ).strip()
+        base_item["clean_slug_name"] = ExtractorService.handle_get_clean_name(
+            base_item["url"].split('/')[-1].replace('-', ' ')
+        ).strip()
         base_item["category"] = response.get("category", "")
         base_item["category_code"] = response.get("category_code", "")
         base_item["brand"] = ExtractorService.handle_brand_name(
@@ -104,153 +107,153 @@ class ExtractorService(object):
         base_item["list_price"] = response.get("list_price", "")
         base_item["scraper_type"] = response.get("scraper_type", "")
 
-        if domain == "lazada.vn":
-            base_item["slug_id"] = response.get("itemUrl", "").replace(
-                "//www.lazada.vn/products", ""
-            )
-            base_item["brand"] = response.get("brandName", "").strip()
-            base_item["image"] = [response.get("image", "").strip()]
-            if response.get("sellerName", ""):
-                base_item["shop"] = {
-                    "shop_id": response.get("sellerId", ""),
-                    "shop_name": response.get("sellerName", ""),
-                }
-            else:
-                base_item["shop"] = None
-            base_item["price"] = response.get("price", 0)
-            base_item["list_price"] = response.get(
-                "originalPrice", response.get("price", 0)
-            )
-            base_item["stock"] = 10 if response.get("inStock", "") else 0
-            base_item["historical_sold"] = 0
-            base_item["liked_count"] = 0
-            base_item["item_rating"] = {
-                "rating_star": int(Decimal(response.get("ratingScore", 0))),
-                "rating_count": [
-                    int(response.get("review", 0) if response.get("review", 0) else 0),
-                    int(response.get("review", 0) if response.get("review", 0) else 0),
-                    0,
-                    0,
-                    0,
-                    0,
-                ],
-                "rcount_with_context": int(
-                    response.get("review", 0) if response.get("review", 0) else 0
-                ),
-                "rcount_with_image": 0,
-            }
-            # base_item['content'] = response.get('short_description',"").strip()
-            # base_item['voucher_info'] = None
-            base_item["description"] = response.get("description", [])
+        # if domain == "lazada.vn":
+        #     base_item["slug_id"] = response.get("itemUrl", "").replace(
+        #         "//www.lazada.vn/products", ""
+        #     )
+        #     base_item["brand"] = response.get("brandName", "").strip()
+        #     base_item["image"] = [response.get("image", "").strip()]
+        #     if response.get("sellerName", ""):
+        #         base_item["shop"] = {
+        #             "shop_id": response.get("sellerId", ""),
+        #             "shop_name": response.get("sellerName", ""),
+        #         }
+        #     else:
+        #         base_item["shop"] = None
+        #     base_item["price"] = response.get("price", 0)
+        #     base_item["list_price"] = response.get(
+        #         "originalPrice", response.get("price", 0)
+        #     )
+        #     base_item["stock"] = 10 if response.get("inStock", "") else 0
+        #     base_item["historical_sold"] = 0
+        #     base_item["liked_count"] = 0
+        #     base_item["item_rating"] = {
+        #         "rating_star": int(Decimal(response.get("ratingScore", 0))),
+        #         "rating_count": [
+        #             int(response.get("review", 0) if response.get("review", 0) else 0),
+        #             int(response.get("review", 0) if response.get("review", 0) else 0),
+        #             0,
+        #             0,
+        #             0,
+        #             0,
+        #         ],
+        #         "rcount_with_context": int(
+        #             response.get("review", 0) if response.get("review", 0) else 0
+        #         ),
+        #         "rcount_with_image": 0,
+        #     }
+        #     # base_item['content'] = response.get('short_description',"").strip()
+        #     # base_item['voucher_info'] = None
+        #     base_item["description"] = response.get("description", [])
 
-        if domain == "tiki.vn":
-            official_shop = (
-                []
-            )  # list(filter(lambda x: x.get('id', '') == response.get('shopid', None) , list_seller))
+        # if domain == "tiki.vn":
+        #     official_shop = (
+        #         []
+        #     )  # list(filter(lambda x: x.get('id', '') == response.get('shopid', None) , list_seller))
 
-            if len(official_shop) == 1:
-                official_shop = official_shop[0]
-                base_item["shop"] = {
-                    "shop_id": official_shop.get("id", ""),
-                    "shop_name": official_shop.get("seller_name", ""),
-                    "shop_logo": official_shop.get("logo", ""),
-                    "shop_level": official_shop.get("store_level", "NONE"),
-                    "shop_url": official_shop.get("url_slug", ""),
-                }
-            else:
-                official_shop = None
-                base_item["shop"] = None
+        #     if len(official_shop) == 1:
+        #         official_shop = official_shop[0]
+        #         base_item["shop"] = {
+        #             "shop_id": official_shop.get("id", ""),
+        #             "shop_name": official_shop.get("seller_name", ""),
+        #             "shop_logo": official_shop.get("logo", ""),
+        #             "shop_level": official_shop.get("store_level", "NONE"),
+        #             "shop_url": official_shop.get("url_slug", ""),
+        #         }
+        #     else:
+        #         official_shop = None
+        #         base_item["shop"] = None
 
-            base_item["slug_id"] = "/{}".format(response.get("url_key", ""))
-            base_item["brand"] = response.get("brand_name", "").strip()
-            base_item["image"] = [response.get("thumbnail_url", "").strip()]
-            base_item["price"] = response.get("price", "")
-            base_item["list_price"] = response.get("list_price", "")
-            base_item["stock"] = (
-                response.get("stock_item", "")["qty"]
-                if response.get("stock_item", "")
-                else 0
-            )
-            base_item["historical_sold"] = (
-                response.get("quantity_sold", "")["value"]
-                if response.get("quantity_sold", "")
-                else 0
-            )
-            base_item["liked_count"] = 0
-            base_item["item_rating"] = {
-                "rating_star": int(response.get("rating_average", "")),
-                "rating_count": [
-                    response.get("review_count", ""),
-                    response.get("review_count", ""),
-                    0,
-                    0,
-                    0,
-                    0,
-                ],
-                "rcount_with_context": response.get("review_count", ""),
-                "rcount_with_image": 0,
-            }
-            # base_item['content'] = response.get('short_description',"").strip()
-            # base_item['voucher_info'] = None
-            base_item["description"] = [response.get("short_description", "")]
+        #     base_item["slug_id"] = "/{}".format(response.get("url_key", ""))
+        #     base_item["brand"] = response.get("brand_name", "").strip()
+        #     base_item["image"] = [response.get("thumbnail_url", "").strip()]
+        #     base_item["price"] = response.get("price", "")
+        #     base_item["list_price"] = response.get("list_price", "")
+        #     base_item["stock"] = (
+        #         response.get("stock_item", "")["qty"]
+        #         if response.get("stock_item", "")
+        #         else 0
+        #     )
+        #     base_item["historical_sold"] = (
+        #         response.get("quantity_sold", "")["value"]
+        #         if response.get("quantity_sold", "")
+        #         else 0
+        #     )
+        #     base_item["liked_count"] = 0
+        #     base_item["item_rating"] = {
+        #         "rating_star": int(response.get("rating_average", "")),
+        #         "rating_count": [
+        #             response.get("review_count", ""),
+        #             response.get("review_count", ""),
+        #             0,
+        #             0,
+        #             0,
+        #             0,
+        #         ],
+        #         "rcount_with_context": response.get("review_count", ""),
+        #         "rcount_with_image": 0,
+        #     }
+        #     # base_item['content'] = response.get('short_description',"").strip()
+        #     # base_item['voucher_info'] = None
+        #     base_item["description"] = [response.get("short_description", "")]
 
-        if domain == "1shopee.vn":
-            official_shop = list(
-                filter(
-                    lambda x: x.get("shopid", "") == response.get("shopid", None),
-                    list_seller,
-                )
-            )
-            if len(official_shop) == 1:
-                official_shop = official_shop[0]
-                base_item["shop"] = {
-                    "shop_id": official_shop.get("shopid", ""),
-                    "shop_name": official_shop.get("name", ""),
-                    "shop_level": official_shop.get("store_level", ""),
-                }
-            else:
-                official_shop = None
-                base_item["shop"] = None
+        # if domain == "1shopee.vn":
+        #     official_shop = list(
+        #         filter(
+        #             lambda x: x.get("shopid", "") == response.get("shopid", None),
+        #             list_seller,
+        #         )
+        #     )
+        #     if len(official_shop) == 1:
+        #         official_shop = official_shop[0]
+        #         base_item["shop"] = {
+        #             "shop_id": official_shop.get("shopid", ""),
+        #             "shop_name": official_shop.get("name", ""),
+        #             "shop_level": official_shop.get("store_level", ""),
+        #         }
+        #     else:
+        #         official_shop = None
+        #         base_item["shop"] = None
 
-            url_obj = urlparse(response.get("url", ""))
-            slug_arr = url_obj.path.split(".")
-            base_item["slug_id"] = ".".join(slug_arr[:-2])
-            base_item["brand"] = response.get("brand", "")
-            base_item["image"] = [
-                "https://cf.shopee.vn/file/{}".format(image)
-                for image in response.get("images", "")
-            ]
-            base_item["stock"] = response.get("stock", "")
-            base_item["item_rating"] = response.get("item_rating", "")
-            base_item["historical_sold"] = response.get("historical_sold", "")
-            base_item["liked_count"] = response.get("liked_count", "")
-            base_item["price"] = int(response.get("price", "")) / 100000
-            base_item["list_price"] = int(response.get("price_max", "")) / 100000
-            base_item["slug_id"] = response.get("slug_id", "")
-            # base_item['voucher_info'] = response.get('voucher_info',"")
+        #     url_obj = urlparse(response.get("url", ""))
+        #     slug_arr = url_obj.path.split(".")
+        #     base_item["slug_id"] = ".".join(slug_arr[:-2])
+        #     base_item["brand"] = response.get("brand", "")
+        #     base_item["image"] = [
+        #         "https://cf.shopee.vn/file/{}".format(image)
+        #         for image in response.get("images", "")
+        #     ]
+        #     base_item["stock"] = response.get("stock", "")
+        #     base_item["item_rating"] = response.get("item_rating", "")
+        #     base_item["historical_sold"] = response.get("historical_sold", "")
+        #     base_item["liked_count"] = response.get("liked_count", "")
+        #     base_item["price"] = int(response.get("price", "")) / 100000
+        #     base_item["list_price"] = int(response.get("price_max", "")) / 100000
+        #     base_item["slug_id"] = response.get("slug_id", "")
+        #     # base_item['voucher_info'] = response.get('voucher_info',"")
 
-            not_allow_brand = [
-                "nobrand",
-                "no brand",
-                "No brand",
-                "No Brand",
-                0,
-                "0",
-                "",
-                "none",
-            ]
-            if (
-                (
-                    base_item["brand"] == 0
-                    or base_item["brand"].lower() not in not_allow_brand
-                    or len(base_item["brand"]) == 0
-                )
-                and base_item["brand_from_title"]
-                and len(base_item["brand_from_title"]) != 0
-            ):
-                base_item["brand"] = base_item["brand_from_title"]
+        #     not_allow_brand = [
+        #         "nobrand",
+        #         "no brand",
+        #         "No brand",
+        #         "No Brand",
+        #         0,
+        #         "0",
+        #         "",
+        #         "none",
+        #     ]
+        #     if (
+        #         (
+        #             base_item["brand"] == 0
+        #             or base_item["brand"].lower() not in not_allow_brand
+        #             or len(base_item["brand"]) == 0
+        #         )
+        #         and base_item["brand_from_title"]
+        #         and len(base_item["brand_from_title"]) != 0
+        #     ):
+        #         base_item["brand"] = base_item["brand_from_title"]
 
-            base_item["description"] = []
+        #     base_item["description"] = []
 
         return base_item
 

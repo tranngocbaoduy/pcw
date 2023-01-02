@@ -10,7 +10,8 @@ from modules.crawler.models.model_brand import Brand
 from modules.crawler.models.model_category import Category
 from modules.crawler.models.model_raw_product import RawProduct
 from django.utils.html import mark_safe
-
+from price_parser import Price
+from decimal import Decimal
 
 @admin.register(RawProduct)
 class RawProductAdmin(ImportExportModelAdmin, JsonAdmin, admin.ModelAdmin):
@@ -18,18 +19,21 @@ class RawProductAdmin(ImportExportModelAdmin, JsonAdmin, admin.ModelAdmin):
         "id",
         "name",
         "agency",
-        "scraper_type",
-        "count_update",
-        "is_running",
+        "price", 
+        "count_update", 
         "updated_at",
     ]
     search_fields = ("name", "agency")
     list_filter = (FilterByAgency,)
 
-    def is_running(self, obj):
-        return True  # obj.spider.is_running
+    def price(self, obj):
+        money = obj.data.get("price")
+        if money:  
+            return '{:20,.0f}'.format(money)+ " vnđ"
+        return ''
 
     actions = ["extract_info", "re_crawl"]
+    
 
     class Media:
         css = {"all": ("css/fancy.css",)}

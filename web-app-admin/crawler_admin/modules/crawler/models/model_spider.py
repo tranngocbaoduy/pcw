@@ -35,6 +35,7 @@ class Spider(models.Model):
     is_headless = models.BooleanField("Not using browser", default=True, editable=True)
     domain = models.CharField("Domain", default="", max_length=256)
     agency = models.CharField("Agency", default="", max_length=256)
+    search_term = models.CharField("Search Term", default="", max_length=256)
     parser_wait_until_parent = models.ForeignKey(
         ParserWaitUntil,
         on_delete=models.CASCADE,
@@ -54,6 +55,7 @@ class Spider(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_running = models.BooleanField("Is running", default=False, editable=False)
+    save_as = True
 
     def __str__(self):
         return self.name
@@ -99,6 +101,7 @@ class Scraper(models.Model):
     spiders = models.ManyToManyField(Spider, through="ScraperSpider")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    save_as = True
 
     def start_crawling(self):
         if self.is_active is False:
@@ -158,6 +161,10 @@ class Scraper(models.Model):
                 hour=self.start_time.hour,
             ).id
 
+        print('self.scheduler_type', {
+            "scheduler_type":self.scheduler_type,
+            "job_id":job_id,
+        })
         self.job_id = job_id
 
     def __str__(self):

@@ -18,12 +18,24 @@ from modules.crawler.models.model_spider import (
     ScraperSpider,
 )
 
+from copy import deepcopy
+
+def duplicate_spy(modeladmin, request, queryset):
+    for spy in queryset:
+        new_obj = deepcopy(spy)
+        new_obj.id = None
+        new_obj.save() 
+
+duplicate_spy.short_description = "Duplicate Spider"
 
 @admin.register(Spider)
 class SpiderAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ["name", "domain", "url", "base_url_item", "updated_at"]
+    list_display = ["name", "domain", "url", "updated_at"]
     search_fields = ("name", "domain")
     inlines = (ParserTabularInline,)
+
+    actions = [duplicate_spy]
+
 
 
 @admin.register(Scraper)

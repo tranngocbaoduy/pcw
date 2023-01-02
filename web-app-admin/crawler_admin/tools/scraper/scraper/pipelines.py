@@ -93,51 +93,52 @@ class ScraperPipeline:
         spider = self.get_spider(spider)
         spider_db = Spider.objects.get(id=spider.id)
         info_raw_product["spider"] = spider_db
-        try:
-            info_raw_product_db = RawProduct.objects.get(
-                base_encoded_url=info_raw_product["base_encoded_url"]
-            )
-            logging.info({"message": "[UPDATE PRODUCT]", "data": info_raw_product})
-            print(
-                {
-                    "message": "[UPDATE PRODUCT]",
-                    "base_encoded_url": info_raw_product["base_encoded_url"],
-                }
-            )
-            for attr, value in info_raw_product.items():
-                if value:
-                    setattr(info_raw_product_db, attr, value)
-            setattr(
-                info_raw_product_db,
-                "count_update",
-                info_raw_product_db.count_update + 1,
-            )
-            info_raw_product_db.save()
-        except:
-            info_raw_product_db, is_created = RawProduct.objects.get_or_create(
-                **info_raw_product
-            )
-            if not is_created:
-                logging.error(
-                    {"message": "[CREATE PRODUCT ERROR]", "data": info_raw_product}
+        if info_raw_product['name'] != '':
+            try:
+                info_raw_product_db = RawProduct.objects.get(
+                    base_encoded_url=info_raw_product["base_encoded_url"]
                 )
+                logging.info({"message": "[UPDATE PRODUCT]", "data": info_raw_product})
                 print(
                     {
-                        "message": "[CREATE PRODUCT ERROR]",
+                        "message": "[UPDATE PRODUCT]",
                         "base_encoded_url": info_raw_product["base_encoded_url"],
                     }
                 )
-
-            else:
-                logging.info({"message": "[CREATE PRODUCT]", "data": info_raw_product})
-                print(
-                    {
-                        "message": "[CREATE PRODUCT]",
-                        "base_encoded_url": info_raw_product["base_encoded_url"],
-                    }
+                for attr, value in info_raw_product.items():
+                    if value:
+                        setattr(info_raw_product_db, attr, value)
+                setattr(
+                    info_raw_product_db,
+                    "count_update",
+                    info_raw_product_db.count_update + 1,
                 )
+                info_raw_product_db.save()
+            except:
+                info_raw_product_db, is_created = RawProduct.objects.get_or_create(
+                    **info_raw_product
+                )
+                if not is_created:
+                    logging.error(
+                        {"message": "[CREATE PRODUCT ERROR]", "data": info_raw_product}
+                    )
+                    print(
+                        {
+                            "message": "[CREATE PRODUCT ERROR]",
+                            "base_encoded_url": info_raw_product["base_encoded_url"],
+                        }
+                    )
 
-        return info_raw_product_db
+                else:
+                    logging.info({"message": "[CREATE PRODUCT]", "data": info_raw_product})
+                    print(
+                        {
+                            "message": "[CREATE PRODUCT]",
+                            "base_encoded_url": info_raw_product["base_encoded_url"],
+                        }
+                    )
+
+            return info_raw_product_db
 
     def close_spider(self, spider):
         spider = self.get_spider(spider)

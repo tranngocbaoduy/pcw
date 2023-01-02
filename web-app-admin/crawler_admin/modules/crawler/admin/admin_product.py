@@ -9,7 +9,7 @@ from modules.crawler.filters import FilterByCategory, FilterByAgency
 
 @admin.register(Product)
 class ProductAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ["id", "name", "product_code", "agency", "price", "updated_at"]
+    list_display = ["id", "name", "clean_slug_name", "product_code", "agency", "price", "updated_at"]
     search_fields = ("name", "agency")
     list_filter = (
         FilterByCategory,
