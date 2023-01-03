@@ -9,5 +9,9 @@ class PageInfo(ImportExportModelAdmin, admin.ModelAdmin):
 
 @admin.register(Sitemap)
 class Sitemap(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ["id", "name", "base_url"]
+    list_display = ["_id", "name", "base_url"]
+
+    def _id(self, obj):
+        return '#{}'.format(obj.id)
+        
     inlines = (PageInfoTabularInline,)

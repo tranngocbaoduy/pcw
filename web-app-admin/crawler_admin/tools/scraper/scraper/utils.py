@@ -122,10 +122,6 @@ class CrawlingHelper(object):
         return base64.urlsafe_b64encode(url.encode("utf-8")).decode("utf-8").rstrip("=")
 
     @staticmethod
-    def get_clean_url(url):
-        return urljoin(url, urlparse(url).path)
-
-    @staticmethod
     def get_all_exist_urls():
         return []
         # encoded_urls = []
@@ -198,3 +194,13 @@ class CrawlingHelper(object):
         if price.amount_float and price.amount_float > float(999):
             return price.amount_float
         return None
+
+    @staticmethod
+    def get_clean_url(url):
+        o = urlparse(url)
+        return o.scheme + "://" + o.netloc + o.path
+
+    @staticmethod
+    def get_domain(url):
+        o = urlparse(url)
+        return o.netloc

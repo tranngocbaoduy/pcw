@@ -3,12 +3,25 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from modules.crawler.models.utils import id_gen
 
+from tools.scraper.scraper.spiders.html_headless import HtmlHeadless
+from tools.scraper.scraper.spiders.html_non_headless import HtmlNonHeadless
 
 class Sitemap(models.Model): 
+
+    class CrawlType(models.TextChoices):
+        MPA = "mpa", _("MPA")
+        SPA = "spa", _("SPA")
 
     id = models.CharField(
         primary_key=True, default=id_gen, editable=False, unique=True, max_length=12
     ) 
+
+    def __str__(self):
+        return '#{} - {}'.format(self.id, self.name)
+
+    crawl_type = models.CharField(
+        max_length=50, choices=CrawlType.choices, default=CrawlType.MPA
+    )
 
     name = models.CharField(max_length=256) 
     base_url = models.CharField(max_length=256)

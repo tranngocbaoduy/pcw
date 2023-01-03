@@ -17,134 +17,15 @@ from itemadapter import ItemAdapter
 from scrapy.exceptions import DropItem
 from dateutil import parser
 from validators.url import url
-from modules.crawler.models.model_raw_product import RawProduct
-from modules.crawler.models.model_spider import Spider
 from tools.scraper.scraper.utils import CrawlingHelper
 
 
 class ScraperPipeline:
-    def extract_text_item(self, item, scraper):
-        def extract_text_with_bs4(attr):
-            return BeautifulSoup(str(attr)).get_text().strip()
-
-        if item["thumbnail_link"]:
-            thumbnail_link = BeautifulSoup(item["thumbnail_link"], "html.parser")
-            if thumbnail_link:
-                thumbnail_link = thumbnail_link.img["src"]
-                if not (url(thumbnail_link)):
-                    thumbnail_link = scraper.homepage + thumbnail_link
-        else:
-            thumbnail_link = None
-
-        if item["image_link"]:
-            image_link = BeautifulSoup(item["image_link"], "html.parser")
-            if image_link:
-                image_link = image_link.img["src"]
-                if not (url(image_link)):
-                    image_link = scraper.homepage + image_link
-        else:
-            image_link = None
-
-        output = {
-            "title": extract_text_with_bs4(item["title"]),
-            "content": extract_text_with_bs4(item["content"]),
-            "author": extract_text_with_bs4(item["author"]),
-            "image_link": image_link,
-            "thumbnail_link": thumbnail_link,
-            # 'category': BeautifulSoup(item['category']).get_text(),
-            # 'tag': BeautifulSoup(item['tag']).get_text(),
-            "summary": extract_text_with_bs4(item["summary"]),
-            "published_at": parser.parse(
-                " ".join(
-                    " ".join(
-                        extract_text_with_bs4(item["published_at"]).split(" - ")
-                    ).split(" | ")
-                ),
-                fuzzy=True,
-            ),
-            "url": item["url"],
-        }
-        return output
-
-    def convert_raw_product_db(self, item):
-        return {
-            "url": item.get("url"),
-            "base_encoded_url": CrawlingHelper.urlsafe_encode(item.get("url")),
-            "agency": item.get("agency"),
-            "name": item.get("name", ""),
-            "data": item,
-            "scraper_type": item.get("scraper_type", "api"),
-        }
-
-    def handle_category_for_shopee(self, tree_category):
-        pass
-
-    def get_spider(self, spider):
-        print("spider.spider", spider.spider, type(spider.spider))
-        try:
-            if spider.spider.spider:
-                return spider.spider.spider
-        except:
-            return spider.spider
-
+    
     def process_item(self, item, spider):
-        info_raw_product = self.convert_raw_product_db(item)
-
-        spider = self.get_spider(spider)
-        spider_db = Spider.objects.get(id=spider.id)
-        info_raw_product["spider"] = spider_db
-        if info_raw_product['name'] != '':
-            try:
-                info_raw_product_db = RawProduct.objects.get(
-                    base_encoded_url=info_raw_product["base_encoded_url"]
-                )
-                logging.info({"message": "[UPDATE PRODUCT]", "data": info_raw_product})
-                print(
-                    {
-                        "message": "[UPDATE PRODUCT]",
-                        "base_encoded_url": info_raw_product["base_encoded_url"],
-                    }
-                )
-                for attr, value in info_raw_product.items():
-                    if value:
-                        setattr(info_raw_product_db, attr, value)
-                setattr(
-                    info_raw_product_db,
-                    "count_update",
-                    info_raw_product_db.count_update + 1,
-                )
-                info_raw_product_db.save()
-            except:
-                info_raw_product_db, is_created = RawProduct.objects.get_or_create(
-                    **info_raw_product
-                )
-                if not is_created:
-                    logging.error(
-                        {"message": "[CREATE PRODUCT ERROR]", "data": info_raw_product}
-                    )
-                    print(
-                        {
-                            "message": "[CREATE PRODUCT ERROR]",
-                            "base_encoded_url": info_raw_product["base_encoded_url"],
-                        }
-                    )
-
-                else:
-                    logging.info({"message": "[CREATE PRODUCT]", "data": info_raw_product})
-                    print(
-                        {
-                            "message": "[CREATE PRODUCT]",
-                            "base_encoded_url": info_raw_product["base_encoded_url"],
-                        }
-                    )
-
-            return info_raw_product_db
+        print('[PROCESS ITEM]',item)
+        return item
 
     def close_spider(self, spider):
-        spider = self.get_spider(spider)
-        try:
-            spider_db = Spider.objects.get(id=spider.id)
-            spider_db.is_running = False
-            spider_db.save()
-        except:
-            print("[CLOSE SPIDER ERROR]", spider)
+        print('[CLOSE SPIDER]', spider)
+        pass
