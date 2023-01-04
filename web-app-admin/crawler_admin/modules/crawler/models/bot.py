@@ -1,7 +1,7 @@
 import uuid
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from modules.crawler.models.utils import id_gen
+from modules.crawler.models.utils import id_generator, id_gen
 from modules.crawler.models.sitemap import Sitemap
 from apscheduler.jobstores.base import JobLookupError
 from modules.crawler.apps import scheduler
@@ -24,7 +24,7 @@ class Scraper(models.Model):
         # YEARLY = 'yearly', _('Yearly') 
 
     id = models.CharField(
-        primary_key=True, default=id_gen(6), editable=False, unique=True, max_length=12
+        primary_key=True, default=id_gen, editable=False, unique=True, max_length=12
     ) 
 
     name = models.CharField(max_length=256) 
@@ -104,12 +104,15 @@ class Scraper(models.Model):
 
     def __str__(self):
         return self.name
+    
+    class Meta:
+        ordering = ['name']
 
 
 class ScraperSitemap(models.Model):
     
     id = models.CharField(
-        primary_key=True, default=id_gen(6), editable=False, unique=True, max_length=12
+        primary_key=True, default=id_generator, editable=False, unique=True, max_length=12
     ) 
     scraper = models.ForeignKey(Scraper, on_delete=models.CASCADE)
     sitemap = models.ForeignKey(Sitemap, on_delete=models.CASCADE) 
@@ -118,3 +121,6 @@ class ScraperSitemap(models.Model):
 
     def __str__(self):
         return "#{} - {}".format(self.sitemap.id,self.sitemap.name)
+
+    class Meta:
+        ordering = ['sitemap']

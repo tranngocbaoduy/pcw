@@ -1,0 +1,1 @@
+from modules.crawler.filters.sitemap import FilterBySitemap

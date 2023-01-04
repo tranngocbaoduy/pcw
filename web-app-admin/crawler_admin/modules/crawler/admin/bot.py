@@ -16,6 +16,7 @@ class ScraperAdmin(admin.ModelAdmin, CSSAdminMixin):
     inlines = (ScraperSitemapTabularInline,)
     actions = ["setup_crawler", "stop_crawler"]
     list_display = [
+        "_id",
         "name", 
         "scheduler_type",
         "crawl_url",
@@ -24,6 +25,9 @@ class ScraperAdmin(admin.ModelAdmin, CSSAdminMixin):
         "is_active", 
     ]
     readonly_fields = ("job_id",)
+
+    def _id(self, obj):
+        return '#{}'.format(obj.id)
 
     def crawl_url(self, obj): 
         return [(spy) for spy in obj.sitemap_cells.all()]

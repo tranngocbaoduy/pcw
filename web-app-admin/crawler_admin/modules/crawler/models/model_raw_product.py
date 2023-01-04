@@ -1,5 +1,5 @@
 from django.db.models import JSONField
-from modules.crawler.models.utils import id_gen
+from modules.crawler.models.utils import id_generator
 from django.db import models
 from modules.crawler.models.model_category import Category
 from django.utils.translation import gettext_lazy as _
@@ -49,7 +49,7 @@ class RawProduct(models.Model):
         HTML_SHOPEE = "html_shopee", _("HTML_SHOPEE")
 
     id = models.CharField(
-        primary_key=True, default=id_gen, editable=False, unique=True, max_length=12
+        primary_key=True, default=id_generator, editable=False, unique=True, max_length=12
     )
     url = models.CharField("URL", max_length=512)
     name = models.CharField("Name", max_length=512, blank=True)

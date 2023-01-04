@@ -1,4 +1,4 @@
-from modules.crawler.models.utils import id_gen
+from modules.crawler.models.utils import id_generator
 from django.db import models
 from modules.crawler.models.model_category import Category
 from django.contrib.postgres.fields import ArrayField
@@ -6,7 +6,7 @@ from django.contrib.postgres.fields import ArrayField
 
 class GroupProduct(models.Model):
     id = models.CharField(
-        primary_key=True, default=id_gen, editable=False, unique=True, max_length=12
+        primary_key=True, default=id_generator, editable=False, unique=True, max_length=12
     )
     name = models.CharField(max_length=50, blank=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)

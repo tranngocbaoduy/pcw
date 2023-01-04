@@ -1,4 +1,4 @@
-from modules.crawler.models.utils import id_gen
+from modules.crawler.models.utils import id_generator
 from mptt.models import MPTTModel
 from mptt.fields import TreeForeignKey
 from django.db import models
@@ -6,7 +6,7 @@ from django.db import models
 
 class Category(MPTTModel):
     id = models.CharField(
-        primary_key=True, default=id_gen, editable=False, unique=True, max_length=12
+        primary_key=True, default=id_generator, editable=False, unique=True, max_length=12
     )
     name = models.CharField(max_length=250)
     parent = TreeForeignKey(

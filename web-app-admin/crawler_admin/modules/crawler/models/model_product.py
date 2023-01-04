@@ -1,4 +1,4 @@
-from modules.crawler.models.utils import id_gen
+from modules.crawler.models.utils import id_generator
 from django.utils.translation import gettext_lazy as _
 from django.db import models
 from modules.crawler.models.model_category import Category
@@ -15,7 +15,7 @@ class Product(models.Model):
         HTML_SHOPEE = "html_shopee", _("HTML_SHOPEE")
 
     id = models.CharField(
-        primary_key=True, default=id_gen, editable=False, unique=True, max_length=12
+        primary_key=True, default=id_generator, editable=False, unique=True, max_length=12
     )
     name = models.CharField("Name", max_length=256)
     clean_name = models.CharField("Clean Name", max_length=512)

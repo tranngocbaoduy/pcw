@@ -6,7 +6,7 @@ from modules.crawler.forms.sitemap import PageInfoInlineFormSet, SitemapInlineFo
 
 class PageInfoTabularInline(admin.TabularInline):
     model = PageInfo
-    formset = PageInfoInlineFormSet
+    form = PageInfoInlineFormSet
     extra = 0
 
 class ScraperSitemapTabularInline(admin.TabularInline):

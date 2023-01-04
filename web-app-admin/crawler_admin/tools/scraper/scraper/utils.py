@@ -199,8 +199,24 @@ class CrawlingHelper(object):
     def get_clean_url(url):
         o = urlparse(url)
         return o.scheme + "://" + o.netloc + o.path
+    
+    @staticmethod
+    def get_sub_path(url):
+        o = urlparse(url)
+        return o.path
 
     @staticmethod
     def get_domain(url):
         o = urlparse(url)
         return o.netloc
+
+    @staticmethod 
+    def get_url_formatted(base_url):
+        base_url_formatted = base_url
+        if ('index.html' in base_url):
+            base_url_formatted = re.sub(r'(index\.html(\?.*)*$)', '', base_url)
+        elif ('.html' in base_url):
+            base_url_formatted = re.sub(r'(\.html(\?.*)*$)', '', base_url)
+            temp = base_url_formatted.split('/')
+            base_url_formatted = '/'.join(temp[:-1])
+        return base_url_formatted

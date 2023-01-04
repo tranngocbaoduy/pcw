@@ -5,9 +5,15 @@ from modules.crawler.tabular_in_lines.parser import ParserTabularInline
 
 @admin.register(Parser)
 class Parser(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ["name", "selector_type", "selector"]
+    list_display = ["_id", "name", "selector_type", "selector"]
+
+    def _id(self, obj):
+        return '#{}'.format(obj.id)
 
 @admin.register(WareParser)
 class WareParser(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ["id", "name"]
+    list_display = ["_id", "name"]
     inlines = (ParserTabularInline,)
+
+    def _id(self, obj):
+        return '#{}'.format(obj.id)

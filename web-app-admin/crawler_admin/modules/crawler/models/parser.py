@@ -1,7 +1,7 @@
 import uuid
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from modules.crawler.models.utils import id_gen
+from modules.crawler.models.utils import id_generator, id_gen
 
 
 class WareParser(models.Model): 
@@ -17,7 +17,7 @@ class WareParser(models.Model):
 class Parser(models.Model): 
 
     id = models.CharField(
-        primary_key=True, default=id_gen, editable=False, unique=True, max_length=12
+        primary_key=True, default=id_generator, editable=False, unique=True, max_length=12
     )
 
     class SelectorType(models.TextChoices):

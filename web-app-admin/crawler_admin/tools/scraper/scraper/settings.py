@@ -48,12 +48,12 @@ ROBOTSTXT_OBEY = True
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
 # DOWNLOAD_DELAY = 5
-
-DOWNLOAD_TIMEOUT = 600
-
+DOWNLOAD_TIMEOUT = 300
 DOWNLOAD_FAIL_ON_DATALOSS = False
-
 CONCURRENT_REQUESTS = 16
+DEPTH_LIMIT = 20
+CLOSESPIDER_TIMEOUT = 3*60
+RETRY_TIMES = 3 
 # The download delay setting will honor only one of:
 # CONCURRENT_REQUESTS_PER_DOMAIN = 16
 # CONCURRENT_REQUESTS_PER_IP = 16
@@ -65,10 +65,19 @@ CONCURRENT_REQUESTS = 16
 # TELNETCONSOLE_ENABLED = False
 
 # Override the default request headers:
-# DEFAULT_REQUEST_HEADERS = {
-#   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-#   'Accept-Language': 'en',
-# }
+DEFAULT_REQUEST_HEADERS = {
+   "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9", 
+   "Accept-Encoding": "gzip, deflate, br", 
+   "Accept-Language": "vi-VN,vi;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5,ja;q=0.4", 
+   "Sec-Fetch-Dest": "document",
+   "Referer": "https://www.google.com/",
+   "Sec-Fetch-Site": "same-origin",
+   "Sec-Fetch-Mode": "navigate",
+   "Sec-Fetch-User": "?1",
+   "Upgrade-Insecure-Requests": "1", 
+   "Connection": "keep-alive",
+   "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36",
+}
 
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
@@ -101,14 +110,14 @@ ITEM_PIPELINES = {
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
-# AUTOTHROTTLE_ENABLED = True
+AUTOTHROTTLE_ENABLED = True
 # The initial download delay
-# AUTOTHROTTLE_START_DELAY = 5
+AUTOTHROTTLE_START_DELAY = 5
 # The maximum download delay to be set in case of high latencies
-# AUTOTHROTTLE_MAX_DELAY = 60
+AUTOTHROTTLE_MAX_DELAY = 60
 # The average number of requests Scrapy should be sending in parallel to
 # each remote server
-# AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
+AUTOTHROTTLE_TARGET_CONCURRENCY = 16.0
 # Enable showing throttling stats for every response received:
 # AUTOTHROTTLE_DEBUG = False
 
@@ -120,8 +129,7 @@ ITEM_PIPELINES = {
 # HTTPCACHE_IGNORE_HTTP_CODES = []
 # HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
-# ITEM_PIPELINES = {'scrapy.pipelines.images.ImagesPipeline': 1}
-# IMAGES_STORE = 'images'
-#
-# IMAGES_URLS_FIELD = 'image_link'
-# IMAGES_RESULT_FIELD = 'image'
+DEPTH_LIMIT = 20
+CLOSESPIDER_TIMEOUT = 3*60
+RETRY_TIMES = 3
+DOWNLOAD_TIMEOUT = 30
