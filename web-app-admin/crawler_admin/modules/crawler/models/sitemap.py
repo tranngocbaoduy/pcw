@@ -27,7 +27,7 @@ class Sitemap(models.Model):
     name = models.CharField(max_length=256) 
     base_url = models.CharField(max_length=256)
     target_search_terms = models.CharField(max_length=512, default="apple-iphone-,iphone-14,iphone-13,iphone-12,iphone-11,iphone-se", blank=True)
-    exclude_search_terms = models.CharField(max_length=512, default="su-kien,event,quay-,tai-nghe,&,filter,loc,so-sanh,san-pham-moi,cong-nghe,nguoi-,khuyen-mai,phu-kien,combo,tag,dchannel,tragop,zalo,tra-gop,news,tekzone,the-,hub-,cap-,cuong-luc,bao-,mieng-,sac-,op-,mua-", blank=True)
+    exclude_search_terms = models.CharField(max_length=512, default="dat-truoc,su-kien,event,quay-,tai-nghe,&,filter,loc,so-sanh,san-pham-moi,cong-nghe,nguoi-,khuyen-mai,phu-kien,combo,tag,dchannel,tragop,zalo,tra-gop,news,tekzone,the-,hub-,cap-,cuong-luc,bao-,mieng-,sac-,op-,mua-", blank=True)
     limit_page = models.CharField(max_length=256, default="500")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
