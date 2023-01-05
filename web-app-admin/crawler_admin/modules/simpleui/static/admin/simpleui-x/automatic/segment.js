@@ -41,9 +41,12 @@ function Segment() {
 var segment = new Segment();
 
 function getIcon(name, icon) {
-    if(!name){
+    if (!name) {
         return;
     }
+    console.log('name', name)
+    if (name == 'Import') return 'fa fa-upload';
+    if (name == 'Export') return 'fa fa-download';
     var value = 'far fa-circle';
     if (icon) {
         //有默认图标的

@@ -1,6 +1,7 @@
 from modules.crawler.models.utils import id_generator
 from modules.crawler.models.parser import WareParser, Parser
 from modules.crawler.models.sitemap import Sitemap, PageInfo
+from modules.crawler.models.product import Category, GroupProduct, Product
 
 # from modules.crawler.models import model_category
 # from modules.crawler.models import model_brand

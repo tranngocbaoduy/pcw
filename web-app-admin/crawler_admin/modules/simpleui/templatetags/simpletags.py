@@ -294,7 +294,7 @@ def handler_eid(data, eid):
 
 
 def get_icon(obj, name=None):
-    temp = get_config_icon(name)
+    temp = get_config_icon(name) 
     if temp != "":
         return temp
     _dict = {
@@ -308,8 +308,9 @@ def get_icon(obj, name=None):
         "Category": "fas fa-list",
         "WareParser": "fas fa-meteor",
         "PageInfo": "fas fa-tags", 
-        "Brand": "fas fa-cloud",
+        "Product": "fas fa-cloud",
         "Seller": "fas fa-shop",
+        "Group": "fas fa-users",
     }
 
     temp = _dict.get(obj)

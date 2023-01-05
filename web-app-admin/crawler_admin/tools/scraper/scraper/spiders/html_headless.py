@@ -121,6 +121,7 @@ class HtmlHeadless(scrapy.Spider):
         item['encoded_base_url'] = encoded_base_url
         item['title'] = sel.xpath('/html/head/title/text()').extract()
         item['meta'] = sel.xpath('/html/head/meta').getall() 
+        item['action'] = "SITEMAP"
 
         new_links = LinkExtractor(allow=('^' + re.escape(self.base_url)), allow_domains=self.allowed_domains).extract_links(response)
         for link in new_links:

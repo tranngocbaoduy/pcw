@@ -13,6 +13,9 @@ class WareParser(models.Model):
     name = models.CharField(max_length=256) 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return '#BR{} - {}'.format(self.id, self.name)
 
 class Parser(models.Model): 
 
@@ -29,6 +32,9 @@ class Parser(models.Model):
         max_length=50, choices=SelectorType.choices, default=SelectorType.XPATH
     )
     selector = models.CharField(max_length=256)
-    spider = models.ForeignKey(WareParser, on_delete=models.CASCADE)
+    ware_parser = models.ForeignKey(WareParser, on_delete=models.CASCADE, related_name='parsers')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return '#LE{} - {}'.format(self.id, self.name)

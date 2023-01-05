@@ -12,7 +12,22 @@ class PageInfoItem(Item):
     title = Field()
     meta = Field() 
     id = Field()
+    action = Field()
     pass
+
+class ProductInfoItem(Item):
+    URL = Field()
+    encoded_base_url = Field()
+    title = Field()
+    meta = Field()  
+    price = Field()
+    name = Field()
+    list_price = Field()
+    category = Field() 
+    list_image = Field()
+    action = Field()
+    pass
+
 
 # Define here the models for your scraped items
 #
