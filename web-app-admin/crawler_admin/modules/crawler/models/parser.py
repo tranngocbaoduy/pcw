@@ -17,6 +17,9 @@ class WareParser(models.Model):
     def __str__(self):
         return '#BR{} - {}'.format(self.id, self.name)
 
+    class Meta:
+        ordering = ['name']
+        
 class Parser(models.Model): 
 
     id = models.CharField(
@@ -38,3 +41,6 @@ class Parser(models.Model):
 
     def __str__(self):
         return '#LE{} - {}'.format(self.id, self.name)
+    
+    class Meta:
+        ordering = ['name']

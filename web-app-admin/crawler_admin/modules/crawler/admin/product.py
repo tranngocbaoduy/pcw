@@ -2,7 +2,7 @@ from import_export.admin import ImportExportModelAdmin
 from django.contrib import admin, messages
 from modules.crawler.models.product import Category, Product, GroupProduct
 from modules.crawler.tabular_in_lines.product import ProductTabularInline
-from modules.crawler.filters.product import FilterByDomain
+from modules.crawler.filters.product import FilterByDomain, FilterByGroup
 from copy import deepcopy
 from gettext import ngettext
 
@@ -18,7 +18,7 @@ duplicate.short_description = "Duplicate"
 class ProductAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     search_fields = ["title"]
     list_display = ["_id", "title", "price", "list_price", "count_update", "updated_at"]
-    list_filter = [FilterByDomain]
+    list_filter = [FilterByDomain, FilterByGroup]
 
     def _id(self, obj):
         return '#{}'.format(obj.id)

@@ -3,6 +3,7 @@ from django.contrib import admin, messages
 from modules.crawler.models.sitemap import Sitemap, PageInfo
 from modules.crawler.tabular_in_lines.sitemap import PageInfoTabularInline
 from modules.crawler.filters.sitemap import FilterBySitemap
+from modules.crawler.models.utils import ExtractInfoIphone
 
 from urllib.parse import urljoin, urlparse 
 from gettext import ngettext
@@ -39,9 +40,11 @@ class SitemapAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         return '#{}'.format(obj.id)
 
     def subscribe(self, obj):
-        total = len(PageInfo.objects.filter(sitemap=obj.id))
+        items = PageInfo.objects.filter(sitemap=obj.id)
+        total = len(items)
         total_subscribed = len(PageInfo.objects.filter(sitemap=obj.id, is_subscribe=True))
-        return '{}/{}'.format(total_subscribed, total)
+        total_candidates = len([ s for s in items if ExtractInfoIphone.is_candidate_url(s.url, s.title)])
+        return '{}/{}/{}'.format(total_subscribed, total_candidates, total)
     
     @admin.action(description="Scan data")
     def scan_data(self, request, queryset):

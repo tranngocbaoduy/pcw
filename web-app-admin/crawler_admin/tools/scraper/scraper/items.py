@@ -19,6 +19,7 @@ class ProductInfoItem(Item):
     encoded_base_url = Field()
     title = Field()
     meta = Field()  
+    description = Field()
     price = Field()
     name = Field()
     list_price = Field()

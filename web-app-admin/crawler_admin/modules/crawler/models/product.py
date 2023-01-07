@@ -15,6 +15,10 @@ class Category(models.Model):
     
     def __str__(self):
         return '#C{} - {}'.format(self.id, self.name)
+    
+    class Meta:
+        verbose_name = _('Category')
+        ordering = ['name'] 
 
 class GroupProduct(models.Model):
     id = models.CharField(
@@ -25,6 +29,7 @@ class GroupProduct(models.Model):
     list_image = models.TextField(default="", blank=True,)
     meta = models.JSONField(default=dict) 
 
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -33,6 +38,7 @@ class GroupProduct(models.Model):
 
     class Meta:
         verbose_name = _('Group Product')
+        ordering = ['name'] 
 
 
 class Product(models.Model): 
@@ -63,12 +69,13 @@ class Product(models.Model):
 
     def get_base_url(self):
         return self.base_url
+    
+    class Meta:
+        ordering = ['group_product__name']
 
     def categorize(self,): 
         base_url = self.base_url
-        gen_number = ExtractInfoIphone().extract_gen_number(base_url)
-        ram_size = ExtractInfoIphone().extract_ram_size(base_url) 
-        is_used = ExtractInfoIphone().extract_is_used(base_url)
+        gen_number, ram_size, is_used = ExtractInfoIphone().extract_info(base_url) 
         if ram_size and gen_number and not is_used:
             pprint({
                 'gen_number': gen_number,

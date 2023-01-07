@@ -97,6 +97,7 @@ class ScraperPipeline:
 
     def process_item(self, item, spider):
         sitemap = spider.sitemap
+        print('[{}]'.format(spider.action),item)
         if spider.action == 'SITEMAP':
             params = self.get_params_from_raw(item, sitemap)
             retry_count = 0
@@ -125,8 +126,8 @@ class ScraperPipeline:
         return None
 
     def close_spider(self, spider):
-        print('[CLOSE SPIDER]', spider, spider.action)
         sitemap = spider.sitemap  
+        print('[CLOSE SPIDER]', spider, sitemap, spider.action)
         if spider.action == 'SITEMAP': sitemap.is_sitemap_running = False
         if spider.action == 'UPDATE_DETAIL': sitemap.is_crawl_detail_running = False
         sitemap.save() 
