@@ -308,9 +308,10 @@ def get_icon(obj, name=None):
         "Category": "fas fa-list",
         "WareParser": "fas fa-meteor",
         "PageInfo": "fas fa-tags", 
-        "Product": "fas fa-cloud",
+        "Product": "fas fa-clone",
         "Seller": "fas fa-shop",
         "Group": "fas fa-users",
+        "GroupProduct": "fas fa-layer-group",
     }
 
     temp = _dict.get(obj)

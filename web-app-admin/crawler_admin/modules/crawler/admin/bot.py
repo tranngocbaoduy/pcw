@@ -22,6 +22,7 @@ class ScraperAdmin(admin.ModelAdmin, CSSAdminMixin):
         "crawl_url",
         "start_time",
         "start_date",
+        "is_sitemap_running",
         "is_active", 
     ]
     readonly_fields = ("job_id",)
@@ -32,7 +33,10 @@ class ScraperAdmin(admin.ModelAdmin, CSSAdminMixin):
     def crawl_url(self, obj): 
         return [(spy) for spy in obj.sitemap_cells.all()]
 
-    @admin.action(description="Start crawling now")
+    def is_sitemap_running(self, obj):
+        return ','.join([(str(spy.is_sitemap_running)) for spy in obj.sitemap_cells.all()])
+
+    @admin.action(description="Start sitemap now")
     def setup_crawler(self, request, queryset):
         for query in queryset:
             query.start_crawling()

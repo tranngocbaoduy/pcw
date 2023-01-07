@@ -12,15 +12,14 @@ def duplicate(modeladmin, request, queryset):
 
 duplicate.short_description = "Duplicate"
 
-@admin.register(Parser)
-class ParserAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ["_id", "name", "selector_type", "selector"]
-    actions = [duplicate]
+# @admin.register(Parser)
+# class ParserAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+#     list_display = ["_id", "name", "selector_type", "selector"]
+#     actions = [duplicate]
 
-    def _id(self, obj):
-        return '#{}'.format(obj.id)
+#     def _id(self, obj):
+#         return '#{}'.format(obj.id)
     
-
 @admin.register(WareParser)
 class WareParserAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ["_id", "name"]

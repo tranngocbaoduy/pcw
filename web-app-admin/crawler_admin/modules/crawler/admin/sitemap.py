@@ -33,7 +33,7 @@ class PageInfoAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
 @admin.register(Sitemap)
 class SitemapAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ["_id", "name", "base_url", "subscribe"]
+    list_display = ["_id", "name", "base_url", "is_crawl_detail_running", "is_sitemap_running", "subscribe"]
     
     def _id(self, obj):
         return '#{}'.format(obj.id)
@@ -57,6 +57,21 @@ class SitemapAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         )
         for query in queryset:
             query.scan_data(request, query)
+    
+    @admin.action(description="Unsubscribe data")
+    def unsubscribe_all(self, request, queryset):
+        self.message_user(
+            request,
+            ngettext(
+                "%d was successfully running.",
+                "%d were successfully running.",
+                len(queryset),
+            )
+            % len(queryset),
+            messages.SUCCESS,
+        )
+        for query in queryset:
+            query.unsubscribe_all(request, query)
 
     inlines = (PageInfoTabularInline,)
-    actions = [duplicate, scan_data]
+    actions = [scan_data, unsubscribe_all, duplicate,]

@@ -57,7 +57,7 @@ class HtmlHeadlessDetail(scrapy.Spider):
     def __init__(self, *a, **kwargs):
         super(HtmlHeadlessDetail, self).__init__(*a, **kwargs)
 
-        self.spider = kwargs.get("sitemap")
+        self.sitemap = kwargs.get("sitemap")
         self.page_info_items = kwargs.get("page_info_items")
         self.count_err = 0
         self.count_candidates = 0
@@ -67,11 +67,12 @@ class HtmlHeadlessDetail(scrapy.Spider):
         logging.getLogger('scrapy.middleware').setLevel(logging.WARNING)
         logging.getLogger('scrapy.core.scraper').setLevel(logging.INFO)
 
-        self.base_url = self.spider.base_url
-        self.category_name = self.spider.category_name
+        self.base_url = self.sitemap.base_url
+        self.category_name = self.sitemap.category_name
         self.encoded_base_url = CrawlingHelper.urlsafe_encode(self.base_url)
         self.encoded_urls = [self.encoded_base_url]        
-        self.parsers = Parser.objects.filter(ware_parser=self.spider.ware_parser.id)
+        self.parsers = Parser.objects.filter(ware_parser=self.sitemap.ware_parser.id)
+        self.action = 'UPDATE_DETAIL'
           
         pprint({
             "custom_settings": self.custom_settings,
@@ -98,8 +99,7 @@ class HtmlHeadlessDetail(scrapy.Spider):
         item['encoded_base_url'] = encoded_base_url
         item['title'] = sel.xpath('/html/head/title/text()').extract()
         item['meta'] = sel.xpath('/html/head/meta').getall() 
-        item['category'] = self.category_name
-        item['action'] = "UPDATE_DETAIL" 
+        item['category'] = self.category_name 
 
         info_from_parser = dict()
         for parser in self.parsers:

@@ -11,8 +11,7 @@ class PageInfoItem(Item):
     encoded_base_url = Field()
     title = Field()
     meta = Field() 
-    id = Field()
-    action = Field()
+    id = Field() 
     pass
 
 class ProductInfoItem(Item):
@@ -24,8 +23,7 @@ class ProductInfoItem(Item):
     name = Field()
     list_price = Field()
     category = Field() 
-    list_image = Field()
-    action = Field()
+    list_image = Field() 
     pass
 
 

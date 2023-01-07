@@ -2,7 +2,7 @@ import uuid
 from django.db.models import JSONField
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from modules.crawler.models.utils import id_generator, id_gen
+from modules.crawler.models.utils import id_generator, id_gen, ExtractInfoIphone
 from modules.crawler.models.parser import WareParser
 
 from tools.scraper.scraper.spiders.html_headless import HtmlHeadless
@@ -35,6 +35,8 @@ class Sitemap(models.Model):
     target_search_terms = models.CharField(max_length=512, default="apple-iphone-,iphone-14,iphone-13,iphone-12,iphone-11,iphone-se", blank=True)
     exclude_search_terms = models.CharField(max_length=512, default="dat-truoc,su-kien,event,quay-,tai-nghe,&,filter,loc,so-sanh,san-pham-moi,cong-nghe,nguoi-,khuyen-mai,phu-kien,combo,tag,dchannel,tragop,zalo,tra-gop,news,tekzone,the-,hub-,cap-,cuong-luc,bao-,mieng-,sac-,op-,mua-", blank=True)
     ware_parser = models.ForeignKey(WareParser, on_delete=models.CASCADE, null=True)
+    is_sitemap_running = models.BooleanField(default=False, editable=False)
+    is_crawl_detail_running = models.BooleanField(default=False, editable=False)
     category_name = models.CharField(max_length=256, default="")
     limit_page = models.CharField(max_length=256, default="500")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -50,9 +52,19 @@ class Sitemap(models.Model):
         crawl_settings.setmodule("tools.scraper.scraper.settings")
 
         page_info_items = PageInfo.objects.filter(sitemap=self.id)#is_subscribe=True
+        page_info_items = list(filter(lambda x: ExtractInfoIphone.is_candidate_url(x.url), page_info_items))
 
+        self.is_crawl_detail_running = True
+        self.save()
+        
         runner = CrawlerRunner(crawl_settings)
         runner.crawl(HtmlHeadlessDetail, sitemap=self, page_info_items=page_info_items) 
+
+    def unsubscribe_all(self, request, query):
+        page_info_items = PageInfo.objects.filter(sitemap=self.id)#is_subscribe=True
+        for page_info in page_info_items:
+            page_info.is_subscribe = False
+            page_info.save()
 
 class PageInfo(models.Model): 
 

@@ -57,12 +57,14 @@ class Scraper(models.Model):
                 params["SELENIUM_DRIVER_ARGUMENTS"] = []
             crawl_settings.update(params)
             runner = CrawlerRunner(crawl_settings) 
+            
+            _sitemap_db.is_sitemap_running = True
             _sitemap_db.save()   
 
             if _sitemap_db.crawl_type == 'mpa':
-                runner.crawl(HtmlHeadless, url=_sitemap_db.base_url, spider=_sitemap_db)
+                runner.crawl(HtmlHeadless, url=_sitemap_db.base_url, sitemap=_sitemap_db)
             else:
-                runner.crawl(HtmlNonHeadless, url=_sitemap_db.base_url, spider=_sitemap_db)
+                runner.crawl(HtmlNonHeadless, url=_sitemap_db.base_url, sitemap=_sitemap_db)
 
     def update_job(self):
         print('self.job_id',self.job_id)

@@ -55,7 +55,7 @@ class HtmlHeadless(scrapy.Spider):
     def __init__(self, *a, **kwargs):
         super(HtmlHeadless, self).__init__(*a, **kwargs)
 
-        self.spider = kwargs.get("spider")
+        self.sitemap = kwargs.get("sitemap")
         self.count_err = 0
         self.count_candidates = 0
 
@@ -64,14 +64,15 @@ class HtmlHeadless(scrapy.Spider):
         logging.getLogger('scrapy.middleware').setLevel(logging.WARNING)
         logging.getLogger('scrapy.core.scraper').setLevel(logging.INFO)
 
-        self.base_url = CrawlingHelper.get_url_formatted(self.spider.base_url)
+        self.base_url = CrawlingHelper.get_url_formatted(self.sitemap.base_url)
         self.encoded_base_url = CrawlingHelper.urlsafe_encode(self.base_url)
         self.encoded_urls = [self.encoded_base_url]  
-        self.list_target_search_terms = self.spider.target_search_terms.split(',')
-        self.list_exclude_search_terms = self.spider.exclude_search_terms.split(',')
+        self.list_target_search_terms = self.sitemap.target_search_terms.split(',')
+        self.list_exclude_search_terms = self.sitemap.exclude_search_terms.split(',')
+        self.action = 'SITEMAP'
 
         self.count_pages = 1 
-        self.limit_page = int(self.spider.limit_page)
+        self.limit_page = int(self.sitemap.limit_page)
         self.allowed_domains = [CrawlingHelper.get_domain(url=self.base_url)]
         self.rule = Rule(
             LinkExtractor(
@@ -121,7 +122,6 @@ class HtmlHeadless(scrapy.Spider):
         item['encoded_base_url'] = encoded_base_url
         item['title'] = sel.xpath('/html/head/title/text()').extract()
         item['meta'] = sel.xpath('/html/head/meta').getall() 
-        item['action'] = "SITEMAP"
 
         new_links = LinkExtractor(allow=('^' + re.escape(self.base_url)), allow_domains=self.allowed_domains).extract_links(response)
         for link in new_links:

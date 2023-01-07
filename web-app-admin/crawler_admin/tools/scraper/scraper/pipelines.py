@@ -16,15 +16,7 @@ from modules.crawler.models.sitemap import PageInfo, Sitemap
 from modules.crawler.models.product import Category, GroupProduct, Product 
 from tools.scraper.scraper.utils import CrawlingHelper
 
-class ScraperPipeline:
-    
-    def get_sitemap_item_db(self, spider): 
-        try:
-            if spider.spider.spider: 
-                return spider.spider.spider
-        except: 
-            return spider.spider
-    
+class ScraperPipeline: 
 
     def get_params_from_raw(self, item, sitemap):
         list_meta = {}
@@ -104,8 +96,8 @@ class ScraperPipeline:
             return None
 
     def process_item(self, item, spider):
-        sitemap = self.get_sitemap_item_db(spider) 
-        if item['action'] == 'SITEMAP':
+        sitemap = spider.sitemap
+        if spider.action == 'SITEMAP':
             params = self.get_params_from_raw(item, sitemap)
             retry_count = 0
             page_info = None
@@ -113,7 +105,7 @@ class ScraperPipeline:
                 retry_count = retry_count + 1
                 page_info = self.create_or_update_item(params)
             return page_info
-        elif item['action'] == 'UPDATE_DETAIL':
+        elif spider.action == 'UPDATE_DETAIL':
             params = self.get_params_from_raw_detail(item, sitemap) 
             page_info = PageInfo.objects.get(encoded_base_url=params['encoded_base_url']) 
             if params['name'] and params['price'] and params['list_price']:
@@ -133,5 +125,9 @@ class ScraperPipeline:
         return None
 
     def close_spider(self, spider):
-        print('[CLOSE SPIDER]', spider)
+        print('[CLOSE SPIDER]', spider, spider.action)
+        sitemap = spider.sitemap  
+        if spider.action == 'SITEMAP': sitemap.is_sitemap_running = False
+        if spider.action == 'UPDATE_DETAIL': sitemap.is_crawl_detail_running = False
+        sitemap.save() 
         pass

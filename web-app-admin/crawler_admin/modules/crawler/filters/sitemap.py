@@ -5,15 +5,16 @@ class FilterBySitemap(admin.SimpleListFilter):
     title = _("Sitemap")
     parameter_name = "sitemap"
 
-    def lookups(self, request, model_admin):
+    def lookups(self, request, model_admin): 
         return list(
             set(
-                [
+                [   
+                    # (id for filter, value for display)
                     (c.sitemap.id, c.sitemap.name)
                     for c in model_admin.model.objects.all()
                 ]
             )
-        )
+        ) 
 
     def queryset(self, request, queryset):
         if self.value():
