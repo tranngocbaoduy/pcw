@@ -93,7 +93,7 @@
                         class="font-size-12 font-color-customer font-weight-bold bg-primary-color-0"
                         v-for="category in listCategoryName"
                         :key="`${category.name}-category-on-search`"
-                        :to="`/category/${category.SK}`"
+                        :to="`/category/${category.id}`"
                       >
                         {{ categoryName(category.name) }}
                       </v-chip>
@@ -119,7 +119,7 @@
                         class="font-size-12 font-color-customer font-weight-bold bg-primary-color-0"
                         v-for="category in listCategoryName"
                         :key="`${category.name}-category-on-search`"
-                        :to="`/category/${category.SK}`"
+                        :to="`/category/${category.id}`"
                       >
                         {{ categoryName(category.name) }}
                       </v-chip>
@@ -151,7 +151,7 @@
                         class="font-size-12 font-color-customer font-weight-bold bg-primary-color-0"
                         v-for="category in listCategoryName"
                         :key="`${category.name}-category-on-search`"
-                        :to="`/category/${category.SK}`"
+                        :to="`/category/${category.id}`"
                       >
                         {{ categoryName(category.name) }}
                       </v-chip>
@@ -212,14 +212,14 @@
           </template>
         </v-autocomplete>
         <div class="some-category-hot font-size-12 pb-1 my-1" style="height: 35px">
-          <div class="d-inline" v-for="i in listCategoryName.slice(0, 4)" :key="`${i.SK}-some-category-hot`">
+          <div class="d-inline" v-for="i in listCategoryName.slice(0, 4)" :key="`${i.id}-some-category-hot`">
             <v-hover v-slot="{ hover }">
               <router-link
-                :to="`/category/${i.SK}`"
+                :to="`/category/${i.id}`"
                 class="pr-4 primary-color-1"
                 :class="hover ? 'font-weight-bold' : 'font-weight-normal'"
               >
-                {{ categoryName(i.name) }}
+                {{ i.name }}
               </router-link>
             </v-hover>
           </div>
@@ -345,8 +345,8 @@ export default Vue.extend({
     // allProductName(): any[] {
     //   let items = this.$store.getters.allProductName as string[];
 
-    //   if (this.selectedCategory && this.selectedCategory.SK && this.selectedCategory.SK != 'TatCa') {
-    //     const mappingId = (this as any).mappingCategoryId[this.selectedCategory.SK];
+    //   if (this.selectedCategory && this.selectedCategory.id && this.selectedCategory.id != 'TatCa') {
+    //     const mappingId = (this as any).mappingCategoryId[this.selectedCategory.id];
     //     items = items.filter((item: string) => item.includes(mappingId));
     //   } else if (this.categoryId && !this.selectedCategory) {
     //     items = items.filter((item: string) => item.includes(this.categoryId));
@@ -378,16 +378,16 @@ export default Vue.extend({
       if (this.$route.path != '/') this.$router.push('/');
     },
     filterItems(item: ProductItem, queryText: string): boolean {
-      // if (item.SK.includes(queryText.split(' ').join('_'))) return true;
-      // if (item.SK.includes(queryText)) return true;
-      const a = item.SK.toLowerCase().trim().split(' ');
+      // if (item.id.includes(queryText.split(' ').join('_'))) return true;
+      // if (item.id.includes(queryText)) return true;
+      const a = item.id.toLowerCase().trim().split(' ');
       const b = queryText.toLowerCase().trim().split(' ');
       const lastWordInQuery = b[b.length - 1];
       if (a.length == 0 && b.length == 0) return false;
       const intersection = this._.intersection(a, b);
       const isIntersection = intersection && intersection.length != 0 && intersection.length == b.length ? true : false;
       if (isIntersection) return true;
-      else return item.SK.toLowerCase().includes(lastWordInQuery);
+      else return item.id.toLowerCase().includes(lastWordInQuery);
     },
     handleShowMenu() {
       this.$emit('handle-show-menu');
@@ -431,7 +431,7 @@ export default Vue.extend({
             ...i,
           }));
           this.productSearchItems = this.productSearchItems.concat(listSearchItem);
-          this.searchCode = listSearchItem[0].cleanName;
+          this.searchCode = listSearchItem[0].name;
         }
       } else {
         if (this.searchCode && !this.searchStringList.includes(this.searchCode)) {

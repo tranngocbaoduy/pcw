@@ -214,6 +214,7 @@ AuthService.api.interceptors.request.use(async (config) => {
     region: process.env.VUE_APP_AWS_REGION,
     headers: {
       'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Origin, X-Requested-With',
     },
     method: config.method?.toUpperCase(),
   };

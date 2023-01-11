@@ -3,13 +3,15 @@ import Vuex from 'vuex';
 import { CognitoUser } from '@aws-amplify/auth';
 import { ProductItem } from '@/api/product.service';
 import { UserGoogleInfo } from '@/api/google-auth.service';
+import { CategoryItem } from '@/api/category.service';
 
 Vue.use(Vuex);
 
 interface RootState {
   userName: string;
   user: CognitoUser;
-  categoryItems: any[];
+  categoryItems: CategoryItem[];
+  selectedCategory: CategoryItem;
   domainItems: any[];
   searchString: string;
   brandItemsStore: {};
@@ -33,7 +35,8 @@ interface ProductItemByCategory {
 const state: RootState = {
   userName: '',
   user: {} as CognitoUser,
-  categoryItems: [] as any[],
+  categoryItems: [] as CategoryItem[],
+  selectedCategory: {} as CategoryItem,
   searchString: '',
   brandItemsStore: {},
   isMobile: false,
@@ -223,6 +226,7 @@ export default new Vuex.Store({
     userName: (state) => state.userName,
     user: (state) => state.user,
     categoryItems: (state) => state.categoryItems,
+    selectedCategory: (state) => state.selectedCategory,
     domainItems: (state) => state.domainItems,
     searchString: (state) => state.searchString,
     searchFilter: (state) => state.searchFilter,
@@ -245,8 +249,8 @@ export default new Vuex.Store({
     signInDefault({ commit }, { user }) {
       commit('setState', { user });
     },
-    setCategory({ commit }, { categoryItems }) {
-      commit('setState', { categoryItems });
+    setCategory({ commit }, { categoryItems, selectedCategory }) {
+      commit('setState', { categoryItems, selectedCategory });
     },
     setIsMobile({ commit }, { isMobile }) {
       commit('setState', { isMobile: isMobile });

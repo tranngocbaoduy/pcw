@@ -19,17 +19,15 @@
         <div class="mt-2 pa-0" :class="isMobile ? 'px-2' : 'px-0'">
           <BreadCrumbs :breadcrumbs="breadcrumbs" />
           <v-card-title class="product-page-name font-size-32 font-weight-3 px-0 mt-0 mx-0">{{
-            categoryName
+            selectedCategory.name
           }}</v-card-title>
         </div>
         <EnhancedFilter
           v-if="!isMobile"
-          :brandItems="brandItems"
           :priceItems="priceItems"
           :agencyItems="agencyItems"
           @change-agency="changeAgency"
           @change-price="changePrice"
-          @change-brand="changeBrand"
           class="ma-n2 pa-2 mx-0"
           @refresh-filter="refreshFilter"
         />
@@ -74,7 +72,7 @@
 import Vue from 'vue';
 import BreadCrumbs from '@/components/common/BreadCrumbs.vue';
 import Product from '@/components/product/Product.vue';
-import CategoryService from '@/api/category.service';
+import CategoryService, { CategoryItem } from '@/api/category.service';
 import ProductService, { ProductItem } from '@/api/product.service';
 
 import EnhancedFilter from '@/components/search-filter/EnhancedFilter.vue';
@@ -90,7 +88,7 @@ export default Vue.extend({
     EnhancedFilter,
   },
   metaInfo(): MetaInfo {
-    return SeoService.getMetaInfoCategoryPage(this.categoryName || '');
+    return SeoService.getMetaInfoCategoryPage(this.selectedCategory ? this.selectedCategory.name : '');
   },
   data: () => ({
     isLoading: false,
@@ -102,23 +100,15 @@ export default Vue.extend({
       { name: '2-stars', rate: 2 },
       { name: '1-stars', rate: 1 },
     ],
-    brandItems: [
-      { name: 'Apple', selected: false },
-      { name: 'Samsung', selected: false },
-      { name: 'Xiaomi', selected: false },
-      { name: 'OPPO', selected: false },
-      { name: 'Huawei', selected: false },
-      { name: 'Sony', selected: false },
-    ],
     agencyItems: [
-      { name: 'Tiki', selected: false, code: 'tiki' },
-      // { name: 'Điện máy xanh', selected: false, code: 'dienmayxanh' },
-      { name: 'Shopee', selected: false, code: 'shopee' },
-      { name: 'Shopee Mall', selected: false, code: 'mall' },
-      { name: 'Lazada Mall', selected: false, code: 'lazmall' },
-      // { name: 'Lazada', selected: false },
-      // { name: 'Sendo', selected: false },
-      // { name: 'Nguyễn Kim', selected: false },
+      { name: 'TopZone', selected: false, code: 'topzone' },
+      { name: 'DiĐộngViệt', selected: false, code: 'didongviet' },
+      { name: 'ShopDunk', selected: false, code: 'shopdunk' },
+      { name: 'BạchLongMobile', selected: false, code: 'bachlong' },
+      { name: 'Cellphones', selected: false, code: 'cellphones' },
+      { name: '24h store', selected: false, code: '24hstore' },
+      { name: 'ViettelStore', selected: false, code: 'viettelstore' },
+      { name: 'Nguyễn Kim', selected: false, code: 'nguyenkim' },
     ],
     shipItems: [
       { name: 'Nội địa: Giao hàng nhanh', selected: false },
@@ -139,11 +129,11 @@ export default Vue.extend({
   }),
   async created() {
     this.priceItems = [
-      { id: 1, name: `${this.$t('Below')} 2 MIL VND`, selected: false, min: 0.3, max: 2 },
-      { id: 2, name: `${this.$t('Range')} 2-4 MIL VND`, selected: false, min: 2, max: 4 },
-      { id: 3, name: `${this.$t('Range')} 4-7 MIL VND`, selected: false, min: 4, max: 7 },
-      { id: 4, name: `${this.$t('Range')} 7-13 MIL VND`, selected: false, min: 7, max: 13 },
-      { id: 5, name: `${this.$t('Above')} 13 MIL VND`, selected: false, min: 13, max: 999 },
+      { id: 1, name: `${this.$t('Below')} 10 MIL VND`, selected: false, min: 0.3, max: 10 },
+      { id: 2, name: `${this.$t('Range')} 11 - 20 MIL VND`, selected: false, min: 11, max: 20 },
+      { id: 3, name: `${this.$t('Range')} 21 - 30 MIL VND`, selected: false, min: 21, max: 30 },
+      { id: 4, name: `${this.$t('Range')} 31 - 40 MIL VND`, selected: false, min: 31, max: 40 },
+      { id: 5, name: `${this.$t('Above')} 40 MIL VND`, selected: false, min: 41, max: 999 },
     ];
     this.page = 1;
     this.limit = this.isMobile ? 6 : 18;
@@ -154,7 +144,6 @@ export default Vue.extend({
       searchFilter: {
         catalogItems: this.catalogItems,
         voteItems: this.voteItems,
-        brandItems: this.brandItems,
         priceItems: this.priceItems,
         agencyItems: this.agencyItems,
         shipItems: this.shipItems,
@@ -166,10 +155,8 @@ export default Vue.extend({
     isMobile(): boolean {
       return this.$store.getters.isMobile;
     },
-    categoryName(): string {
-      return CategoryService.upperCaseFirstLetter(CategoryService.code2category(this.categoryId))
-        ? `${CategoryService.upperCaseFirstLetter(CategoryService.code2category(this.categoryId))}`
-        : '';
+    selectedCategory(): CategoryItem {
+      return this.$store.getters.selectedCategory;
     },
     categoryId(): string {
       return this.$route.params['idCate'] || '';
@@ -192,7 +179,7 @@ export default Vue.extend({
           exact: true,
         },
         {
-          text: this.categoryName,
+          text: this.selectedCategory.name,
           to: `/category/${this.$route.params['idCate']}`,
           disabled: true,
           exact: true,
@@ -201,22 +188,19 @@ export default Vue.extend({
     },
 
     filterProductItems() {
-      const agencySelecting = this.agencyItems.filter((item: any) => item.selected).map((item: any) => item.code);
-      const brandSelecting = this.brandItems
-        .filter((item: any) => item.selected)
-        .map((item: any) => CategoryService.upperCaseFirstLetter(item.name));
-      return this.productItems.filter(
-        (item: ProductItem) =>
-          (agencySelecting.length == 0 || (agencySelecting && agencySelecting.includes(item.agency))) &&
-          (brandSelecting.length == 0 ||
-            (brandSelecting && brandSelecting.includes(CategoryService.upperCaseFirstLetter(item.brand)))) &&
-          item.price > this.minMaxTuple[0] * 1000000 &&
-          item.price < this.minMaxTuple[1] * 100000000
-      );
-    },
-
-    brandItemsStore(): any {
-      return this.$store.getters.brandItemsStore;
+      // const agencySelecting = this.agencyItems.filter((item: any) => item.selected).map((item: any) => item.code);
+      // const brandSelecting = this.brandItems
+      //   .filter((item: any) => item.selected)
+      //   .map((item: any) => CategoryService.upperCaseFirstLetter(item.name));
+      // return this.productItems.filter(
+      //   (item: ProductItem) =>
+      //     (agencySelecting.length == 0 || (agencySelecting && agencySelecting.includes(item.agency))) &&
+      //     (brandSelecting.length == 0 ||
+      //       (brandSelecting && brandSelecting.includes(CategoryService.upperCaseFirstLetter(item.brand)))) &&
+      //     item.price > this.minMaxTuple[0] * 1000000 &&
+      //     item.price < this.minMaxTuple[1] * 100000000
+      // );
+      return this.productItems;
     },
   },
 
@@ -241,7 +225,6 @@ export default Vue.extend({
       console.log('Load item ...', this.categoryId);
       this.page = parseInt((this as any).$route.query.page || 1);
       this.$store.commit('setState', { searchString: this.$route.query.name });
-      await this.loadBrandItems();
       await this.updateUrlQueryToData();
       this.isLoading = false;
     },
@@ -250,15 +233,12 @@ export default Vue.extend({
       this.isNextProduct = true;
       this.page += 1;
       const agencyItems = this.agencyItems.filter((item: any) => item.selected).map((item: any) => item.code);
-      const brandItems = this.brandItems
-        .filter((item: any) => item.selected)
-        .map((item: any) => item.name.toLowerCase());
+
       const newItems = await ProductService.queryItemByTarget({
-        category: this.categoryId.toUpperCase(),
+        categoryId: this.categoryId.toUpperCase(),
         limit: this.limit,
         page: this.page,
         agencyItems: agencyItems,
-        brandItems: brandItems,
         minPrice: this.minMaxTuple[0] * 1000000,
         maxPrice: this.minMaxTuple[1] * 1000000,
         isRep: true,
@@ -267,27 +247,9 @@ export default Vue.extend({
       this.productItems = this.productItems.concat(newItems);
       this.isLoading = false;
     },
-    async loadBrandItems() {
-      const categoryId = this.categoryId.toUpperCase();
-      if (
-        !this.brandItemsStore ||
-        (this.brandItemsStore && this.brandItemsStore.length == 0) ||
-        !Object.keys(this.brandItemsStore).includes(categoryId)
-      ) {
-        this.brandItems = await CategoryService.queryBrandItems(categoryId);
-        const brandItemsStore = this.brandItemsStore ? this.brandItemsStore : {};
-        brandItemsStore[categoryId] = JSON.parse(JSON.stringify(this.brandItems));
-        this.$store.commit('setState', { brandItemsStore: brandItemsStore });
-      } else {
-        this.brandItems = this.brandItemsStore[categoryId];
-      }
-    },
+
     async refreshFilter() {
       this.agencyItems = this.agencyItems.map((i) => ({
-        ...i,
-        selected: false,
-      }));
-      this.brandItems = this.brandItems.map((i) => ({
         ...i,
         selected: false,
       }));
@@ -299,16 +261,6 @@ export default Vue.extend({
         const agency = this.agencyItems.find((a) => i.code == a.code);
         if (agency && agency.selected.toString().length != 0) {
           agency.selected = !agency.selected;
-        }
-      });
-      await this.loadProductItemByTarget();
-    },
-    async changeBrand(brandItems: any[]) {
-      console.log(brandItems);
-      brandItems.map((i) => {
-        const brand = this.brandItems.find((a) => i.name == a.name);
-        if (brand && brand.selected.toString().length != 0) {
-          brand.selected = !brand.selected;
         }
       });
       await this.loadProductItemByTarget();
@@ -332,17 +284,9 @@ export default Vue.extend({
         !isRefresh && query && query.agencyItems && typeof query.agencyItems == 'string'
           ? query.agencyItems.split(',')
           : '';
-      const brandSelecting =
-        !isRefresh && query && query.brandItems && typeof query.brandItems == 'string'
-          ? query.brandItems.split(',')
-          : '';
       this.agencyItems = this.agencyItems.map((item: any) => ({
         ...item,
         selected: agencySelecting.includes(item.name),
-      }));
-      this.brandItems = this.brandItems.map((item: any) => ({
-        ...item,
-        selected: brandSelecting.includes(item.name),
       }));
 
       this.page = 1;
@@ -353,18 +297,16 @@ export default Vue.extend({
 
     async loadProductItemByTarget() {
       const agencyItems = this.agencyItems.filter((item: any) => item.selected).map((item: any) => item.code);
-      const brandItems = this.brandItems
-        .filter((item: any) => item.selected)
-        .map((item: any) => item.name.toLowerCase());
+
       this.productItems = await ProductService.queryItemByTarget({
-        category: this.categoryId.toUpperCase(),
+        categoryId: this.categoryId.toUpperCase(),
         limit: this.limit,
         page: this.page,
         agencyItems: agencyItems,
-        brandItems: brandItems,
+
         minPrice: this.minMaxTuple[0] * 1000000,
         maxPrice: this.minMaxTuple[1] * 1000000,
-        discountRate: agencyItems.length != 0 || brandItems.length != 0 ? 0 : this.discountRate,
+        discountRate: agencyItems.length != 0 ? 0 : this.discountRate,
         isRep: true,
       });
       console.log('this.productItems', this.productItems);
@@ -373,16 +315,7 @@ export default Vue.extend({
       return ProductService.getSlugId(item);
     },
     getIdProduct(item: ProductItem) {
-      console.log('item', item);
-      if (item['SK'].includes('REP')) return item['SK'].split('#').join('_');
-      if (item['SK'].includes('CHILD')) {
-        const newSK = item['SK']
-          .split('#')
-          .slice(0, item['SK'].split('#').length - 1)
-          .join('_');
-        return `${newSK.split('CHILD').join('REP')}_${item.relationshipID}`;
-      }
-      return '';
+      return item.id;
     },
     transitionToTopPage() {
       window.scrollTo({ top: -100, left: 0, behavior: 'smooth' });

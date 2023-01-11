@@ -87,7 +87,7 @@ export default Vue.extend({
     },
     async categoryItems() {
       this.randomCategory = this.categoryItems[Math.floor(Math.random() * this.categoryItems.length)];
-      this.randomPathChangeTo = `/category/${this.randomCategory.SK}`;
+      this.randomPathChangeTo = `/category/${this.randomCategory.id}`;
       await this.loadProductItemByTarget();
     },
   },
@@ -108,11 +108,10 @@ export default Vue.extend({
     async loadProductItemByTarget() {
       if (this.randomCategory) {
         this.productItems = await ProductService.queryItemByTarget({
-          category: this.randomCategory.SK,
+          categoryId: this.randomCategory.id,
           limit: this.isMobile ? 6 : this.limit,
           page: this.page,
           agencyItems: [],
-          brandItems: [],
           minPrice: 0,
           maxPrice: 1000000000,
           isRep: true,
@@ -124,15 +123,7 @@ export default Vue.extend({
       return ProductService.getSlugId(item);
     },
     getIdProduct(item: ProductItem) {
-      if (item['SK'].includes('REP')) return item['SK'].split('#').join('_');
-      if (item['SK'].includes('CHILD')) {
-        const newSK = item['SK']
-          .split('#')
-          .slice(0, item['SK'].split('#').length - 1)
-          .join('_');
-        return `${newSK.split('CHILD').join('REP')}_${item.relationshipID}`;
-      }
-      return '';
+      return item.id;
     },
   },
 });

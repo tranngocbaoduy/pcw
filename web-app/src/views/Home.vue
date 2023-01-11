@@ -51,6 +51,10 @@ export default Vue.extend({
     isMobileAndHomePage(): boolean {
       return this.isMobile && this.$route.path == '/';
     },
+
+    categoryIdInRoute(): string {
+      return this.$route.params['idCate'] || '';
+    },
   },
   async created() {
     console.log('Home component is created');
@@ -58,16 +62,15 @@ export default Vue.extend({
   },
   methods: {
     async initialize() {
-      let retryCount = 0;
-      let categoryItems = null;
-      if (!this.getCategoryItems || this.getCategoryItems.length == 0) {
-        do {
-          categoryItems = await CategoryService.queryAllCategory();
-          this.$store.dispatch('setCategory', { categoryItems: await CategoryService.queryAllCategory() });
-          await setTimeout(() => {}, 2000);
-          retryCount += 1;
-        } while (!categoryItems && retryCount < 3);
-      }
+      const categoryItems = await CategoryService.queryAllCategory();
+      console.log(
+        this.categoryIdInRoute,
+        categoryItems.find((c) => c.id == this.categoryIdInRoute)
+      );
+      this.$store.dispatch('setCategory', {
+        categoryItems: categoryItems,
+        selectedCategory: categoryItems.find((c) => c.id == this.categoryIdInRoute),
+      });
     },
     handleShowMenu() {
       this.isShowMenu = !this.isShowMenu;

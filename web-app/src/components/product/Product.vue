@@ -3,20 +3,13 @@
     <v-card :loading="loading" style="" class="product rounded-0 py-2 my-0">
       <v-row class="px-2 pb-0 pt-8 ma-0 py-0" style="height: 220px">
         <span
-          :class="[
-            isMobile
-              ? `domain-sub-left-mobile ${item.domain.toLowerCase()} `
-              : `domain-sub-left ${item.domain.toLowerCase()} `,
-          ]"
+          :class="[isMobile ? `domain-sub-left-mobile ${item.domain} ` : `domain-sub-left ${item.domain} `]"
           class="font-size-14 px-4"
         ></span>
         <span
-          :class="[
-            isMobile ? `domain-mobile ${item.domain.toLowerCase()}` : `domain ${item.domain.toLowerCase()}`,
-            hover ? 'top-1px' : '',
-          ]"
+          :class="[isMobile ? `domain-mobile ${item.domain}` : `domain ${item.domain}`, hover ? 'top-1px' : '']"
           class="font-size-14 px-4"
-          >{{ item.agencyDisplay }}</span
+          >{{ item.domain }}</span
         >
         <v-img
           :class="hover ? 'mt-0' : 'mt-2'"
@@ -35,7 +28,7 @@
           <v-col cols="12 pr-0">
             <div class="font-size-14 line-height-20 title-product">
               <!-- <span class="primary-color-2 font-weight-bold">{{ itemBrand }} </span>-  -->
-              {{ item.cleanName }}
+              {{ item.name }}
             </div>
           </v-col>
           <!-- <v-col cols="3 pr-2 pt-0">
@@ -57,7 +50,7 @@
 
         <v-col cols="4" class="ma-0 pa-0">
           <div class="font-size-10 font-weight-1 pr-0 pa-0 ma-0 text-right line-height-20">
-            <span class="font-weight-3 primary-color-3" v-if="item.listChildId.length != 0">
+            <span class="font-weight-3 primary-color-3" v-if="item.listChildId && item.listChildId.length != 0">
               {{ `${item.listChildId.length} ${$t('in stores')}` }}</span
             ><br />
           </div>
@@ -67,7 +60,7 @@
         <v-col cols="7" class="line-height-22 ma-0 pa-0 font-size-14 font-weight-3 text-left primary-color-1">
           {{ item.price | formatPrice }}đ
         </v-col>
-        <v-col cols="5" class="ma-0 pa-0 text-right">
+        <v-col cols="5" class="ma-0 pa-0 text-right" v-if="item.itemRating">
           <RatingItem :itemRating="item.itemRating" size="12" />
           <!-- <v-rating
             class="product-rate line-height-18 pa-0"

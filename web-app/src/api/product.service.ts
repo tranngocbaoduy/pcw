@@ -9,40 +9,50 @@ export interface ProductSearchItem {
 }
 
 export interface ProductItem {
-  PK: string;
-  SK: string;
   id: string;
-  relationshipID: string;
-  listChildId: string[];
-  listImage: string[];
-  agency: string;
-  agencyDisplay: string;
-  content: string;
-  createdDate?: string;
-  domain: string;
-  nameDomain: string;
   name: string;
-  cleanName: string;
-  price: number;
-  listPrice: number;
-  isAPI?: boolean;
-  productCode: string;
-  brand: string;
-  url: string;
+  title: string;
+  baseUrl: string;
+  encodedBaseUrl: string;
+  categoryId: string;
+  groupProductId: string;
+  price: string;
+  listPrice: string;
+  updatedAt: string;
   discountRate: number;
-  shopLocation?: string;
-  historicalSold: string;
-  likedCount: string;
+  listImage: string[];
   slugId: string;
-  stock: number;
-  subCategory: string;
-  voucherInfo: {};
-  itemRating: {};
-  countReview: number;
-  shopItem: {};
-  shopUrl: string;
-  description: [];
-  isDisplayHover?: boolean;
+  // PK: string;
+  // SK: string;
+  // id: string;
+  // relationshipID: string;
+  // listChildId: string[];
+  // agency: string;
+  // agencyDisplay: string;
+  // content: string;
+  // createdDate?: string;
+  // domain: string;
+  // nameDomain: string;
+  // name: string;
+  // cleanName: string;
+  // price: number;
+  // listPrice: number;
+  // isAPI?: boolean;
+  // productCode: string;
+  // brand: string;
+  // url: string;
+  // shopLocation?: string;
+  // historicalSold: string;
+  // likedCount: string;
+  // stock: number;
+  // subCategory: string;
+  // voucherInfo: {};
+  // itemRating: {};
+  // countReview: number;
+  // shopItem: {};
+  // shopUrl: string;
+  // description: [];
+  // isDisplayHover?: boolean;
 }
 
 export interface QueryProductItems {
@@ -100,9 +110,8 @@ export default class ProductService {
   }
 
   static async querySearchItems({ searchString }: { searchString: string }): Promise<ProductItem[]> {
-    const url =
-      process.env.VUE_APP_API_BASE_URL +
-      `/${process.env.VUE_APP_ENV}/product?action=querySearchItems&searchString=${searchString}`;
+    console.log('searchString', searchString);
+    const url = process.env.VUE_APP_API_BASE_URL + `products?&searchString=${searchString}`;
     try {
       const data = await AuthService.api
         .get(url)
@@ -114,43 +123,49 @@ export default class ProductService {
   }
 
   static async queryItemByTarget({
-    category,
+    categoryId,
     limit = 20,
     page = 1,
     agencyItems,
-    brandItems,
-    maxPrice,
-    minPrice,
+    maxPrice = 10000000,
+    minPrice = 1,
     discountRate,
     isRep = false,
   }: {
-    category: string;
+    categoryId: string;
     limit: int;
     page: int;
-    agencyItems: string[];
-    brandItems: string[];
+    agencyItems?: string[];
     maxPrice?: int;
     minPrice?: int;
     discountRate?: int;
     isRep?: boolean;
   }): Promise<ProductItem[]> {
-    if (!category) return [];
+    if (!categoryId) return [];
     const params = {
-      category: category,
       limit: limit,
       page: page,
       agencyItems: agencyItems,
-      brandItems: brandItems,
       maxPrice: maxPrice,
       minPrice: minPrice,
       discountRate: discountRate,
       isRep: isRep,
     };
-    const url = process.env.VUE_APP_API_BASE_URL + `/${process.env.VUE_APP_ENV}/product?action=queryItemByTarget`;
+    console.log('params', params, categoryId);
+    const url =
+      process.env.VUE_APP_API_BASE_URL +
+      `products/${categoryId}?` +
+      `page=${page}` +
+      `${limit ? `&limit=${limit}` : ''}` +
+      `${agencyItems ? `&agency=${agencyItems}` : ''}` +
+      `${minPrice ? `&min=${minPrice}` : ''}` +
+      `${maxPrice ? `&max=${maxPrice}` : ''}` +
+      `${discountRate ? `&discount=${discountRate}` : ''}`;
+    console.log('URL', url);
     const data = await AuthService.api
-      .post(url, params)
-      .then((response) => response.data)
-      .then((res) => ProductService.parseListProductItem(res.data));
+      .get(url)
+      .then((response: any) => response.data.products)
+      .then((data: any) => ProductService.parseListProductItem(data));
     return data;
   }
 
@@ -225,39 +240,71 @@ export default class ProductService {
     return text.trim();
   }
 
+  static parseListImage(list_image: string) {
+    try {
+      return JSON.parse(list_image);
+    } catch {
+      return [];
+    }
+  }
+
+  static getDomainFromURL(url: string) {
+    try {
+      const urlObj = new URL(url);
+      if (urlObj.hostname.includes('www')) return urlObj.hostname.split('.')[1];
+      return urlObj.hostname.split('.')[0];
+    } catch {
+      // console.log('url', url);
+      return '';
+    }
+  }
+
   static parseProductItem(item: any): ProductItem {
     return {
-      PK: item.PK,
-      SK: item.SK,
-      brand: item.brand ? item.brand.toUpperCase() : item.brand,
-      id: item.SK.split('#')[item.SK.split('#').length - 1],
-      listChildId: item.child ? item.child : [],
-      content: item.content,
-      createdDate: item.created_date,
-      domain: ProductService.nameDomainShop[item.agency],
-      listImage: item.image,
-      agency: item.agency,
-      agencyDisplay: ProductService.handleAgency(item.agency),
-      name: item.name,
-      cleanName: this.handleRemoveSub(item.name),
-      price: item.price > 200000000000 ? parseInt(item.price) / 100000 : parseInt(item.price),
-      listPrice: item.list_price > 200000000000 ? parseInt(item.list_price) / 100000 : parseInt(item.list_price),
+      id: item.id, // '3hekq4s138bb',
+      name: item.name, // 'iPhone 11 128GB Chính hãng - Đã kích hoạt bảo hành VN/A',
+      title: item.title, // 'iPhone 11 128GB đã kích hoạt - Giá rẻ nhất,đổi trả 30 ngày,bảo hành 12 tháng',
+      baseUrl: item.base_url, // 'https://cellphones.com.vn/iphone-11-128gb-da-kich-hoat.html',
+      encodedBaseUrl: item.encoded_base_url, // 'aHR0cHM6Ly9jZWxscGhvbmVzLmNvbS52bi9pcGhvbmUtMTEtMTI4Z2ItZGEta2ljaC1ob2F0Lmh0bWw',
+      categoryId: item.category, // '3111010055',
+      groupProductId: item.group_product, // 'si0abb2e7gbo',
+      price: item.price, // '11190000.0',
+      listPrice: item.list_price, // '16990000.0',
+      updatedAt: item.updated_at, // '2023-01-08T15:04:37.862989Z',
       discountRate: Math.round(100 - (parseInt(item.price) / parseInt(item.list_price)) * 100),
-      isAPI: item.is_api,
-      shopItem: item.shop_item ? item.shop_item : {},
-      shopUrl: item.shop_item ? ProductService.getshopUrl(item.agency, item.shop_item) : '',
-      url: ProductService.handleProcessUrlAccessTrade(item.url),
-      shopLocation: item.shop_location,
+      listImage: ProductService.parseListImage(item.list_image),
+      domain: ProductService.getDomainFromURL(item.base_url),
       slugId: item.slug_id ? item.slug_id : '',
-      stock: item.stock ? parseInt(item.stock) : 0,
-      subCategory: item.sub_category_code ? item.sub_category_code : '',
-      voucherInfo: item.voucher_info ? item.voucher_info : '',
-      historicalSold: item.historical_sold ? item.historical_sold : '',
-      likedCount: item.liked_count ? item.liked_count : '',
-      itemRating: item.item_rating ? item.item_rating : '',
-      countReview: item.item_rating ? item.item_rating.rating_count[0] : 0,
-      description: item.description ? ProductService.handleDescription(item.description) : [],
-      isDisplayHover: false,
+      // PK: item.PK,
+      // SK: item.SK,
+      // brand: item.brand ? item.brand.toUpperCase() : item.brand,
+      // id: item.SK.split('#')[item.SK.split('#').length - 1],
+      // listChildId: item.child ? item.child : [],
+      // content: item.content,
+      // createdDate: item.created_date,
+      // domain: ProductService.nameDomainShop[item.agency],
+      // listImage: item.image,
+      // agency: item.agency,
+      // agencyDisplay: ProductService.handleAgency(item.agency),
+      // name: item.name,
+      // cleanName: this.handleRemoveSub(item.name),
+      // price: item.price > 200000000000 ? parseInt(item.price) / 100000 : parseInt(item.price),
+      // listPrice: item.list_price > 200000000000 ? parseInt(item.list_price) / 100000 : parseInt(item.list_price),
+      // discountRate: Math.round(100 - (parseInt(item.price) / parseInt(item.list_price)) * 100),
+      // isAPI: item.is_api,
+      // shopItem: item.shop_item ? item.shop_item : {},
+      // shopUrl: item.shop_item ? ProductService.getshopUrl(item.agency, item.shop_item) : '',
+      // url: ProductService.handleProcessUrlAccessTrade(item.url),
+      // shopLocation: item.shop_location,
+      // stock: item.stock ? parseInt(item.stock) : 0,
+      // subCategory: item.sub_category_code ? item.sub_category_code : '',
+      // voucherInfo: item.voucher_info ? item.voucher_info : '',
+      // historicalSold: item.historical_sold ? item.historical_sold : '',
+      // likedCount: item.liked_count ? item.liked_count : '',
+      // itemRating: item.item_rating ? item.item_rating : '',
+      // countReview: item.item_rating ? item.item_rating.rating_count[0] : 0,
+      // description: item.description ? ProductService.handleDescription(item.description) : [],
+      // isDisplayHover: false,
     } as ProductItem;
   }
 
@@ -310,7 +357,7 @@ export default class ProductService {
     if (item.slugId) {
       const preHandle = item.slugId
         .split('/')
-        .filter((i) => !!i)
+        .filter((i: string) => !!i)
         .join('/')
         .replace('[', '(')
         .replace(']', ')');

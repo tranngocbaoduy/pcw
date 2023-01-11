@@ -43,12 +43,12 @@ const routes: Array<RouteConfig> = [
         component: () =>
           import('@/components/pages/user/PriceComparisonPage.vue').catch(RouterHelper.handleAsyncComponentError),
       },
-      {
-        path: ':slugId*',
-        name: 'ProductDetailSlugPage',
-        component: () =>
-          import('@/components/pages/user/ProductDetailSlugPage.vue').catch(RouterHelper.handleAsyncComponentError),
-      },
+      // {
+      //   path: ':slugId*',
+      //   name: 'ProductDetailSlugPage',
+      //   component: () =>
+      //     import('@/components/pages/user/ProductDetailSlugPage.vue').catch(RouterHelper.handleAsyncComponentError),
+      // },
     ],
   },
   {

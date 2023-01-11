@@ -86,7 +86,16 @@
                             >
                               <v-col
                                 cols="9"
-                                class="ma-0 pa-0 primary-color-4 text-left font-weight-1 line-height-18 old-price font-size-14"
+                                class="
+                                  ma-0
+                                  pa-0
+                                  primary-color-4
+                                  text-left
+                                  font-weight-1
+                                  line-height-18
+                                  old-price
+                                  font-size-14
+                                "
                                 >{{ item.listPrice | formatPrice }}đ
                               </v-col>
                             </v-row>
@@ -178,15 +187,7 @@ export default Vue.extend({
       return 200;
     },
     getIdProduct(item: ProductItem) {
-      if (item['SK'].includes('REP')) return item['SK'].split('#').join('_');
-      if (item['SK'].includes('CHILD')) {
-        const newSK = item['SK']
-          .split('#')
-          .slice(0, item['SK'].split('#').length - 1)
-          .join('_');
-        return `${newSK.split('CHILD').join('REP')}_${item.relationshipID}`;
-      }
-      return '';
+      return item.id;
     },
   },
 });

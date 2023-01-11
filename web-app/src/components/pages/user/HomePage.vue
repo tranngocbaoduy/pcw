@@ -3,8 +3,8 @@
     <Carousel />
     <RecommendProducts />
     <TrendingPromotion :promotionItems="promotionItems" />
-    <!-- <TrendingBrand /> -->
-    <TrendingCategory :listItem="trendingCategoryItems" />
+    <TrendingBrand />
+    <!-- <TrendingCategory :listItem="trendingCategoryItems" /> -->
     <!-- <TrendingSearchProducts /> -->
     <!-- <TrendingSearch></TrendingSearch> -->
     <!-- <Feature></Feature> -->
@@ -31,9 +31,9 @@ export default Vue.extend({
   components: {
     SearchBar,
     Carousel,
-    TrendingCategory,
+    // TrendingCategory,
     // TrendingBrand,
-    TrendingPromotion,
+    // TrendingPromotion,
     RecommendProducts,
     // TrendingSearchProducts,
     // TrendingSearch,
@@ -57,28 +57,25 @@ export default Vue.extend({
     isMobileAndHomePage(): boolean {
       return this.isMobile && this.$route.path == '/';
     },
+    categoryId(): string {
+      return this.$route.params['idCate'] || '';
+    },
   },
   created() {
     window.scrollTo({ top: 0, left: 0 });
-    this.loadTrendingCategoryItems();
+    // this.loadTrendingCategoryItems();
     this.loadPromotionItems();
   },
   async mounted() {},
-  watch: {
-    async categoryItems() {
-      if (this.categoryItems && this.categoryItems.length) {
-        this.loadTrendingCategoryItems();
-      }
-    },
-  },
+  watch: {},
   methods: {
     async loadPromotionItems() {
-      this.promotionItems = await ProductService.queryPromotionItems({
+      this.promotionItems = await ProductService.queryItemByTarget({
+        categoryId: this.categoryId,
         page: 1,
         limit: this.isMobile ? 8 : 21,
         discountRate: 2,
       });
-
       this.promotionItems = this.promotionItems.sort((itemA: ProductItem, itemB: ProductItem) => {
         const valueA = itemA.discountRate || 0;
         const valueB = itemB.discountRate || 0;
@@ -87,41 +84,41 @@ export default Vue.extend({
         else return -1;
       });
     },
-    async loadTrendingCategoryItems() {
-      this.trendingCategoryItems = [];
-      for (const i of this.categoryItems) {
-        try {
-          i.image = require('@/assets/image/category/' + i.name.toLowerCase() + '.jpeg');
-        } catch (err) {
-          // console.log('not jpeg');
-          try {
-            i.image = require('@/assets/image/category/' + i.name.toLowerCase() + '.png');
-          } catch (err) {
-            // console.log('err');
-          }
-        }
-        this.trendingCategoryItems.push(JSON.parse(JSON.stringify(i)));
-      }
-      // const catalog = [
-      //   'Máy giặt',
-      //   'Balo',
-      //   'Sách nghệ thuật',
-      //   'Kem chống nắng',
-      //   'Tủ',
-      //   'Sách tư duy',
-      //   'Bàn ghế làm việc',
-      // ].slice(0, 12);
-      // for (const i of catalog) {
-      //   this.trendingCategoryItems.push({
-      //     PK: 'CATEGORY',
-      //     SK: 'PHONE',
-      //     name: 'phone',
-      //     translateName: 'Phone',
-      //     image: require('@/assets/image/category/phone.jpeg'),
-      //     href: '/category/phone',
-      //   });
-      // }
-    },
+    // async loadTrendingCategoryItems() {
+    //   this.trendingCategoryItems = [];
+    //   for (const i of this.categoryItems) {
+    //     try {
+    //       i.image = require('@/assets/image/category/' + i.name.toLowerCase() + '.jpeg');
+    //     } catch (err) {
+    //       // console.log('not jpeg');
+    //       try {
+    //         i.image = require('@/assets/image/category/' + i.name.toLowerCase() + '.png');
+    //       } catch (err) {
+    //         // console.log('err');
+    //       }
+    //     }
+    //     this.trendingCategoryItems.push(JSON.parse(JSON.stringify(i)));
+    //   }
+    //   // const catalog = [
+    //   //   'Máy giặt',
+    //   //   'Balo',
+    //   //   'Sách nghệ thuật',
+    //   //   'Kem chống nắng',
+    //   //   'Tủ',
+    //   //   'Sách tư duy',
+    //   //   'Bàn ghế làm việc',
+    //   // ].slice(0, 12);
+    //   // for (const i of catalog) {
+    //   //   this.trendingCategoryItems.push({
+    //   //     PK: 'CATEGORY',
+    //   //     SK: 'PHONE',
+    //   //     name: 'phone',
+    //   //     translateName: 'Phone',
+    //   //     image: require('@/assets/image/category/phone.jpeg'),
+    //   //     href: '/category/phone',
+    //   //   });
+    //   // }
+    // },
   },
 });
 </script>

@@ -8,9 +8,14 @@
         </v-col>
         <v-col cols="6" md="3" sm="2" class="pa-2" v-if="listCategoryName && listCategoryName.length != 0">
           <v-card-title class="font-size-18 primary-color-1 font-weight-4 pa-0 mb-4">{{ $t('catalog') }}</v-card-title>
-          <router-link class="custom-link" :to="category.href" v-for="category in listCategoryName" :key="category.id">
+          <router-link
+            class="custom-link"
+            :to="`category/${category.id}`"
+            v-for="category in listCategoryName"
+            :key="category.id"
+          >
             <v-card-text class="custom-link black--text font-size-14 font-weight-2 my-1 pa-0"
-              >{{ categoryName(category.name) }}
+              >{{ category.name }}
             </v-card-text>
           </router-link>
         </v-col>

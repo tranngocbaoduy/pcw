@@ -92,31 +92,6 @@
       </div>
       <div class="mr-4">
         <v-select
-          v-model="selectedBrands"
-          hide-details
-          style="width: 150px"
-          :style="
-            selectedBrands && selectedBrands.length == 0
-              ? 'border: #6e6e6e 0.5px solid; box-shadow: none !important'
-              : 'border: #1859db 1px solid'
-          "
-          :items="brandItems"
-          label=""
-          solo
-          flat
-          :placeholder="$t('brand')"
-          multiple
-          item-text="name"
-          return-object
-          @change="handleChangeSelectedBrand"
-        >
-          <template v-slot:selection="{ index }">
-            <span v-if="index === 0" style="color: #1859db" class="text-caption"> {{ $t('brand') }} </span>
-          </template>
-        </v-select>
-      </div>
-      <div class="mr-4">
-        <v-select
           v-model="selectedPrices"
           hide-details
           style="width: 150px"
@@ -211,10 +186,9 @@ import { ProductSearchItem } from '@/api/product.service';
 import Vue from 'vue';
 
 export default Vue.extend({
-  props: ['agencyItems', 'brandItems', 'priceItems'],
+  props: ['agencyItems', 'priceItems'],
   data: () => ({
     selectedAgencies: [] as any[],
-    selectedBrands: [] as any[],
     selectedPrices: [] as any[],
 
     isLoading: false,
@@ -282,7 +256,7 @@ export default Vue.extend({
         : [];
     },
     isDisabledRefreshButton(): boolean {
-      return !(this.selectedPrices.length != 0 || this.selectedAgencies.length != 0 || this.selectedBrands.length != 0);
+      return !(this.selectedPrices.length != 0 || this.selectedAgencies.length != 0);
     },
   },
   created() {},
@@ -294,9 +268,6 @@ export default Vue.extend({
       } else {
         this.selectedPrices = [] as any[];
       }
-    },
-    brandItems() {
-      this.selectedBrands = this.brandItems.filter((i: any) => i.selected);
     },
     agencyItems() {
       this.selectedAgencies = this.agencyItems.filter((i: any) => i.selected);
@@ -343,9 +314,6 @@ export default Vue.extend({
       //   this.$router.replace({ path: this.$route.path, query: query || {} });
       //   this.$emit('refresh-filter');
       // }
-    },
-    handleChangeSelectedBrand() {
-      this.$emit('change-brand', this.selectedBrands);
     },
   },
   filters: {

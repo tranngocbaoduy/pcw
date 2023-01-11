@@ -4,7 +4,7 @@
       class="pa-1 rounded-0"
       v-for="(item, index) in listSearchItem"
       :class="item.isDisplayHover ? 'bg-primary-color-8' : ''"
-      :key="`${index}-search-item-qr-bar-${item.SK}`"
+      :key="`${index}-search-item-qr-bar-${item.id}`"
     >
       <v-hover v-slot="{ hover }">
         <v-list-item
@@ -116,14 +116,14 @@ export default Vue.extend({
         !this.isSearch
       ) {
         this.isSearch = true;
-        const listSearchItemSK = this.listSearchItem.map((i: ProductItem) => i.SK);
+        const listSearchItemSK = this.listSearchItem.map((i: ProductItem) => i.id);
         const listSearchItem = await ProductService.querySearchItemsByUrl({ searchUrl: text });
         const addItems = listSearchItem.filter((i: ProductItem) => {
-          return !listSearchItemSK.includes(i.SK);
+          return !listSearchItemSK.includes(i.id);
         });
         this.snackbar = true;
         if (addItems && addItems.length != 0) {
-          this.listHasAlreadySearch[text] = addItems.map((i) => i.SK);
+          this.listHasAlreadySearch[text] = addItems.map((i) => i.id);
           this.listSearchItem = this.listSearchItem.concat(addItems);
           this.text = `Tìm được ${addItems.length} sản phẩm`;
           console.log('addItems', addItems);
@@ -136,13 +136,13 @@ export default Vue.extend({
         if (Object.keys(this.listHasAlreadySearch).includes(text)) {
           //
           const listSK = this.listHasAlreadySearch[text];
-          const listItemFound = this.listSearchItem.filter((i: ProductItem) => listSK.includes(i.SK));
+          const listItemFound = this.listSearchItem.filter((i: ProductItem) => listSK.includes(i.id));
           for (const item of listItemFound) {
-            item.isDisplayHover = true;
+            // item.isDisplayHover = true;
           }
           const timeout = setTimeout(() => {
             for (const item of listItemFound) {
-              item.isDisplayHover = false;
+              // item.isDisplayHover = false;
             }
             clearTimeout(timeout);
           }, 2000);
