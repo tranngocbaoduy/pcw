@@ -22,8 +22,10 @@ class ProductSerializer(serializers.ModelSerializer):
             "base_url",
             "encoded_base_url", 
             "category",
+            "discount_rate",
             "group_product",  
             "price",
+            "list_image",
             "list_price",
             "updated_at",
         ]

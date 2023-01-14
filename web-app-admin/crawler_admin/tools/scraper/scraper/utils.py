@@ -190,6 +190,7 @@ class CrawlingHelper(object):
 
     @staticmethod
     def get_currency_from_text(text):
+        text = re.sub(r"[{}\\*/.]", "", text)
         price = Price.fromstring("".join(text).strip())
         if price.amount_float and price.amount_float > float(999):
             return price.amount_float

@@ -1,7 +1,6 @@
 from gettext import ngettext
 from modules.crawler.css_mixin import CSSAdminMixin
-from modules.crawler.apps import scheduler
-from mptt.admin import DraggableMPTTAdmin
+from modules.crawler.apps import scheduler 
 from django.contrib import admin, messages
 from import_export.admin import ImportExportModelAdmin
 from modules.crawler.tabular_in_lines import (

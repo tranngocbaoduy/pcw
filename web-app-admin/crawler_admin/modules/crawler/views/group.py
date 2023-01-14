@@ -15,21 +15,18 @@ from modules.crawler.views.types import EN_2_VN_CATEGORY
 
 class GroupProductView(APIView):
     def get(self, request, pk=None, category=None):
-
+    
         limit = request.query_params.get('limit', 20) 
         page = request.query_params.get('page', 1) 
-        quantity = int(limit) * int(page)
+        quantity = int(limit) * int(page) 
+        from_quantity = int(limit) * (int(page) -1) 
         only_detail = request.query_params.get('only_detail', False) 
- 
-        if category == '' or category not in EN_2_VN_CATEGORY.keys(): 
-            return Response({"products": []})
-        category = EN_2_VN_CATEGORY[category]
-
+  
         if pk:
             group = get_object_or_404(GroupProduct.objects.all(), pk=pk)
             serializer = GroupProductSerializerDetail(group)
            
-            if only_detail != 'True':
+            if only_detail:
                 products = Product.objects.filter(group_product=group.id).order_by('name')
                 product_serializer = ProductSerializer(products, many=True)
                 return Response({"group": serializer.data, "list_product":product_serializer.data})
@@ -37,7 +34,7 @@ class GroupProductView(APIView):
 
 
         groups = GroupProduct.objects.all()
-        serializer = GroupProductSerializer(groups[:quantity], many=True)
+        serializer = GroupProductSerializer(groups[from_quantity:quantity], many=True)
         return Response({"groups": serializer.data})
 
     # def post(self, request):

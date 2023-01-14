@@ -31,12 +31,15 @@ SECRET_KEY = os.getenv("APP_SECRET_KEY")
 DEBUG = os.getenv("APP_DEBUG")
 
 
-ALLOWED_HOSTS = ["*"]
-
+ALLOWED_HOSTS=['*']
+# ALLOWED_HOSTS = ['localhost','http://127.0.0.1:8000', 'http://localhost:8080']
 
 # Application definition
-
 INSTALLED_APPS = [
+
+    'corsheaders',
+    # add rest_framework support to the project
+    'rest_framework',
     "modules.simpleui.apps.SimpleApp",
     "django.contrib.admin",
     "django.contrib.auth",
@@ -44,23 +47,30 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "corsheaders",
-    "rest_framework",
-    "mptt",
+    
+    # "mptt",
     "import_export",
     "django_filters",
     "modules.crawler.apps.ScrapersConfig",
 ]
 
-MIDDLEWARE = [
-    "django.middleware.security.SecurityMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+MIDDLEWARE = [ 
+    # Default
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware', 
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+      # CORS
+    # "corsheaders.middleware.CorsMiddleware",
+    # "django.middleware.common.CommonMiddleware", 
+    # "corsheaders.middleware.CorsPostCsrfMiddleware",
+
+    "modules.crawler.middleware.cors_middleware.CorsMiddlewareCustom",
 ]
+ 
+
 
 ROOT_URLCONF = "crawler_admin.urls"
 TEMPLATES = [
@@ -167,10 +177,44 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# CORS_ALLOW_ALL_ORIGINS = True  
+CORS_ORIGIN_ALLOW_ALL = False
+CORS_ORIGIN_WHITELIST = ['http://localhost:8080',]
+CORS_ALLOWED_ORIGINS = ['http://localhost:8080',]
+# CORS_ALLOWED_ORIGIN = ["127.0.0.1", 'localhost','localhost:8080', 'http://localhost:8080/', 'http://127.0.0.1', 'http://localhost']
+# CORS_ALLOWED_ORIGIN = ['localhost:8080', 'http://localhost:8080/', 'http://127.0.0.1', 'http://localhost']
 REST_FRAMEWORK = {
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": 20,
 }
+# CORS_ALLOWED_ORIGINS = [
+#     "https://example.com",
+#     "https://sub.example.com",
+#     "http://localhost:8080",
+#     "http://127.0.0.1:9000",
+# ]
+# CORS_ALLOW_METHODS = [
+#     "DELETE",
+#     "GET",
+#     "OPTIONS",
+#     "PATCH",
+#     "POST",
+#     "PUT",
+# ]
 
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOW_HEADERS = [
+#     "accept",
+#     "accept-encoding",
+#     "authorization",
+#     "content-type",
+#     "dnt",
+#     "origin",
+#     "user-agent",
+#     "x-csrftoken",
+#     "x-requested-with",
+# ]
+
+# CSRF_TRUSTED_ORIGINS = [
+#     "http://localhost:8080",
+# ]

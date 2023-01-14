@@ -101,17 +101,18 @@ class HtmlHeadlessDetail(scrapy.Spider):
         item['meta'] = sel.xpath('/html/head/meta').getall() 
         item['category'] = self.category_name 
 
+        self.save_html(response, item['title'])
         info_from_parser = dict()
         for parser in self.parsers:
 
             # Get value from tag html
-            if parser.name == "image" or parser.name == "img":
+            if parser.name in ['list_image', 'images', 'img']:
                 # handle for image
                 img_tags = self._parse_attribute(
                     response, parser.selector_type, parser.selector
-                )
+                ) 
                 list_url_images = self.handle_get_list_image(response, img_tags)
-                info_from_parser["image"] = list_url_images
+                info_from_parser["list_image"] = list_url_images if list_url_images else []
             else:
                 tags = self._parse_attribute(
                     response, parser.selector_type, parser.selector
@@ -161,12 +162,12 @@ class HtmlHeadlessDetail(scrapy.Spider):
             return html
 
     def handle_get_list_image(self, dom, selector_items):
-        image_urls = []
+        image_urls = [] 
         for selector in selector_items:
             try:
                 image_element_items = selector.css("img").xpath("@src").getall()
                 for img_element in image_element_items:
-                    if "https://" in img_element:
+                    if "https://" in img_element: 
                         image_urls.append(img_element)
             except:
                 print("not image")

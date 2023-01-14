@@ -10,6 +10,7 @@ import requests
 import json
 import logging
 
+from decimal import *
 from bs4 import BeautifulSoup
 from validators.url import url
 from modules.crawler.models.sitemap import PageInfo, Sitemap 
@@ -49,6 +50,12 @@ class ScraperPipeline:
             elif 'name' in meta_attrs.keys() and meta_attrs.get('name') in attrs:
                 list_meta['name'] = meta_attrs.get('content')
 
+        discount_rate = 0 
+        p1 = Decimal(item.get('price', 0))
+        p2 = Decimal(item.get('list_price', 1))
+        if p1 and p1 > 0 and p2 and p2  > 0:
+            discount_rate = 100 - int(Decimal(p1) / Decimal(p2) * 100)
+
         params = { 
             "name": item.get('name').strip(),
             "title": '__'.join(item.get('title')),
@@ -58,9 +65,11 @@ class ScraperPipeline:
             "description": "",
             "price": item.get('price'), 
             "list_price": item.get('list_price'),
-            "list_image": item.get('list_image'),
+            "list_image": json.dumps(item.get('list_image')),
             "category": item.get('category'),
+            "discount_rate": discount_rate
         } 
+
         return params
 
     def create_or_update_item(self, params):

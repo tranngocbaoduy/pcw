@@ -3,7 +3,7 @@ from django.db.models import JSONField
 from django.db import models
 from django.contrib import admin, messages
 from django.utils.translation import gettext_lazy as _
-from modules.crawler.models.utils import id_generator, id_gen, ExtractInfoIphone
+from modules.crawler.models.utils import id_generator, id_gen, ExtractInfoIphone, ExtractInfoMacbook
 from modules.crawler.models.parser import WareParser
 
 from tools.scraper.scraper.spiders.html_headless import HtmlHeadless
@@ -47,7 +47,8 @@ class Sitemap(models.Model):
         ordering = ['name']
 
     def scan_data(self, request, query):
-        if self.is_crawl_detail_running:
+        if self.is_crawl_detail_running: 
+            self.save()
             messages.add_message(
                 request,
                 messages.WARNING,
@@ -58,14 +59,27 @@ class Sitemap(models.Model):
             crawl_settings = Settings()
             crawl_settings.setmodule("tools.scraper.scraper.settings")
 
-            page_info_items = PageInfo.objects.filter(sitemap=self.id)#is_subscribe=True
-            page_info_items = list(filter(lambda x: ExtractInfoIphone.is_candidate_url(x.url, x.title), page_info_items))
+            if self.category_name == 'Điện thoại':
+                page_info_items = PageInfo.objects.filter(sitemap=self.id)#is_subscribe=True
+                page_info_items = list(filter(lambda x: ExtractInfoIphone.is_candidate_url(x.url, x.title), page_info_items))
+            elif self.category_name == 'Macbook':
+                page_info_items = PageInfo.objects.filter(sitemap=self.id)#is_subscribe=True
+                page_info_items = list(filter(lambda x: ExtractInfoMacbook.is_candidate_url(x.url, x.title), page_info_items))
+            else:
+                page_info_items = []
 
-            self.is_crawl_detail_running = True
-            self.save()
-            
-            runner = CrawlerRunner(crawl_settings)
-            runner.crawl(HtmlHeadlessDetail, sitemap=self, page_info_items=page_info_items) 
+            if page_info_items and len(page_info_items) != 0:
+                self.is_crawl_detail_running = True
+                self.save()
+                
+                runner = CrawlerRunner(crawl_settings)
+                runner.crawl(HtmlHeadlessDetail, sitemap=self, page_info_items=page_info_items)
+            else:
+                messages.add_message(
+                    request,
+                    messages.WARNING,
+                    "No data to scan",
+                ) 
 
     def unsubscribe_all(self, request, query):
         page_info_items = PageInfo.objects.filter(sitemap=self.id)#is_subscribe=True

@@ -27,6 +27,24 @@ class FilterByDomain(admin.SimpleListFilter):
         if self.value():
             return queryset.filter(base_url__contains=self.value())
 
+class FilterByCategory(admin.SimpleListFilter):
+    title = _("Category filter")
+    parameter_name = "category"
+
+    def lookups(self, request, model_admin):  
+        return list(
+            set(
+                [
+                    # (id for filter, value for display)
+                    (c.category.id, c.category.name) for c in model_admin.model.objects.all() if c.category 
+                ]
+            )
+        ) 
+ 
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(category__id=self.value())
+
 class FilterByGroup(admin.SimpleListFilter):
     title = _("Group filter")
     parameter_name = "group_product"
@@ -40,10 +58,6 @@ class FilterByGroup(admin.SimpleListFilter):
                 ]
             )
         ) 
-
-    def queryset(self, request, queryset): 
-        if self.value():
-            return queryset.filter(base_url__contains=self.value())
 
     def queryset(self, request, queryset):
         if self.value():
