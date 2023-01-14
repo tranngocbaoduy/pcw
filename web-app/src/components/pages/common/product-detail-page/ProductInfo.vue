@@ -6,12 +6,12 @@
         style="border-radius: 2px !important"
         class="rounded-0 font-size-16 pa-1 mb-2 mr-3 font-weight-2 text-right elevation-0"
       >
-        {{ domain }}
+        {{ item.representDomainName }}
       </span>
       <span class="primary-color-2 font-size-22">{{ item.brand || '' }} </span> -
-      <span class="font-size-20">{{ item.cleanName | reduceText(500) }}</span>
+      <span class="font-size-20">{{ item.name | reduceText(500) }}</span>
     </v-card-title>
-    <v-card-text class="font-size-14 font-weight-2 pl-0 pb-4">
+    <!-- <v-card-text class="font-size-14 font-weight-2 pl-0 pb-4">
       <div class="d-flex justify-start align-center">
         <RatingItem class="hover-custom-link py-2 pr-4" :itemRating="item.itemRating" :isDisplay="true" />
         <v-divider vertical style="width: 10px" class="my-2" />
@@ -32,7 +32,7 @@
           <span class="font-weight-3 primary-color-2">{{ item.likedCount || 0 }}</span>
         </div>
       </div>
-    </v-card-text>
+    </v-card-text> -->
 
     <div class="my-0 pl-0 pb-4">
       <v-row align="center" no-gutters>
@@ -67,7 +67,7 @@
     </div>
     <v-card-actions class="pa-0">
       <v-btn
-        @click="goToPlatform()"
+        @click="goToPlatform(item)"
         class="white--text rounded-lg my-2 text-capitalize"
         color="#1859db"
         height="42px"
@@ -129,7 +129,7 @@ import { ProductItem } from '@/api/product.service';
 
 export default Vue.extend({
   props: ['item', 'averagePrice', 'subProductItems', 'largestSaleOffItem', 'domain', 'cheapestItem'],
-  components: { RatingItem },
+  // components: { RatingItem },
   data: () => ({
     isShowDetail: false,
     propertyItems: [
@@ -172,11 +172,11 @@ export default Vue.extend({
   },
   methods: {
     goToPlatform(item: ProductItem) {
-      window.open(this.getURLAccessTrade(item), '_blank');
+      window.open(item.baseUrl, '_blank');
     },
-    getURLAccessTrade(item?: any): string {
-      return `${process.env.VUE_APP_BASE_ACCESS_TRADE_URL}?url=${item && item.url ? item.url : this.item.url}`;
-    },
+    // getURLAccessTrade(item?: any): string {
+    //   return `${process.env.VUE_APP_BASE_ACCESS_TRADE_URL}?url=${item && item.url ? item.url : this.item.url}`;
+    // },
   },
 });
 </script>

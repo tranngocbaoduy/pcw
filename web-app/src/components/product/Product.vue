@@ -9,7 +9,7 @@
         <span
           :class="[isMobile ? `domain-mobile ${item.domain}` : `domain ${item.domain}`, hover ? 'top-1px' : '']"
           class="font-size-14 px-4"
-          >{{ item.domain }}</span
+          >{{ item.representDomainName }}</span
         >
         <v-img
           :class="hover ? 'mt-0' : 'mt-2'"
@@ -60,17 +60,21 @@
         <v-col cols="7" class="line-height-22 ma-0 pa-0 font-size-14 font-weight-3 text-left primary-color-1">
           {{ item.price | formatPrice }}đ
         </v-col>
-        <v-col cols="5" class="ma-0 pa-0 text-right" v-if="item.itemRating">
-          <RatingItem :itemRating="item.itemRating" size="12" />
-          <!-- <v-rating
+        <v-col cols="5" class="ma-0 pa-0 text-right">
+          <!-- <RatingItem :itemRating="item.itemRating" size="12" /> -->
+          <!-- 
+          <v-rating
             class="product-rate line-height-18 pa-0"
-            :value="getRatingAverage"
+            :value="5"
             color="#FFA200"
             dense
             half-increments
             readonly
             size="13"
           ></v-rating> -->
+          <div class="font-size-10 font-weight-1 pr-0 pa-0 ma-0 text-right line-height-20">
+            {{ item.updatedAt | calTimeSince }}
+          </div>
         </v-col>
       </v-row>
 
@@ -82,12 +86,13 @@
 
 <script lang="ts">
 import CategoryService from '@/api/category.service';
-import RatingItem from '@/components/common/rating/RatingItem.vue';
+import moment from 'moment';
+// import RatingItem from '@/components/common/rating/RatingItem.vue';
 import Vue from 'vue';
 
 export default Vue.extend({
   props: ['item'],
-  components: { RatingItem },
+  // components: { RatingItem },
   data: () => ({
     loading: false,
     selection: 1,
@@ -115,6 +120,33 @@ export default Vue.extend({
     },
     formatPrice(value: string) {
       return value ? value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '';
+    },
+    calTimeSince(fromDateString: string) {
+      const fromDate: Date = new Date(fromDateString);
+      const nowDate: Date = new Date();
+      const seconds = Math.floor((nowDate.getTime() - fromDate.getTime()) / 1000);
+      let interval = seconds / 31536000;
+
+      if (interval > 1) {
+        return Math.floor(interval) + 'y ago';
+      }
+      interval = seconds / 2592000;
+      if (interval > 1) {
+        return Math.floor(interval) + 'M ago';
+      }
+      interval = seconds / 86400;
+      if (interval > 1) {
+        return Math.floor(interval) + 'd ago';
+      }
+      interval = seconds / 3600;
+      if (interval > 1) {
+        return Math.floor(interval) + 'h ago';
+      }
+      interval = seconds / 60;
+      if (interval < 1) {
+        return 'Just now';
+      }
+      return Math.floor(interval) + 'm ago';
     },
   },
 

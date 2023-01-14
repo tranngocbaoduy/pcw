@@ -10,7 +10,6 @@ export interface CategoryItem {
 export default class CategoryService {
   static async queryAllCategory(): Promise<CategoryItem[]> {
     const url = process.env.VUE_APP_API_BASE_URL + `categories`;
-    console.log(url);
     const data = await axios
       .get(url)
       .then((response) => response.data.categories)

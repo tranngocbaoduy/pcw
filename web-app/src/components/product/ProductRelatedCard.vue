@@ -36,9 +36,12 @@
 
         <div style="flex: 1">
           <div class="font-size-14 font-weight-2">{{ item.name }}</div>
+          <div class="font-size-10 font-weight-1 pr-0 pa-0 ma-0 text-right line-height-20">
+            {{ item.updatedAt | calTimeSince }}
+          </div>
           <div class="d-flex justify-space-between align-center px-0 mx-0">
             <!-- <RatingItem class="hover-custom-link" :itemRating="item.itemRating" /> -->
-            <div class="font-size-12 font-weight-2 primary-color-4">
+            <!-- <div class="font-size-12 font-weight-2 primary-color-4">
               <v-icon
                 @click="goToStore()"
                 v-if="item.shopItem.store_level && item.shopItem.store_level == 'TRUSTED_STORE'"
@@ -52,10 +55,10 @@
               <span @click="goToStore()" class="store" style="text-decoration: underline">{{
                 item.shopItem.shop_name
               }}</span>
-            </div>
-            <div class="font-size-14 font-weight-2 pt-1 pl-2" v-if="item.shopLocation !== item.shopItem.shop_name">
+            </div> -->
+            <!-- <div class="font-size-14 font-weight-2 pt-1 pl-2" v-if="item.shopLocation !== item.shopItem.shop_name">
               <v-icon small class="px-2 pr-1 pb-1">mdi-map-marker</v-icon>{{ item.shopLocation }}
-            </div>
+            </div> -->
           </div>
         </div>
       </div>
@@ -82,15 +85,17 @@
       </div> -->
 
       <div style="flex: 1" class="text-right" :style="isMobile ? 'min-width: 95px' : 'min-width: 120px'">
-        <div
-          class="ma-0 pa-0 font-size-16 font-weight-3 text-right primary-color-1"
-          :class="item.listPrice != item.price ? 'pt-4 mb-n2' : ''"
+        <span
+          :class="item.listPrice != item.price ? 'mt-4 mb-n2' : ''"
+          class="px-2 py-0 discount-rate font-size-12 font-weight-2 text-right"
+          v-if="item.listPrice != item.price"
         >
-          {{ item.price | formatPrice }}đ
-        </div>
-        <span class="px-2 py-0 discount-rate font-size-12 font-weight-2 text-right" v-if="item.listPrice != item.price">
           {{ item.discountRate }}%
         </span>
+        <div class="ma-0 pa-0 font-size-16 font-weight-3 text-right primary-color-1">
+          {{ item.price | formatPrice }}đ
+        </div>
+        <div class="font-size-12 font-weight-1 old-price line-height-22">{{ item.listPrice | formatPrice }}đ</div>
       </div>
 
       <!-- <div
@@ -119,7 +124,7 @@
         <span
           :class="[isMobile ? `domain-mobile ${item.domain.toLowerCase()}` : `domain ${item.domain.toLowerCase()}`]"
           class="font-size-14 px-4"
-          >{{ item.agencyDisplay }}</span
+          >{{ item.representDomainName }}</span
         >
       </div>
     </v-card>
@@ -141,6 +146,33 @@ export default Vue.extend({
   },
 
   filters: {
+    calTimeSince(fromDateString: string) {
+      const fromDate: Date = new Date(fromDateString);
+      const nowDate: Date = new Date();
+      const seconds = Math.floor((nowDate.getTime() - fromDate.getTime()) / 1000);
+      let interval = seconds / 31536000;
+
+      if (interval > 1) {
+        return Math.floor(interval) + 'y ago';
+      }
+      interval = seconds / 2592000;
+      if (interval > 1) {
+        return Math.floor(interval) + 'M ago';
+      }
+      interval = seconds / 86400;
+      if (interval > 1) {
+        return Math.floor(interval) + 'd ago';
+      }
+      interval = seconds / 3600;
+      if (interval > 1) {
+        return Math.floor(interval) + 'h ago';
+      }
+      interval = seconds / 60;
+      if (interval < 1) {
+        return 'Just now';
+      }
+      return Math.floor(interval) + 'm ago';
+    },
     reduceText: function (text: string, max: number) {
       return CategoryService.upperCaseFirstLetter(text && text.length > max ? text.slice(0, max - 2) + '...' : text);
     },
@@ -174,11 +206,11 @@ export default Vue.extend({
       setTimeout(() => (this.loading = false), 2000);
     },
     goToPlatform() {
-      window.open(this.getURLAccessTrade(), '_blank');
+      window.open(this.item.baseUrl, '_blank');
     },
-    getURLAccessTrade(): string {
-      return `${process.env.VUE_APP_BASE_ACCESS_TRADE_URL}?url=${this.item.url}`;
-    },
+    // getURLAccessTrade(): string {
+    //   return `${process.env.VUE_APP_BASE_ACCESS_TRADE_URL}?url=${this.item.url}`;
+    // },
     goToStore(): void {
       if (this.item.shopUrl) window.open(this.item.shopUrl, '_blank');
     },

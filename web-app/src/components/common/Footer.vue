@@ -67,9 +67,9 @@ export default Vue.extend({
     },
   },
   methods: {
-    categoryName(categoryId: string): string {
-      return categoryId ? this.$t(`category.${categoryId}`).toString() : '';
-    },
+    // categoryName(categoryId: string): string {
+    //   return categoryId ? this.$t(`category.${categoryId}`).toString() : '';
+    // },
   },
 });
 </script>

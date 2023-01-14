@@ -11,7 +11,6 @@ export interface ProductSearchItem {
 export interface ProductItem {
   id: string;
   name: string;
-  title: string;
   baseUrl: string;
   encodedBaseUrl: string;
   categoryId: string;
@@ -22,6 +21,7 @@ export interface ProductItem {
   discountRate: number;
   listImage: string[];
   slugId: string;
+  representDomainName: string;
   // PK: string;
   // SK: string;
   // id: string;
@@ -55,25 +55,24 @@ export interface ProductItem {
   // isDisplayHover?: boolean;
 }
 
-export interface QueryProductItems {
-  PK: string;
-  SK: string;
-  PRODUCTS: any[];
+export interface IInfoGroup {
+  id: string;
+  name: string;
+  description: string;
+  listImage: string[];
+  meta: {};
 }
 
 export default class ProductService {
-  static async queryItemById({ id, isHasChild = false }: { id: string; isHasChild?: boolean }) {
-    const url =
-      process.env.VUE_APP_API_BASE_URL +
-      `/${process.env.VUE_APP_ENV}/product?action=queryItemById&id=${id}&isHasChild=${isHasChild}`;
+  static async queryItemById({ groupProductId }: { groupProductId: string }) {
+    const url = process.env.VUE_APP_API_BASE_URL + `groups/${groupProductId}?only_detail=True`;
     try {
-      const data = await AuthService.api
-        .get(url)
-        .then((response) => response.data)
-        .then((res) => ({
-          mainItem: ProductService.parseProductItem(res.data.mainItem),
-          childItems: ProductService.parseListProductItem(res.data.childItems),
-        }));
+      const data = await AuthService.api.get(url).then((res) => {
+        return {
+          infoGroup: ProductService.parseInfoGroupItem(res.data.group),
+          items: ProductService.parseListProductItem(res.data.list_product),
+        };
+      });
       return data;
     } catch (err) {
       return null;
@@ -102,20 +101,43 @@ export default class ProductService {
     try {
       const data = await AuthService.api
         .post(url, params)
-        .then((response) => ProductService.parseListProductItem(response.data.data));
+        .then((response) => ProductService.parseListProductItem(response.data.products));
       return data;
     } catch (err) {
       return [];
     }
   }
 
-  static async querySearchItems({ searchString }: { searchString: string }): Promise<ProductItem[]> {
-    console.log('searchString', searchString);
-    const url = process.env.VUE_APP_API_BASE_URL + `products?&searchString=${searchString}`;
+  static async querySearchItems({
+    querySearch,
+    limit = 20,
+    page = 1,
+    agencyItems,
+    maxPrice,
+    minPrice,
+    discountRate,
+  }: {
+    limit?: number;
+    page?: number;
+    querySearch: string;
+    agencyItems?: string;
+    maxPrice?: int;
+    minPrice?: int;
+    discountRate?: int;
+  }): Promise<ProductItem[]> {
+    const url =
+      process.env.VUE_APP_API_BASE_URL +
+      `products/search?&q=${querySearch}` +
+      `${page ? `&page=${page}` : ''}` +
+      `${limit ? `&limit=${limit}` : ''}` +
+      `${agencyItems ? `&agency=${agencyItems}` : ''}` +
+      `${minPrice ? `&min=${minPrice}` : ''}` +
+      `${maxPrice ? `&max=${maxPrice}` : ''}` +
+      `${discountRate && discountRate != 0 ? `&discount=${discountRate}` : ''}`;
     try {
       const data = await AuthService.api
         .get(url)
-        .then((response) => ProductService.parseListProductItem(response.data.data));
+        .then((response) => ProductService.parseListProductItem(response.data.products));
       return data;
     } catch (err) {
       return [];
@@ -124,44 +146,35 @@ export default class ProductService {
 
   static async queryItemByTarget({
     categoryId,
+    querySearch,
     limit = 20,
     page = 1,
     agencyItems,
-    maxPrice = 10000000,
-    minPrice = 1,
+    maxPrice,
+    minPrice,
     discountRate,
-    isRep = false,
   }: {
     categoryId: string;
     limit: int;
     page: int;
-    agencyItems?: string[];
+    querySearch?: string;
+    agencyItems?: string;
     maxPrice?: int;
     minPrice?: int;
     discountRate?: int;
-    isRep?: boolean;
   }): Promise<ProductItem[]> {
     if (!categoryId) return [];
-    const params = {
-      limit: limit,
-      page: page,
-      agencyItems: agencyItems,
-      maxPrice: maxPrice,
-      minPrice: minPrice,
-      discountRate: discountRate,
-      isRep: isRep,
-    };
-    console.log('params', params, categoryId);
     const url =
       process.env.VUE_APP_API_BASE_URL +
       `products/${categoryId}?` +
       `page=${page}` +
       `${limit ? `&limit=${limit}` : ''}` +
+      `${querySearch ? `&query=${querySearch}` : ''}` +
       `${agencyItems ? `&agency=${agencyItems}` : ''}` +
       `${minPrice ? `&min=${minPrice}` : ''}` +
       `${maxPrice ? `&max=${maxPrice}` : ''}` +
-      `${discountRate ? `&discount=${discountRate}` : ''}`;
-    console.log('URL', url);
+      `${discountRate && discountRate != 0 ? `&discount=${discountRate}` : ''}`;
+
     const data = await AuthService.api
       .get(url)
       .then((response: any) => response.data.products)
@@ -197,48 +210,15 @@ export default class ProductService {
     shopee: 'Shopee',
     mall: 'Mall',
     lazmall: 'LazMall',
+    bachlongmobile: 'Bạch Long Mobile',
+    topzone: 'TopZone',
+    cellphones: 'Cellphones',
+    didongviet: 'DiDongViet',
+    shopdunk: 'Shopdunk',
+    viettelstore: 'Viettel Store',
+    nguyenkim: 'Nguyễn Kim',
+    k24hstore: '24h Store',
   } as any;
-
-  static properText(text: string) {
-    return text
-      .split(' ')
-      .map((t: string) => t.charAt(0).toUpperCase() + t.slice(1, t.length).toLowerCase())
-      .join('');
-  }
-  static getshopUrl(agency: string, shopItem: any): string {
-    if (shopItem && shopItem.shop_name && shopItem.shop_id) {
-      if (agency == 'mall' || agency == 'shopee') {
-        return 'https://shopee.vn/shop/' + shopItem.shop_id;
-      } else if (agency == 'tiki') {
-        return 'https://tiki.vn/cua-hang/' + shopItem.shop_url;
-      }
-    }
-    return '';
-  }
-
-  static removeTextInSplash(text: string) {
-    if (text.includes('(') && text.includes(')')) {
-      const startIndex = text.indexOf('(');
-      const endIndex = text.indexOf(')');
-      if (endIndex > startIndex) text = text.split(text.slice(startIndex, endIndex + 1)).join('');
-    }
-    return text;
-  }
-  static removeTextInSquare(text: string) {
-    if (text.includes('[') && text.includes(']')) {
-      const startIndex = text.indexOf('[');
-      const endIndex = text.indexOf(']');
-      if (endIndex > startIndex) text = text.split(text.slice(startIndex, endIndex + 1)).join('');
-    }
-    return text;
-  }
-  static handleRemoveSub(text: string) {
-    text = this.removeTextInSplash(text);
-    text = this.removeTextInSplash(text);
-    text = this.removeTextInSquare(text);
-    text = this.removeTextInSquare(text);
-    return text.trim();
-  }
 
   static parseListImage(list_image: string) {
     try {
@@ -248,22 +228,51 @@ export default class ProductService {
     }
   }
 
+  static removeAccents(text: string) {
+    return text
+      ? text
+          .normalize('NFD')
+          .replace(/[\-|()/]/g, '')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLocaleLowerCase()
+      : '';
+  }
+
+  static getSlugIdFromItem(item: any) {
+    let slugId = `${ProductService.removeAccents(item.name).split(' ').join('-')}-${item.id}-${item.group_product}`;
+    slugId = slugId.split('--').join('-');
+    return slugId;
+  }
+
   static getDomainFromURL(url: string) {
     try {
       const urlObj = new URL(url);
       if (urlObj.hostname.includes('www')) return urlObj.hostname.split('.')[1];
-      return urlObj.hostname.split('.')[0];
+      const domain = urlObj.hostname.split('.')[0];
+      return ['24hstore'].includes(domain) ? `k${domain}` : domain;
     } catch {
       // console.log('url', url);
       return '';
     }
   }
 
+  static parseInfoGroupItem(item: any): IInfoGroup {
+    return {
+      id: item.id,
+      name: item.name,
+      description: item.description,
+      listImage: item.list_image,
+      meta: item.meta,
+    } as IInfoGroup;
+  }
+
   static parseProductItem(item: any): ProductItem {
+    const domain = ProductService.getDomainFromURL(item.base_url);
+
     return {
       id: item.id, // '3hekq4s138bb',
-      name: item.name, // 'iPhone 11 128GB Chính hãng - Đã kích hoạt bảo hành VN/A',
-      title: item.title, // 'iPhone 11 128GB đã kích hoạt - Giá rẻ nhất,đổi trả 30 ngày,bảo hành 12 tháng',
+      name: item.title, // 'iPhone 11 128GB Chính hãng - Đã kích hoạt bảo hành VN/A',
+      // title: item.title, // 'iPhone 11 128GB đã kích hoạt - Giá rẻ nhất,đổi trả 30 ngày,bảo hành 12 tháng',
       baseUrl: item.base_url, // 'https://cellphones.com.vn/iphone-11-128gb-da-kich-hoat.html',
       encodedBaseUrl: item.encoded_base_url, // 'aHR0cHM6Ly9jZWxscGhvbmVzLmNvbS52bi9pcGhvbmUtMTEtMTI4Z2ItZGEta2ljaC1ob2F0Lmh0bWw',
       categoryId: item.category, // '3111010055',
@@ -271,49 +280,14 @@ export default class ProductService {
       price: item.price, // '11190000.0',
       listPrice: item.list_price, // '16990000.0',
       updatedAt: item.updated_at, // '2023-01-08T15:04:37.862989Z',
-      discountRate: Math.round(100 - (parseInt(item.price) / parseInt(item.list_price)) * 100),
+      discountRate: item.discount_rate,
       listImage: ProductService.parseListImage(item.list_image),
-      domain: ProductService.getDomainFromURL(item.base_url),
-      slugId: item.slug_id ? item.slug_id : '',
-      // PK: item.PK,
-      // SK: item.SK,
-      // brand: item.brand ? item.brand.toUpperCase() : item.brand,
-      // id: item.SK.split('#')[item.SK.split('#').length - 1],
-      // listChildId: item.child ? item.child : [],
-      // content: item.content,
-      // createdDate: item.created_date,
-      // domain: ProductService.nameDomainShop[item.agency],
-      // listImage: item.image,
-      // agency: item.agency,
-      // agencyDisplay: ProductService.handleAgency(item.agency),
-      // name: item.name,
-      // cleanName: this.handleRemoveSub(item.name),
-      // price: item.price > 200000000000 ? parseInt(item.price) / 100000 : parseInt(item.price),
-      // listPrice: item.list_price > 200000000000 ? parseInt(item.list_price) / 100000 : parseInt(item.list_price),
-      // discountRate: Math.round(100 - (parseInt(item.price) / parseInt(item.list_price)) * 100),
-      // isAPI: item.is_api,
-      // shopItem: item.shop_item ? item.shop_item : {},
-      // shopUrl: item.shop_item ? ProductService.getshopUrl(item.agency, item.shop_item) : '',
-      // url: ProductService.handleProcessUrlAccessTrade(item.url),
-      // shopLocation: item.shop_location,
-      // stock: item.stock ? parseInt(item.stock) : 0,
-      // subCategory: item.sub_category_code ? item.sub_category_code : '',
-      // voucherInfo: item.voucher_info ? item.voucher_info : '',
-      // historicalSold: item.historical_sold ? item.historical_sold : '',
-      // likedCount: item.liked_count ? item.liked_count : '',
-      // itemRating: item.item_rating ? item.item_rating : '',
-      // countReview: item.item_rating ? item.item_rating.rating_count[0] : 0,
-      // description: item.description ? ProductService.handleDescription(item.description) : [],
-      // isDisplayHover: false,
+      domain: domain,
+      slugId: ProductService.getSlugIdFromItem(item),
+      representDomainName: Object.keys(ProductService.nameDomainShop).includes(domain)
+        ? ProductService.nameDomainShop[domain]
+        : domain,
     } as ProductItem;
-  }
-
-  static handleAgency(agency: string): string {
-    if (agency == 'mall') return 'Shopee Mall';
-    if (agency == 'lazmall') return 'Lazada Mall';
-    if (agency == 'shopee') return 'Shopee';
-    if (agency == 'tiki') return 'Tiki';
-    return agency;
   }
 
   static handleDescription(description: string[]): string {
@@ -329,22 +303,7 @@ export default class ProductService {
       return newDescription.join('<br />');
     }
   }
-  static handleProcessUrlAccessTrade(url: string) {
-    const urlObj = new URL(url);
-    const preHandle = urlObj.pathname
-      .split('/')
-      .filter((i) => !!i)
-      .join('/')
-      .replace('%', '')
-      .replace('[', '(')
-      .replace(']', ')');
-    const encodeURIItem = encodeURIComponent(preHandle);
-    return (
-      urlObj.origin +
-      '/' +
-      (encodeURIItem.slice(0, 2) == '%2F' ? encodeURIItem.slice(2, encodeURIItem.length) : encodeURIItem)
-    );
-  }
+
   static parseListProductItem(data: any[]): ProductItem[] {
     const items = [] as ProductItem[];
     for (const i of data) {

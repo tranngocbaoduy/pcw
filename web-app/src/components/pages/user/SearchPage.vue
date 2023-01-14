@@ -19,14 +19,16 @@
         <div class="mt-2 pa-0" :class="isMobile ? 'px-2' : 'px-0'">
           <BreadCrumbs :breadcrumbs="breadcrumbs" />
           <v-card-title class="product-page-name font-size-32 font-weight-3 px-0 mt-0 mx-0">{{
-            selectedCategory.name
+            `Tìm sản phẩm theo từ khóa: ${querySearch}`
           }}</v-card-title>
         </div>
         <EnhancedFilter
           v-if="!isMobile"
           :priceItems="priceItems"
           :agencyItems="agencyItems"
+          :isSearchPage="true"
           @change-agency="changeAgency"
+          @change-category="changeCategory"
           @change-price="changePrice"
           class="ma-n2 pa-2 mx-0"
           @refresh-filter="refreshFilter"
@@ -76,8 +78,6 @@ import CategoryService, { CategoryItem } from '@/api/category.service';
 import ProductService, { ProductItem } from '@/api/product.service';
 
 import EnhancedFilter from '@/components/search-filter/EnhancedFilter.vue';
-import SeoService from '@/api/seo.service';
-import { MetaInfo } from 'vue-meta';
 
 export default Vue.extend({
   name: 'CategoryPage',
@@ -87,19 +87,10 @@ export default Vue.extend({
     Product,
     EnhancedFilter,
   },
-  metaInfo(): MetaInfo {
-    return SeoService.getMetaInfoCategoryPage(this.selectedCategory ? this.selectedCategory.name : '');
-  },
   data: () => ({
     isLoading: false,
     isNextProduct: true,
-    voteItems: [
-      { name: '5-stars', rate: 5 },
-      { name: '4-stars', rate: 4 },
-      { name: '3-stars', rate: 3 },
-      { name: '2-stars', rate: 2 },
-      { name: '1-stars', rate: 1 },
-    ],
+    selectedCategory: {} as CategoryItem,
     agencyItems: [
       { name: 'TopZone', selected: false, code: 'topzone' },
       { name: 'DiĐộngViệt', selected: false, code: 'didongviet' },
@@ -140,35 +131,14 @@ export default Vue.extend({
     this.quantity = this.isMobile ? 6 : 18;
     await this.initialize();
     this.$store.commit('setState', { searchString: '' });
-    this.$store.commit('setState', {
-      searchFilter: {
-        catalogItems: this.catalogItems,
-        voteItems: this.voteItems,
-        priceItems: this.priceItems,
-        agencyItems: this.agencyItems,
-        shipItems: this.shipItems,
-      },
-    });
   },
   mounted() {},
   computed: {
     isMobile(): boolean {
       return this.$store.getters.isMobile;
     },
-    selectedCategory(): CategoryItem {
-      return this.$store.getters.selectedCategory;
-    },
-    categoryId(): string {
-      return this.$route.params['idCate'] || '';
-    },
-    categoryItem(): any {
-      return this.$store.getters.categoryItems.find((item: any) => item.SK == this.categoryId) || {};
-    },
-    catalogItems(): [] {
-      return this.$store.getters.categoryItems.map((item: any) => ({
-        name: CategoryService.code2category(item.SK),
-        urlRoute: CategoryService.code2category(item.SK).split(' ').join('').toLowerCase(),
-      }));
+    querySearch(): string {
+      return (this.$route.query.query as string) || '';
     },
     breadcrumbs(): any[] {
       return [
@@ -179,8 +149,8 @@ export default Vue.extend({
           exact: true,
         },
         {
-          text: this.selectedCategory ? this.selectedCategory.name : '',
-          to: `/category/${this.$route.params['idCate']}`,
+          text: 'Tìm kiếm: ' + this.querySearch,
+          to: `/`,
           disabled: true,
           exact: true,
         },
@@ -222,7 +192,7 @@ export default Vue.extend({
       window.scrollTo({ top: 0, left: 0 });
       this.isLoading = true;
 
-      console.log('Load item ...', this.categoryId);
+      console.log('Load item ...', this.querySearch);
       this.page = parseInt((this as any).$route.query.page || 1);
       this.$store.commit('setState', { searchString: this.$route.query.name });
       await this.updateUrlQueryToData();
@@ -233,15 +203,27 @@ export default Vue.extend({
       this.isNextProduct = true;
       this.page += 1;
       const agencyItems = this.agencyItems.filter((item: any) => item.selected).map((item: any) => item.code);
-
-      const newItems = await ProductService.queryItemByTarget({
-        categoryId: this.categoryId.toUpperCase(),
-        limit: this.limit,
-        page: this.page,
-        agencyItems: agencyItems.join(','),
-        minPrice: this.minMaxTuple[0] * 1000000,
-        maxPrice: this.minMaxTuple[1] * 1000000,
-      });
+      let newItems = [] as ProductItem[];
+      if (this.selectedCategory && this.selectedCategory.id) {
+        newItems = await ProductService.queryItemByTarget({
+          limit: this.limit,
+          page: this.page,
+          categoryId: this.selectedCategory.id,
+          querySearch: this.querySearch,
+          agencyItems: agencyItems.join(','),
+          minPrice: this.minMaxTuple[0] * 1000000,
+          maxPrice: this.minMaxTuple[1] * 1000000,
+        });
+      } else {
+        newItems = await ProductService.querySearchItems({
+          limit: this.limit,
+          page: this.page,
+          querySearch: this.querySearch,
+          agencyItems: agencyItems.join(','),
+          minPrice: this.minMaxTuple[0] * 1000000,
+          maxPrice: this.minMaxTuple[1] * 1000000,
+        });
+      }
       if (newItems && newItems.length == 0) this.isNextProduct = false;
       this.productItems = this.productItems.concat(newItems);
       this.isLoading = false;
@@ -255,13 +237,22 @@ export default Vue.extend({
       this.minMaxTuple = this.minMaxTupleDefault;
       await this.loadProductItemByTarget();
     },
+    async changeCategory(selectedCategory: CategoryItem) {
+      if (selectedCategory && selectedCategory.id) {
+        this.selectedCategory = selectedCategory;
+        await this.loadProductItemByTarget();
+      }
+    },
     async changeAgency(agencyItems: any[]) {
+      console.log('agencyItems', agencyItems);
+      this.agencyItems.forEach((i) => (i.selected = false));
       agencyItems.map((i) => {
         const agency = this.agencyItems.find((a) => i.code == a.code);
         if (agency && agency.selected.toString().length != 0) {
           agency.selected = !agency.selected;
         }
       });
+
       await this.loadProductItemByTarget();
     },
     async changePrice({ min, max }: { min: number; max: number }) {
@@ -296,16 +287,26 @@ export default Vue.extend({
 
     async loadProductItemByTarget() {
       const agencyItems = this.agencyItems.filter((item: any) => item.selected).map((item: any) => item.code);
-
-      this.productItems = await ProductService.queryItemByTarget({
-        categoryId: this.categoryId.toUpperCase(),
-        limit: this.limit,
-        page: this.page,
-        agencyItems: agencyItems.join(','),
-        minPrice: this.minMaxTuple[0] * 1000000,
-        maxPrice: this.minMaxTuple[1] * 1000000,
-        discountRate: agencyItems.length != 0 ? 0 : this.discountRate,
-      });
+      if (this.selectedCategory && this.selectedCategory.id) {
+        this.productItems = await ProductService.queryItemByTarget({
+          limit: this.limit,
+          page: this.page,
+          categoryId: this.selectedCategory.id,
+          querySearch: this.querySearch,
+          agencyItems: agencyItems.join(','),
+          minPrice: this.minMaxTuple[0] * 1000000,
+          maxPrice: this.minMaxTuple[1] * 1000000,
+        });
+      } else {
+        this.productItems = await ProductService.querySearchItems({
+          limit: this.limit,
+          page: this.page,
+          querySearch: this.querySearch,
+          agencyItems: agencyItems.join(','),
+          minPrice: this.minMaxTuple[0] * 1000000,
+          maxPrice: this.minMaxTuple[1] * 1000000,
+        });
+      }
       console.log('this.productItems', this.productItems);
     },
     getSlugId(item: ProductItem): string {

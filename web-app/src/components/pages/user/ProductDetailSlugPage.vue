@@ -1,6 +1,6 @@
 <template>
   <div class="product-detail-slug-page mt-3">
-    <!-- <div
+    <div
       class="d-flex flex-column justify-center align-end"
       :class="isMobile ? 'transition-span-mobile' : 'transition-span'"
     >
@@ -21,7 +21,7 @@
         icon
       >
         <v-icon size="18">mdi-comment</v-icon>
-      </v-btn> 
+      </v-btn>
 
       <v-menu
         v-if="isMobile && tabModel == 0"
@@ -219,263 +219,267 @@
     </div>
     <v-row v-else>
       <v-img :src="noItemImage" max-height="800" max-width="90%" height="400" class="ma-auto" />
-    </v-row> -->
+    </v-row>
   </div>
 </template>
 
 <script lang="ts">
-// import Vue from 'vue';
-// import BreadCrumbs from '@/components/common/BreadCrumbs.vue';
-// import ProductPhoto from '@/components/pages/common/product-detail-page/ProductPhoto.vue';
-// import ProductInfo from '@/components/pages/common/product-detail-page/ProductInfo.vue';
-// import ProductAnotherAgency from '@/components/pages/common/product-detail-page/ProductAnotherAgency.vue';
-// import CategoryService from '@/api/category.service';
-// import ProductService, { ProductItem } from '@/api/product.service';
-// import DetailRatingItem from '@/components/common/rating/DetailRatingItem.vue';
-// import SeoService from '@/api/seo.service';
-// import { MetaInfo } from 'vue-meta';
-// import axios from 'axios';
+import Vue from 'vue';
+import BreadCrumbs from '@/components/common/BreadCrumbs.vue';
+import ProductPhoto from '@/components/pages/common/product-detail-page/ProductPhoto.vue';
+import ProductInfo from '@/components/pages/common/product-detail-page/ProductInfo.vue';
+import ProductAnotherAgency from '@/components/pages/common/product-detail-page/ProductAnotherAgency.vue';
+import CategoryService from '@/api/category.service';
+import ProductService, { ProductItem } from '@/api/product.service';
+import DetailRatingItem from '@/components/common/rating/DetailRatingItem.vue';
+import SeoService from '@/api/seo.service';
+import { MetaInfo } from 'vue-meta';
+import axios from 'axios';
 
-// export default Vue.extend({
-//   name: 'Body',
-//   props: ['isShowMenu'],
-//   components: {
-//     BreadCrumbs,
-//     ProductPhoto,
-//     ProductInfo,
-//     ProductAnotherAgency,
-//     DetailRatingItem,
-//     // ListProductRelated,
-//   },
-//   metaInfo(): MetaInfo {
-//     const name = this.mainProduct ? this.mainProduct.cleanName || '' : '';
-//     const url = this.listPhotoItems && this.listPhotoItems.length != 0 ? this.listPhotoItems[0].url : '';
-//     const price =
-//       this.mainProduct && this.mainProduct.price
-//         ? this.mainProduct.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-//         : '';
-//     return SeoService.getMetaInfoProductPage(name, url, price);
-//   },
-//   data: () => ({
-//     tabModel: null,
-//     noItemImage: require('@/assets/banner/no-product.png'),
-//     subProductItems: [] as ProductItem[],
-//     relatedProductItems: [] as ProductItem[],
-//     anotherProductItems: [] as ProductItem[],
-//     mainProduct: {} as ProductItem,
-//     allProduct: [] as ProductItem[],
-//     largestSaleOffItem: {} as ProductItem,
-//     cheapestItem: {} as ProductItem,
-//     listPhotoItems: [] as any[],
-//     averagePrice: 0 as number,
-//     anotherCategoryId: '' as string,
-//     isLoadedFinish: false,
-//     encodedSlugId: '',
-//     filterByProductAnotherAgency: [
-//       { id: 'discount', name: 'Giảm giá', isSelected: false },
-//       { id: 'review', name: 'Đánh giá', isSelected: false },
-//       { id: 'trusted', name: 'Store uy tín', isSelected: false },
-//     ],
-//     sortByProductAnotherAgency: [
-//       { id: 'discountRate', name: 'Giảm giá', isSelected: false },
-//       { id: 'price', name: 'Giá', isSelected: true },
-//       { id: 'countReview', name: 'Đánh giá', isSelected: false },
-//       { id: 'stock', name: 'Tồn kho', isSelected: false },
-//     ],
-//   }),
-//   computed: {
-//     isHasSortBy(): boolean {
-//       return this.sortByProductAnotherAgency.find((i) => i.isSelected) ? true : false;
-//     },
-//     isHasFilterBy(): boolean {
-//       return this.filterByProductAnotherAgency.find((i) => i.isSelected) ? true : false;
-//     },
-//     filterProductItems(): ProductItem[] {
-//       let productItems = this.allProduct;
-//       for (const i of this.filterByProductAnotherAgency) {
-//         if (i.id == 'discount' && i.isSelected) productItems = productItems.filter((item) => !!item.discountRate);
-//         if (i.id == 'review' && i.isSelected) productItems = productItems.filter((item) => !!item.countReview);
-//         if (i.id == 'trusted' && i.isSelected)
-//           productItems = productItems.filter((item) => !!item.shopItem && (item as any).shopItem.shop_is_official == 1);
-//       }
-//       console.log('productItems', productItems, this.filterByProductAnotherAgency);
-//       return productItems;
-//     },
-//     slugId(): string {
-//       return this.$route.params['slugId'];
-//     },
-//     isMobile(): boolean {
-//       return this.$store.getters.isMobile;
-//     },
-//     categoryId(): string {
-//       return this.mainProduct ? this.mainProduct.PK : '';
-//     },
-//     categoryItems(): any[] {
-//       return this.$store.getters.categoryItems;
-//     },
-//     getCategory(): any {
-//       return this.$store.getters.categoryItems.filter((item: any) => item.SK == this.categoryId)[0] || [];
-//     },
-//     getDomainItems(): any[] {
-//       return this.$store.getters.domainItems;
-//     },
-//     breadcrumbs(): any[] {
-//       return [
-//         {
-//           text: this.$t('home'),
-//           disabled: false,
-//           to: '/',
-//           exact: true,
-//         },
-//         {
-//           text: this.categoryId ? `${CategoryService.code2category(this.categoryId)}` : '',
-//           to: `/category/${this.categoryId ? this.categoryId.toLowerCase() : ''}`,
-//           disabled: false,
-//           exact: true,
-//         },
-//         {
-//           text: CategoryService.upperCaseFirstLetter(`${(this as any).mainProduct.cleanName || ''}`),
-//           to: `#`,
-//           disabled: true,
-//           exact: true,
-//         },
-//       ];
-//     },
-//   },
-//   async created() {
-//     console.log('ProductDetailPage component is created');
-//     try {
-//       await axios
-//         .get('http://192.168.1.2/crawler/api/products/', {
-//           responseType: 'json',
-//         })
-//         .then((er) => {
-//           console.log(er.data);
-//           return er.data;
-//         });
-//     } catch (err) {
-//       console.log(err);
-//     }
-//     window.scrollTo({ top: 0, left: 0 });
-//     await this.initialize();
-//     this.allProduct = [this.mainProduct, ...this.subProductItems];
-//     this.handleChangeSorter(this.sortByProductAnotherAgency.find((i) => i.isSelected));
-//     this.cheapestItem = JSON.parse(JSON.stringify(this.allProduct[0]));
-//   },
-//   watch: {
-//     async slugId() {
-//       if (this.slugId) await this.initialize();
-//     },
-//     async categoryItems() {
-//       if (this.categoryItems && this.categoryItems.length != 0 && !this.isLoadedFinish) {
-//         this.isLoadedFinish = true;
-//       }
-//     },
-//   },
-//   methods: {
-//     transitionToCompare(tab: any) {
-//       if (tab == -1) {
-//         window.scrollTo({ top: -100, left: 0, behavior: 'smooth' });
-//       } else {
-//         this.tabModel = tab;
-//         (document as any)
-//           .getElementById('detail-rating-item')
-//           .scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
-//       }
-//     },
-//     handleChangeFilter(item: any) {
-//       const filter = this.filterByProductAnotherAgency.find((i) => item.id == i.id);
-//       if (filter) filter.isSelected = !filter.isSelected;
-//     },
-//     handleChangeSorter(item: any) {
-//       this.sortByProductAnotherAgency = this.sortByProductAnotherAgency.map((i) => ({
-//         ...i,
-//         isSelected: false,
-//       }));
-//       const filter = this.sortByProductAnotherAgency.find((i) => item.id == i.id);
-//       if (filter) {
-//         filter.isSelected = !filter.isSelected;
+export default Vue.extend({
+  name: 'Body',
+  props: ['isShowMenu'],
+  components: {
+    BreadCrumbs,
+    ProductPhoto,
+    ProductInfo,
+    ProductAnotherAgency,
+    DetailRatingItem,
+    // ListProductRelated,
+  },
+  metaInfo(): MetaInfo {
+    const name = this.mainProduct ? this.mainProduct.name || '' : '';
+    const url = this.listPhotoItems && this.listPhotoItems.length != 0 ? this.listPhotoItems[0].url : '';
+    const price =
+      this.mainProduct && this.mainProduct.price
+        ? this.mainProduct.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+        : '';
+    return SeoService.getMetaInfoProductPage(name, url, price);
+  },
+  data: () => ({
+    tabModel: null,
+    noItemImage: require('@/assets/banner/no-product.png'),
+    subProductItems: [] as ProductItem[],
+    relatedProductItems: [] as ProductItem[],
+    anotherProductItems: [] as ProductItem[],
+    mainProduct: {} as ProductItem,
+    allProduct: [] as ProductItem[],
+    largestSaleOffItem: {} as ProductItem,
+    cheapestItem: {} as ProductItem,
+    listPhotoItems: [] as any[],
+    averagePrice: 0 as number,
+    anotherCategoryId: '' as string,
+    isLoadedFinish: false,
+    encodedSlugId: '',
+    filterByProductAnotherAgency: [
+      { id: 'discount', name: 'Giảm giá', isSelected: false },
+      { id: 'review', name: 'Đánh giá', isSelected: false },
+      { id: 'trusted', name: 'Store uy tín', isSelected: false },
+    ],
+    sortByProductAnotherAgency: [
+      { id: 'discountRate', name: 'Giảm giá', isSelected: false },
+      { id: 'price', name: 'Giá', isSelected: true },
+      { id: 'countReview', name: 'Đánh giá', isSelected: false },
+      { id: 'stock', name: 'Tồn kho', isSelected: false },
+    ],
+  }),
+  computed: {
+    isHasSortBy(): boolean {
+      return this.sortByProductAnotherAgency.find((i) => i.isSelected) ? true : false;
+    },
+    isHasFilterBy(): boolean {
+      return this.filterByProductAnotherAgency.find((i) => i.isSelected) ? true : false;
+    },
+    filterProductItems(): ProductItem[] {
+      // let productItems = this.allProduct;
+      // for (const i of this.filterByProductAnotherAgency) {
+      //   if (i.id == 'discount' && i.isSelected) productItems = productItems.filter((item) => !!item.discountRate);
+      //   if (i.id == 'review' && i.isSelected) productItems = productItems.filter((item) => !!item.countReview);
+      //   if (i.id == 'trusted' && i.isSelected)
+      //     productItems = productItems.filter((item) => !!item.shopItem && (item as any).shopItem.shop_is_official == 1);
+      // }
+      // console.log('productItems', productItems, this.filterByProductAnotherAgency);
+      return this.allProduct;
+    },
+    slugId(): string {
+      return this.$route.params['slugId'];
+    },
+    isMobile(): boolean {
+      return this.$store.getters.isMobile;
+    },
+    categoryId(): string {
+      return this.mainProduct && this.mainProduct.categoryId ? this.mainProduct.categoryId : '';
+    },
+    categoryItems(): any[] {
+      return this.$store.getters.categoryItems;
+    },
+    selectedCategory(): any {
+      return this.$store.getters.categoryItems.find((item: any) => item.id == this.categoryId);
+    },
+    getDomainItems(): any[] {
+      return this.$store.getters.domainItems;
+    },
+    breadcrumbs(): any[] {
+      return [
+        {
+          text: this.$t('home'),
+          disabled: false,
+          to: '/',
+          exact: true,
+        },
+        {
+          text: this.categoryId && this.selectedCategory ? `${this.selectedCategory.name}` : '',
+          to: `/category/${this.categoryId ? this.categoryId.toLowerCase() : ''}`,
+          disabled: false,
+          exact: true,
+        },
+        {
+          text: `${this.mainProduct.name || ''}`,
+          to: `#`,
+          disabled: true,
+          exact: true,
+        },
+      ];
+    },
+  },
+  async created() {
+    console.log('ProductDetailPage component is created');
+    // try {
+    //   await axios
+    //     .get('http://192.168.1.2/crawler/api/products/', {
+    //       responseType: 'json',
+    //     })
+    //     .then((er) => {
+    //       console.log(er.data);
+    //       return er.data;
+    //     });
+    // } catch (err) {
+    //   console.log(err);
+    // }
+    window.scrollTo({ top: 0, left: 0 });
+    await this.initialize();
+    this.handleChangeSorter(this.sortByProductAnotherAgency.find((i) => i.isSelected));
+    this.cheapestItem = JSON.parse(JSON.stringify(this.allProduct[0]));
+  },
+  watch: {
+    async slugId() {
+      if (this.slugId) await this.initialize();
+    },
+    async categoryItems() {
+      if (this.categoryItems && this.categoryItems.length != 0 && !this.isLoadedFinish) {
+        this.isLoadedFinish = true;
+      }
+    },
+  },
+  methods: {
+    transitionToCompare(tab: any) {
+      if (tab == -1) {
+        window.scrollTo({ top: -100, left: 0, behavior: 'smooth' });
+      } else {
+        this.tabModel = tab;
+        (document as any)
+          .getElementById('detail-rating-item')
+          .scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+      }
+    },
+    handleChangeFilter(item: any) {
+      const filter = this.filterByProductAnotherAgency.find((i) => item.id == i.id);
+      if (filter) filter.isSelected = !filter.isSelected;
+    },
+    handleChangeSorter(item: any) {
+      this.sortByProductAnotherAgency = this.sortByProductAnotherAgency.map((i) => ({
+        ...i,
+        isSelected: false,
+      }));
+      const filter = this.sortByProductAnotherAgency.find((i) => item.id == i.id);
+      if (filter) {
+        filter.isSelected = !filter.isSelected;
 
-//         this.allProduct = this.allProduct.sort((itemA: ProductItem, itemB: ProductItem) => {
-//           if (Object.keys(itemA).includes(filter.id) && Object.keys(itemB).includes(filter.id)) {
-//             const valueA = (itemA as any)[filter.id] || 0;
-//             const valueB = (itemB as any)[filter.id] || 0;
-//             if (['price'].includes(filter.id)) {
-//               // ascending
-//               if (valueA > valueB) return 1;
-//               else return -1;
-//             } else if (['discountRate', 'stock', 'countReview'].includes(filter.id)) {
-//               // descending
-//               if (valueA < valueB) return 1;
-//               else return -1;
-//             }
-//           }
-//           return 1;
-//         });
-//       }
-//     },
-//     filterConfidentItems(items: ProductItem[]): ProductItem[] {
-//       const allPrice = items.map((i) => i.price);
-//       const averagePrice = Math.round(
-//         (allPrice.reduce((a: number, b: number) => a + b, 0) / allPrice.length) as number
-//       );
-//       return items.filter((i: ProductItem) => i.price / averagePrice < 2);
-//     },
-//     async initialize() {
-//       const loading = this.$loading.show();
-//       try {
-//         const parts = this.slugId.split('.');
-//         const response = await ProductService.queryItemById({
-//           id: `${parts[parts.length - 2]}.${parts[parts.length - 1]}`,
-//           isHasChild: true,
-//         });
-//         if (response?.mainItem && response.childItems) {
-//           this.mainProduct = response.mainItem as ProductItem;
-//           this.subProductItems = JSON.parse(JSON.stringify(response.childItems)).sort(
-//             (itemA: ProductItem, itemB: ProductItem) => {
-//               if (itemA.price < itemB.price) return -1;
-//               else return 1;
-//             }
-//           );
+        this.allProduct = this.allProduct.sort((itemA: ProductItem, itemB: ProductItem) => {
+          if (Object.keys(itemA).includes(filter.id) && Object.keys(itemB).includes(filter.id)) {
+            const valueA = (itemA as any)[filter.id] || 0;
+            const valueB = (itemB as any)[filter.id] || 0;
+            if (['price'].includes(filter.id)) {
+              // ascending
+              if (valueA > valueB) return 1;
+              else return -1;
+            } else if (['discountRate', 'stock', 'countReview'].includes(filter.id)) {
+              // descending
+              if (valueA < valueB) return 1;
+              else return -1;
+            }
+          }
+          return 1;
+        });
+      }
+    },
+    filterConfidentItems(items: ProductItem[]): ProductItem[] {
+      // const allPrice = items.map((i) => i.price);
+      // const averagePrice = Math.round(
+      //   (allPrice.reduce((a: number, b: number) => a + b, 0) / allPrice.length) as number
+      // );
+      // return items.filter((i: ProductItem) => i.price / averagePrice < 2);
+      return items;
+    },
+    async initialize() {
+      const loading = this.$loading.show();
+      try {
+        const parts = this.slugId.split('-');
+        const groupProductId = `${parts[parts.length - 1]}`;
+        const productId = `${parts[parts.length - 2]}`;
+        const response = await ProductService.queryItemById({
+          groupProductId: groupProductId,
+        });
 
-//           const allPrice = [12321321321, 321321321321, 32132321321, 321321321];
-//           // response.childItems
-//           //   .concat(response.mainItem)
-//           //   .map((item: ProductItem) => item.price) as number[];
-//           this.averagePrice = Math.round(
-//             (allPrice.reduce((a: number, b: number) => a + b, 0) / allPrice.length) as number
-//           );
+        console.log('response', response);
+        if (response?.infoGroup && response.items) {
+          this.mainProduct = response.items.find((p) => p.id == productId) as ProductItem;
+          this.subProductItems = response.items.filter((p) => p.id != productId);
+          this.subProductItems = JSON.parse(JSON.stringify(this.subProductItems)).sort(
+            (itemA: ProductItem, itemB: ProductItem) => {
+              if (itemA.price < itemB.price) return -1;
+              else return 1;
+            }
+          );
+          this.allProduct = response.items;
+          console.log('mainProduct', this.mainProduct);
+          console.log('subProductItems', this.subProductItems);
 
-//           const listPhotoItems = Array.from(
-//             new Set(
-//               response.childItems
-//                 .concat(response.mainItem)
-//                 .map((item: ProductItem) => item.listImage)
-//                 .flat(1)
-//             )
-//           );
-//           this.listPhotoItems = listPhotoItems.slice(0, 6).map((imageUrl: string) => ({
-//             name: imageUrl || '',
-//             url: imageUrl || '',
-//             selected: false,
-//           }));
+          const allPrice = this.allProduct.map((item: ProductItem) => parseInt(item.price)) as number[];
+          this.averagePrice = Math.round(
+            (allPrice.reduce((a: number, b: number) => a + b, 0) / allPrice.length) as number
+          );
 
-//           const saleOffSortedItems = JSON.parse(JSON.stringify(response.childItems.concat(response.mainItem))).sort(
-//             (itemA: ProductItem, itemB: ProductItem) => {
-//               if (itemA.discountRate < itemB.discountRate) return 1;
-//               else return -1;
-//             }
-//           );
-//           this.largestSaleOffItem = saleOffSortedItems[0] as ProductItem;
-//         }
-//       } catch (err) {
-//         console.log(err);
-//         this.$router.replace('/');
-//       }
-//       loading.hide();
-//     },
-//   },
-// });
+          const listPhotoItems = Array.from(
+            new Set(
+              response.items
+                .concat(this.mainProduct)
+                .map((item: ProductItem) => item.listImage)
+                .flat(1)
+            )
+          );
+          this.listPhotoItems = listPhotoItems.slice(0, 6).map((imageUrl: string) => ({
+            name: imageUrl || '',
+            url: imageUrl || '',
+            selected: false,
+          }));
+
+          const saleOffSortedItems = JSON.parse(JSON.stringify(this.allProduct)).sort(
+            (itemA: ProductItem, itemB: ProductItem) => {
+              if (itemA.discountRate < itemB.discountRate) return 1;
+              else return -1;
+            }
+          );
+          this.largestSaleOffItem = saleOffSortedItems[0] as ProductItem;
+        }
+      } catch (err) {
+        console.log(err);
+        this.$router.replace('/');
+      }
+      loading.hide();
+    },
+  },
+});
 </script>
 
 <style lang="scss">

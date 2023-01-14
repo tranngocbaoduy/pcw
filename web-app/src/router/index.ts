@@ -38,17 +38,22 @@ const routes: Array<RouteConfig> = [
           import('@/components/pages/user/CategoryPage.vue').catch(RouterHelper.handleAsyncComponentError),
       },
       {
+        path: '/search',
+        name: 'SearchPage',
+        component: () => import('@/components/pages/user/SearchPage.vue').catch(RouterHelper.handleAsyncComponentError),
+      },
+      {
         path: '/compare',
         name: 'ComparasionPage',
         component: () =>
           import('@/components/pages/user/PriceComparisonPage.vue').catch(RouterHelper.handleAsyncComponentError),
       },
-      // {
-      //   path: ':slugId*',
-      //   name: 'ProductDetailSlugPage',
-      //   component: () =>
-      //     import('@/components/pages/user/ProductDetailSlugPage.vue').catch(RouterHelper.handleAsyncComponentError),
-      // },
+      {
+        path: ':slugId*',
+        name: 'ProductDetailSlugPage',
+        component: () =>
+          import('@/components/pages/user/ProductDetailSlugPage.vue').catch(RouterHelper.handleAsyncComponentError),
+      },
     ],
   },
   {

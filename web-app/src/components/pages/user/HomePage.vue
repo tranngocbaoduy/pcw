@@ -3,7 +3,7 @@
     <Carousel />
     <RecommendProducts />
     <TrendingPromotion :promotionItems="promotionItems" />
-    <TrendingBrand />
+    <!-- <TrendingBrand /> -->
     <!-- <TrendingCategory :listItem="trendingCategoryItems" /> -->
     <!-- <TrendingSearchProducts /> -->
     <!-- <TrendingSearch></TrendingSearch> -->
@@ -33,7 +33,7 @@ export default Vue.extend({
     Carousel,
     // TrendingCategory,
     // TrendingBrand,
-    // TrendingPromotion,
+    TrendingPromotion,
     RecommendProducts,
     // TrendingSearchProducts,
     // TrendingSearch,
@@ -45,6 +45,7 @@ export default Vue.extend({
   data: () => ({
     trendingCategoryItems: [] as CategoryItem[],
     promotionItems: [] as ProductItem[],
+    randomCategory: {} as CategoryItem,
   }),
   computed: {
     isMobile(): boolean {
@@ -63,18 +64,24 @@ export default Vue.extend({
   },
   created() {
     window.scrollTo({ top: 0, left: 0 });
-    // this.loadTrendingCategoryItems();
-    this.loadPromotionItems();
   },
   async mounted() {},
-  watch: {},
+  watch: {
+    categoryItems() {
+      console.log('categoryItems', this.categoryItems);
+      if (this.randomCategory && !this.randomCategory.id && this.categoryItems.length > 0) {
+        this.randomCategory = this.categoryItems[Math.floor(Math.random() * this.categoryItems.length)];
+        this.loadPromotionItems();
+      }
+    },
+  },
   methods: {
     async loadPromotionItems() {
       this.promotionItems = await ProductService.queryItemByTarget({
-        categoryId: this.categoryId,
+        categoryId: this.randomCategory.id,
         page: 1,
         limit: this.isMobile ? 8 : 21,
-        discountRate: 2,
+        discountRate: 30,
       });
       this.promotionItems = this.promotionItems.sort((itemA: ProductItem, itemB: ProductItem) => {
         const valueA = itemA.discountRate || 0;

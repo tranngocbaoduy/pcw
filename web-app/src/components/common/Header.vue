@@ -30,10 +30,9 @@
           color="#ECEFF1"
           solo
           allow-overflow
-          item-text="cleanName"
+          item-text="name"
           v-model="valueText"
           :no-data-text="$t('Let search somthing!')"
-          :filter="filterItems"
           :menu-props="{
             closeOnClick: false,
             closeOnContentClick: false,
@@ -153,7 +152,7 @@
                         :key="`${category.name}-category-on-search`"
                         :to="`/category/${category.id}`"
                       >
-                        {{ categoryName(category.name) }}
+                        {{ category.name }}
                       </v-chip>
                     </v-chip-group>
                   </v-card-text>
@@ -189,7 +188,7 @@
                     class="line-height-14"
                     style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 600px"
                   >
-                    {{ item.cleanName }}
+                    {{ item.name }}
                   </div>
                   <div class="d-flex align-center justify-start line-height-18">
                     <span
@@ -235,7 +234,7 @@
           <v-icon size="20">mdi-bell-outline</v-icon>
         </v-btn>
 
-        <v-menu :close-on-click="true" bottom right nudge-bottom="50" z-index="2000">
+        <!-- <v-menu :close-on-click="true" bottom right nudge-bottom="50" z-index="2000">
           <template v-slot:activator="{ on, attrs }">
             <v-btn
               v-if="isAuthenticated && userGoogleInfo"
@@ -252,7 +251,7 @@
                 <img :src="userGoogleInfo.picture" :alt="userGoogleInfo.name" />
               </v-avatar>
 
-              <!-- <span class="px-2"> {{ `${localeLanguage.code.toUpperCase()}` }}</span> -->
+
             </v-btn>
             <v-btn icon v-else @click="login">
               <v-icon size="22">mdi-account</v-icon>
@@ -265,7 +264,7 @@
               <v-list-item-title class="px-3">Sign out</v-list-item-title>
             </v-list-item>
           </v-list>
-        </v-menu>
+        </v-menu> -->
       </div>
     </v-toolbar>
   </div>
@@ -313,7 +312,7 @@ export default Vue.extend({
     },
     productSearchItemsComputed() {
       return this.productSearchItems && this.productSearchItems.length == 0
-        ? { PK: 'default' }
+        ? { id: 'default' }
         : this.productSearchItems;
     },
     innerWidth(): number {
@@ -377,18 +376,18 @@ export default Vue.extend({
       await GoogleAuthService.logout();
       if (this.$route.path != '/') this.$router.push('/');
     },
-    filterItems(item: ProductItem, queryText: string): boolean {
-      // if (item.id.includes(queryText.split(' ').join('_'))) return true;
-      // if (item.id.includes(queryText)) return true;
-      const a = item.id.toLowerCase().trim().split(' ');
-      const b = queryText.toLowerCase().trim().split(' ');
-      const lastWordInQuery = b[b.length - 1];
-      if (a.length == 0 && b.length == 0) return false;
-      const intersection = this._.intersection(a, b);
-      const isIntersection = intersection && intersection.length != 0 && intersection.length == b.length ? true : false;
-      if (isIntersection) return true;
-      else return item.id.toLowerCase().includes(lastWordInQuery);
-    },
+    // filterItems(item: ProductItem, queryText: string): boolean {
+    //   // if (item.id.includes(queryText.split(' ').join('_'))) return true;
+    //   // if (item.id.includes(queryText)) return true;
+    //   const a = item.id.toLowerCase().trim().split(' ');
+    //   const b = queryText.toLowerCase().trim().split(' ');
+    //   const lastWordInQuery = b[b.length - 1];
+    //   if (a.length == 0 && b.length == 0) return false;
+    //   const intersection = this._.intersection(a, b);
+    //   const isIntersection = intersection && intersection.length != 0 && intersection.length == b.length ? true : false;
+    //   if (isIntersection) return true;
+    //   else return item.id.toLowerCase().includes(lastWordInQuery);
+    // },
     handleShowMenu() {
       this.$emit('handle-show-menu');
     },
@@ -396,8 +395,9 @@ export default Vue.extend({
       this.localeLanguage = item;
       if (this.localeLanguage != i18n.locale) i18n.locale = (this as any).localeLanguage.code as string;
     },
-    async searchProduct() {
+    async searchProduct(event: any) {
       console.log('this.searchCode', this.searchCode);
+
       if (this.valueText) {
         const item = null as any;
         if (item) {
@@ -408,11 +408,10 @@ export default Vue.extend({
           this.$router.replace(`/category/${categoryId}/product/${code}`);
         }
       }
-      if (
-        !this.isLoading &&
-        // (event.code == 'Enter' || event.code == 'Space' || (this.searchCode && this.searchCode.length == 1)) &&
-        this.searchCode
-      ) {
+      if (!this.isLoading && (event.code == 'Enter' || event.pointerType == 'mouse') && this.searchCode) {
+        this.isLoading = true;
+        this.$router.replace(`/search?query=${this.searchCode}`);
+      } else if (!this.isLoading && this.searchCode) {
         this.isLoading = true;
         this.debouncedQuery();
         this.updateUrlQuery(this.searchCode);
@@ -430,16 +429,18 @@ export default Vue.extend({
           listSearchItem = listSearchItem.map((i) => ({
             ...i,
           }));
+          console.log('Found:' + listSearchItem.length);
           this.productSearchItems = this.productSearchItems.concat(listSearchItem);
           this.searchCode = listSearchItem[0].name;
         }
       } else {
         if (this.searchCode && !this.searchStringList.includes(this.searchCode)) {
           this.searchStringList.push(this.searchCode);
-          let listSearchItem = await ProductService.querySearchItems({ searchString: this.searchCode });
-          listSearchItem = listSearchItem.map((i) => ({
+          let listSearchItem = await ProductService.querySearchItems({ querySearch: this.searchCode });
+          listSearchItem = listSearchItem.map((i: ProductItem) => ({
             ...i,
           }));
+          console.log('Found:' + listSearchItem.length);
           this.productSearchItems = this.productSearchItems.concat(listSearchItem);
         }
       }
@@ -477,14 +478,8 @@ export default Vue.extend({
       }
       return o;
     },
-    categoryName(categoryId: string): string {
-      return categoryId ? this.$t(`category.${categoryId}`).toString() : '';
-    },
     goToItem(item: ProductItem) {
-      this.$router.push(this.getSlugId(item));
-    },
-    getSlugId(item: ProductItem): string {
-      return ProductService.getSlugId(item);
+      this.$router.push(`/${item.slugId}`);
     },
   },
   async created() {

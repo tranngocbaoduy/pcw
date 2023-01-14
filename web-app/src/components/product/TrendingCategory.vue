@@ -53,24 +53,24 @@ export default Vue.extend({
         //   imgOff: require('@/assets/icon/Blue/smartphone@2x.png'),
         //   imgOn: require('@/assets/icon/White/smartphone@2x.png'),
         // },
-        {
-          id: 'television',
-          name: this.$t('category.Television'),
-          imgOff: require('@/assets/icon/Blue/television-screen@2x.png'),
-          imgOn: require('@/assets/icon/White/television-screen@2x.png'),
-        },
-        {
-          id: 'fridge',
-          name: this.$t('category.Fridge'),
-          imgOff: require('@/assets/icon/Blue/fridge@2x.png'),
-          imgOn: require('@/assets/icon/White/fridge@2x.png'),
-        },
-        {
-          id: 'washing',
-          name: this.$t('category.Washing'),
-          imgOff: require('@/assets/icon/Blue/washing-machine@2x.png'),
-          imgOn: require('@/assets/icon/White/washing-machine@2x.png'),
-        },
+        // {
+        //   id: 'television',
+        //   name: this.$t('category.Television'),
+        //   imgOff: require('@/assets/icon/Blue/television-screen@2x.png'),
+        //   imgOn: require('@/assets/icon/White/television-screen@2x.png'),
+        // },
+        // {
+        //   id: 'fridge',
+        //   name: this.$t('category.Fridge'),
+        //   imgOff: require('@/assets/icon/Blue/fridge@2x.png'),
+        //   imgOn: require('@/assets/icon/White/fridge@2x.png'),
+        // },
+        // {
+        //   id: 'washing',
+        //   name: this.$t('category.Washing'),
+        //   imgOff: require('@/assets/icon/Blue/washing-machine@2x.png'),
+        //   imgOn: require('@/assets/icon/White/washing-machine@2x.png'),
+        // },
       ];
     },
     filterCategories(): any[] {

@@ -111,10 +111,9 @@ export default Vue.extend({
           categoryId: this.randomCategory.id,
           limit: this.isMobile ? 6 : this.limit,
           page: this.page,
-          agencyItems: [],
+          agencyItems: 'bachlong,topzone,didongviet,24hstore,nguyenkim,viettel',
           minPrice: 0,
           maxPrice: 1000000000,
-          isRep: true,
         });
         console.log('this.productItems', this.productItems);
       }

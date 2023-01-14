@@ -158,7 +158,7 @@
                       :key="`${category.name}-category-on-search`"
                       :to="`/category/${category.id}`"
                     >
-                      {{ categoryName(category.name) }}
+                      {{ category.name }}
                     </v-chip>
                   </v-chip-group>
                 </v-card-text>
@@ -224,7 +224,7 @@
               class="pr-4 primary-color-1"
               :class="hover ? 'font-weight-bold' : 'font-weight-normal'"
             >
-              {{ categoryName(i.name) }}
+              {{ i.name }}
             </router-link>
           </v-hover>
         </div>
@@ -366,8 +366,8 @@ export default Vue.extend({
       } else {
         if (this.searchCode && !this.searchStringList.includes(this.searchCode)) {
           this.searchStringList.push(this.searchCode);
-          let listSearchItem = await ProductService.querySearchItems({ searchString: this.searchCode });
-          listSearchItem = listSearchItem.map((i) => ({
+          let listSearchItem = await ProductService.querySearchItems({ querySearch: this.searchCode });
+          listSearchItem = listSearchItem.map((i: any) => ({
             ...i,
           }));
           this.productSearchItems = this.productSearchItems.concat(listSearchItem);
@@ -407,9 +407,7 @@ export default Vue.extend({
       }
       return o;
     },
-    categoryName(categoryId: string): string {
-      return categoryId ? this.$t(`category.${categoryId}`).toString() : '';
-    },
+
     goToItem(item: ProductItem) {
       this.$router.push(this.getSlugId(item));
     },

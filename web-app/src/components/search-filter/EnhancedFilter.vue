@@ -64,6 +64,28 @@
           </template>
         </v-autocomplete>
       </div> -->
+      <div class="mr-4" :class="isSticky ? 'ml-4' : ''" v-if="isSearchPage">
+        <v-select
+          v-model="selectedCategory"
+          hide-details
+          class="font-size-14"
+          style="width: 200px"
+          :style="
+            !selectedCategory ? 'border: #6e6e6e 0.5px solid; box-shadow: none !important' : 'border: #1859db 1px solid'
+          "
+          :items="categoryItems"
+          solo
+          flat
+          :placeholder="'Loại'"
+          item-text="name"
+          return-object
+          @change="handleChangeSelectedCategory"
+        >
+          <!-- <template v-slot:selection="{ index }">
+            <span v-if="index === 0" style="color: #1859db" class="text-caption"> {{ $t('agency') }} </span>
+          </template> -->
+        </v-select>
+      </div>
       <div class="mr-4" :class="isSticky ? 'ml-4' : ''">
         <v-select
           v-model="selectedAgencies"
@@ -186,8 +208,9 @@ import { ProductSearchItem } from '@/api/product.service';
 import Vue from 'vue';
 
 export default Vue.extend({
-  props: ['agencyItems', 'priceItems'],
+  props: ['agencyItems', 'priceItems', 'isSearchPage'],
   data: () => ({
+    selectedCategory: null as any,
     selectedAgencies: [] as any[],
     selectedPrices: [] as any[],
 
@@ -204,8 +227,8 @@ export default Vue.extend({
     innerWidth(): number {
       return this.$store.getters.innerWidth;
     },
-    categoryId(): string {
-      return this.$route.params['idCate'] || '';
+    categoryItems(): string {
+      return this.$store.getters.categoryItems || [];
     },
     isMobile(): boolean {
       return this.$store.getters.isMobile;
@@ -302,6 +325,9 @@ export default Vue.extend({
       urlParams.set(field, query);
       const queryUrl = urlParams.toString();
       history.replaceState({}, '', `${this.$route.path}?${queryUrl}`);
+    },
+    handleChangeSelectedCategory() {
+      this.$emit('change-category', this.selectedCategory);
     },
     handleChangeSelectedAgency() {
       this.$emit('change-agency', this.selectedAgencies);

@@ -55,7 +55,7 @@
                                   style="height: 50px"
                                   class="font-size-12 font-weight-2 line-height-22 title-product mb-2"
                                 >
-                                  {{ filterPromotionItems[+index + i].cleanName }}
+                                  {{ filterPromotionItems[+index + i].name }}
                                 </div>
                                 <span
                                   class="mr-3 line-height-22 font-size-10 font-weight-1 old-price"
