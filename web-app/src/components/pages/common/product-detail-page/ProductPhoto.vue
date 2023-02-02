@@ -11,7 +11,7 @@
         :src="currentPhotoUrl"
         class="ma-auto"
         width="80%"
-        height="80%"
+        height="300px"
       ></v-img>
     </v-card>
 
@@ -81,10 +81,10 @@ export default Vue.extend({
     },
     remainPhotos(): any {
       let remainPhotos = this.listPhotoItems.filter((i: any) => i.url != this.currentPhotoUrl);
-      if (this.$vuetify.breakpoint.xl) remainPhotos = remainPhotos.slice(0, 5);
-      if (this.$vuetify.breakpoint.lg) remainPhotos = remainPhotos.slice(0, 5);
-      if (this.$vuetify.breakpoint.md) remainPhotos = remainPhotos.slice(0, 5);
-      return this.isMobile ? remainPhotos.slice(0, 3) : remainPhotos.slice(0, 5);
+      if (this.$vuetify.breakpoint.xl) remainPhotos = remainPhotos.slice(0, 3);
+      if (this.$vuetify.breakpoint.lg) remainPhotos = remainPhotos.slice(0, 3);
+      if (this.$vuetify.breakpoint.md) remainPhotos = remainPhotos.slice(0, 3);
+      return this.isMobile ? remainPhotos.slice(0, 3) : remainPhotos.slice(0, 3);
     },
   },
 });

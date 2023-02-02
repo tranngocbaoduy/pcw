@@ -92,6 +92,7 @@ class ExtractInfoMacbook(object):
     def extract_is_used(url):
         regexs = [
             '-cu',  
+            ' cũ ',
         ] 
         for regex in regexs:
             match = re.search(regex, url)
@@ -124,9 +125,18 @@ class ExtractInfoMacbook(object):
         info_from_base_url = dict(ExtractInfoMacbook.pre_extract(base_url))
         info_from_name = dict(ExtractInfoMacbook.pre_extract(name_sp))
         
-        for k, v in info_from_name.items():
+        print("\n==")
+        print(info_from_base_url)
+        print('\n=\n')
+        print(info_from_name)
+        print("==\n")
+
+        for k, v in info_from_name.items(): 
             if v and info_from_base_url[k] == None and info_from_base_url[k] != v:
                 info_from_base_url[k] = v
+            if k == 'is_used':
+                if v == True or info_from_base_url[k] == True:
+                    info_from_base_url[k] = True
  
         return info_from_base_url
 
@@ -151,6 +161,7 @@ final_data = []
 print(len(data))
 
 for i in data:
+    print(i)
     url, name_sp = i.split('\t')
     extracted_info = ExtractInfoMacbook.extract_info(url, name_sp) 
     

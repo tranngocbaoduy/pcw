@@ -1,32 +1,37 @@
 <template>
   <v-hover v-slot="{ hover }">
     <v-card :loading="loading" style="" class="product rounded-0 py-2 my-0">
-      <v-row class="px-2 pb-0 pt-8 ma-0 py-0" style="height: 220px">
+      <v-row class="px-2 pb-0 pt-0 ma-0 py-0">
         <span
+          v-if="isDetailMode"
           :class="[isMobile ? `domain-sub-left-mobile ${item.domain} ` : `domain-sub-left ${item.domain} `]"
-          class="font-size-14 px-4"
+          class="font-size-10 px-4"
         ></span>
         <span
+          v-if="isDetailMode"
           :class="[isMobile ? `domain-mobile ${item.domain}` : `domain ${item.domain}`, hover ? 'top-1px' : '']"
-          class="font-size-14 px-4"
+          class="font-size-10 px-2"
           >{{ item.representDomainName }}</span
         >
         <v-img
           :class="hover ? 'mt-0' : 'mt-2'"
           class="product-img text-center"
-          style="width: 181px; height: 181px"
           contain
-          :style="hover ? 'z-index:4' : ''"
+          :style="
+            (hover ? 'z-index:1;' : '') +
+            (isShowImageDetail ? 'width: 120px; height: 120px;' : 'width: 80px; height: 80px;')
+          "
           :src="item.listImage[0] || require('@/assets/banner/no-product.png')"
           :lazy-src="item.listImage[0] || require('@/assets/banner/no-product.png')"
+          :alt="item.name"
         >
         </v-img
       ></v-row>
 
-      <v-card-title class="pa-0 mx-3 mt-0 mb-n2" style="">
+      <v-card-title class="pa-0 mx-3 mt-0 mb-n3" style="">
         <v-row align="center">
           <v-col cols="12 pr-0">
-            <div class="font-size-14 line-height-20 title-product">
+            <div class="font-size-14 mb-2 line-height-20 title-product">
               <!-- <span class="primary-color-2 font-weight-bold">{{ itemBrand }} </span>-  -->
               {{ item.name }}
             </div>
@@ -39,59 +44,87 @@
         </v-row>
       </v-card-title>
 
-      <v-row class="pa-0 mx-3 my-0 mb-0 text-center py-0" align="center" no-gutters>
+      <v-row class="pa-0 mx-3 my-0 mb-0 text-center py-0" align="center" no-gutters v-if="isDetailMode">
         <v-col cols="8" class="ma-0 pa-0 primary-color-4 text-left" v-if="item.listPrice != item.price">
           <span class="line-height-22 font-size-10 font-weight-1 old-price mr-2">
             {{ item.listPrice | formatPrice }}đ</span
           >
           <span class="discount-rate px-1 font-size-12 font-weight-2 text-right"> {{ item.discountRate }}% </span>
         </v-col>
-        <v-col cols="8" v-else class="ma-0 pa-0 primary-color-4 text-left"></v-col>
 
-        <v-col cols="4" class="ma-0 pa-0">
-          <div class="font-size-10 font-weight-1 pr-0 pa-0 ma-0 text-right line-height-20">
-            <span class="font-weight-3 primary-color-3" v-if="item.listChildId && item.listChildId.length != 0">
-              {{ `${item.listChildId.length} ${$t('in stores')}` }}</span
-            ><br />
-          </div>
-        </v-col>
+        <v-col cols="8" v-else class="ma-0 pa-0 primary-color-4 text-left" style="height: 25px"> </v-col>
+
+        <v-col cols="4" class="ma-0 pa-0 d-flex align-center justify-center"> </v-col>
       </v-row>
       <v-row class="pa-0 mx-3 my-0 text-center py-0" align="center" no-gutters>
-        <v-col cols="7" class="line-height-22 ma-0 pa-0 font-size-14 font-weight-3 text-left primary-color-1">
+        <v-col
+          v-if="isDetailMode"
+          cols="12"
+          class="line-height-22 ma-0 pa-0 font-size-14 font-weight-3 text-left primary-color-1"
+        >
           {{ item.price | formatPrice }}đ
         </v-col>
-        <v-col cols="5" class="ma-0 pa-0 text-right">
-          <!-- <RatingItem :itemRating="item.itemRating" size="12" /> -->
-          <!-- 
+        <v-col
+          v-else-if="item.smallestPrice != item.largestPrice"
+          cols="12"
+          class="line-height-22 ma-0 pa-0 font-size-12 font-weight-3 text-left primary-color-1"
+        >
+          {{ item.smallestPrice | formatPrice }} - {{ item.largestPrice | formatPrice }}đ
+        </v-col>
+        <v-col v-else cols="12" class="line-height-22 ma-0 pa-0 font-size-12 font-weight-3 text-left primary-color-1">
+          {{ item.smallestPrice | formatPrice }}đ
+        </v-col>
+      </v-row>
+      <v-row class="pa-2 px-3 py-0 ma-0">
+        <div
+          class="font-size-10 font-weight-1 pr-0 pa-0 my-1 ma-0 text-left line-height-20"
+          style="max-height: 40px; min-height: 40px"
+          v-if="!isDetailMode"
+        >
+          Có ở {{ item.stores.length }} cửa hàng
+          <span class="font-size-10 font-weight-2 primary-color-2">{{ mappingStoreName.slice(0, 2).join(', ') }}</span>
+          {{ mappingStoreName.length >= 2 ? '... và hơn thế nưa' : '' }}
+        </div>
+        <v-col
+          cols="12"
+          class="d-flex flex-wrap align-center justify-start pa-0 ma-0 my-0 py-1"
+          v-if="item.initTags && item.initTags.length != 0"
+        >
+          <span
+            class="sub-info flex-grow-0 pa-1 flex-shink-1 mr-1 mb-1 font-size-10 font-weight-2 text-left"
+            v-for="tag in item.initTags.slice(0, item.initTags.length)"
+            :key="tag"
+          >
+            {{ tag }}
+          </span>
+        </v-col>
+        <v-col cols="6" class="pa-0 ma-0">
           <v-rating
-            class="product-rate line-height-18 pa-0"
-            :value="5"
+            class="ma-0 pa-0 text-left"
+            :value="getRatingAverage"
             color="#FFA200"
             dense
             half-increments
             readonly
             size="13"
-          ></v-rating> -->
-          <div class="font-size-10 font-weight-1 pr-0 pa-0 ma-0 text-right line-height-20">
+          ></v-rating>
+        </v-col>
+        <v-col cols="6" class="pa-0 ma-0">
+          <div class="font-size-10 font-weight-1 pr-0 pa-0 ma-0 text-right">
             {{ item.updatedAt | calTimeSince }}
           </div>
         </v-col>
       </v-row>
-
-      <v-row align="center" class="mx-3 pa-0 ma-0" no-gutters> </v-row>
-      <v-row align="center" class="mx-3 pa-0 ma-0" no-gutters> </v-row>
     </v-card>
   </v-hover>
 </template>
 
 <script lang="ts">
 import CategoryService from '@/api/category.service';
-import moment from 'moment';
-// import RatingItem from '@/components/common/rating/RatingItem.vue';
 import Vue from 'vue';
 
 export default Vue.extend({
-  props: ['item'],
+  props: ['item', 'isDisplayGeneral'],
   // components: { RatingItem },
   data: () => ({
     loading: false,
@@ -103,8 +136,18 @@ export default Vue.extend({
     },
   }),
   computed: {
+    mappingStoreName(): string[] {
+      return this.item.stores.map((store: string) => CategoryService.agencyItems.find((i) => i.code == store)?.name);
+    },
     isMobile(): boolean {
       return this.$store.getters.isMobile;
+    },
+    isDetailMode(): boolean {
+      if (this.isDisplayGeneral) return false;
+      return this.$store.getters.isDetailMode;
+    },
+    isShowImageDetail(): boolean {
+      return this.$store.getters.isShowImageDetail;
     },
     getRatingAverage(): number {
       return 5;
@@ -164,9 +207,28 @@ export default Vue.extend({
 @import '@/resources/scss/LineHeight.scss';
 @import '@/resources/scss/FontSize.scss';
 .product {
+  @keyframes fadeOut {
+    0% {
+      opacity: 1;
+    }
+    99% {
+      opacity: 0;
+      z-index: 1;
+    }
+    100% {
+      opacity: 0;
+      display: none;
+      z-index: -5;
+    }
+  }
   height: 100%;
   border: #f2f2f2 0.1px solid;
   box-shadow: none;
+  transition: opacity 0.5s linear;
+  -webkit-transition: opacity 0.5s linear;
+  -moz-transition: opacity 0.5s linear;
+  -o-transition: opacity 0.5s linear;
+  -ms-transition: opacity 0.5s linear;
   .product-img {
     -webkit-transition: all 0.2s;
     -moz-transition: all 0.2s;
@@ -190,14 +252,14 @@ export default Vue.extend({
     position: absolute;
     right: 0px;
     top: 0px;
-    z-index: 2;
+    z-index: 3 !important;
     border-radius: 4px 0px 4px 2px !important;
   }
   .domain-mobile {
     position: absolute;
     right: 0px;
     top: 3px;
-    z-index: 2;
+    z-index: 3 !important;
     height: 20px;
     line-height: 20px;
     border-radius: 0px 0px 0px 4px !important;
@@ -217,6 +279,15 @@ export default Vue.extend({
     line-height: 14px !important;
   }
 
+  .sub-info {
+    color: #777473;
+    z-index: 2;
+    border: 1px solid#c0bfbe;
+    display: block;
+    white-space: nowrap;
+    border-radius: 1px !important;
+    line-height: 14px !important;
+  }
   .old-price {
     text-decoration: line-through !important;
     text-decoration-color: #607d8b !important;

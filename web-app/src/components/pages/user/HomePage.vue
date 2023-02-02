@@ -1,8 +1,12 @@
 <template>
   <div class="body-user-page pa-2" ref="body-user-page-ref" v-if="!isMobileAndHomePage">
     <Carousel />
-    <RecommendProducts />
-    <TrendingPromotion :promotionItems="promotionItems" />
+    <div v-if="categoryItems && categoryItems.length != 0">
+      <RecommendProducts />
+      <TrendingPromotion :promotionItems="promotionRow1Items" :category="categoryItems[0]" />
+      <TrendingPromotion :promotionItems="promotionRow2Items" :category="categoryItems[1]" />
+      <TrendingPromotion :promotionItems="promotionRow3Items" :category="categoryItems[2]" />
+    </div>
     <!-- <TrendingBrand /> -->
     <!-- <TrendingCategory :listItem="trendingCategoryItems" /> -->
     <!-- <TrendingSearchProducts /> -->
@@ -44,7 +48,9 @@ export default Vue.extend({
   },
   data: () => ({
     trendingCategoryItems: [] as CategoryItem[],
-    promotionItems: [] as ProductItem[],
+    promotionRow1Items: [] as ProductItem[],
+    promotionRow2Items: [] as ProductItem[],
+    promotionRow3Items: [] as ProductItem[],
     randomCategory: {} as CategoryItem,
   }),
   computed: {
@@ -52,7 +58,7 @@ export default Vue.extend({
       return this.$store.getters.isMobile;
     },
     categoryItems(): CategoryItem[] {
-      return this.$store.getters.categoryItems || [];
+      return this.$store.getters.categoryItems.filter((i: CategoryItem) => i.isLeaf) || [];
     },
 
     isMobileAndHomePage(): boolean {
@@ -68,27 +74,36 @@ export default Vue.extend({
   async mounted() {},
   watch: {
     categoryItems() {
-      console.log('categoryItems', this.categoryItems);
-      if (this.randomCategory && !this.randomCategory.id && this.categoryItems.length > 0) {
-        this.randomCategory = this.categoryItems[Math.floor(Math.random() * this.categoryItems.length)];
+      const categoryItems = this.categoryItems;
+      console.log('categoryItems', categoryItems);
+      if (this.randomCategory && !this.randomCategory.id && categoryItems.length > 0) {
+        this.randomCategory = categoryItems[Math.floor(Math.random() * categoryItems.length)];
         this.loadPromotionItems();
       }
     },
   },
   methods: {
     async loadPromotionItems() {
-      this.promotionItems = await ProductService.queryItemByTarget({
-        categoryId: this.randomCategory.id,
+      this.promotionRow1Items = await ProductService.queryItemByTarget({
+        categoryId: this.categoryItems[0].id,
         page: 1,
         limit: this.isMobile ? 8 : 21,
         discountRate: 30,
+        isUsed: 'False',
       });
-      this.promotionItems = this.promotionItems.sort((itemA: ProductItem, itemB: ProductItem) => {
-        const valueA = itemA.discountRate || 0;
-        const valueB = itemB.discountRate || 0;
-        // descending
-        if (valueA < valueB) return 1;
-        else return -1;
+      this.promotionRow2Items = await ProductService.queryItemByTarget({
+        categoryId: this.categoryItems[1].id,
+        page: 1,
+        limit: this.isMobile ? 8 : 21,
+        discountRate: 30,
+        isUsed: 'False',
+      });
+      this.promotionRow3Items = await ProductService.queryItemByTarget({
+        categoryId: this.categoryItems[2].id,
+        page: 1,
+        limit: this.isMobile ? 8 : 21,
+        discountRate: 30,
+        isUsed: 'False',
       });
     },
     // async loadTrendingCategoryItems() {

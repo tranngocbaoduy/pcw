@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     
-    # "mptt",
+    "mptt",
     "import_export",
     "django_filters",
     "modules.crawler.apps.ScrapersConfig",

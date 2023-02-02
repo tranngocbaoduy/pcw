@@ -4,12 +4,7 @@
       <v-progress-linear color="deep-purple" height="10" indeterminate></v-progress-linear>
     </template> -->
 
-    <v-container
-      :fluid="false"
-      class="d-flex justify-start align-center pt-2 pb-0"
-      style="height: 55px; flex-wrap: wrap"
-      :class="isSticky ? '' : 'px-2'"
-    >
+    <v-container :fluid="false" class="d-flex justify-start align-center pa-0" style="flex-wrap: wrap">
       <!-- <div style="width: 100%" class="mb-4" :class="isSticky ? 'ml-4' : ''">
         <v-autocomplete
           class="rounded-sm elevation-0 mr-4"
@@ -64,6 +59,67 @@
           </template>
         </v-autocomplete>
       </div> -->
+
+      <div
+        v-if="!isSearchPage && filterSearchItems && filterSearchItems.length != 0"
+        class="d-flex justify-start align-center py-0"
+      >
+        <div class="mr-4" v-for="(key, index) in keyFilterSearchItems" :key="`${index}-selectedFilter`">
+          <v-select
+            v-model="selectedFilters[key]"
+            hide-details
+            class="font-size-14 w-filter"
+            :style="
+              !selectedFilters[key] || (selectedFilters[key] && selectedFilters[key].length == 0)
+                ? 'border: #6e6e6e 0.5px solid; box-shadow: none !important'
+                : 'border: #1859db 1px solid'
+            "
+            :items="
+              filterSearchItems
+                .filter((i) => !!i[key])
+                .map((i) => i[key])
+                .reverse()
+            "
+            label=""
+            solo
+            flat
+            :placeholder="`${translateName(key)}`"
+            multiple
+            item-text="name"
+            return-object
+            @change="$emit('change-filter', selectedFilters)"
+          >
+            <template v-slot:selection="{ index }">
+              <span v-if="index === 0" style="color: #1859db" class="text-caption">
+                {{ `${translateName(key)}` }}
+              </span>
+            </template>
+          </v-select>
+        </div>
+      </div>
+
+      <div class="mr-4" v-if="!isSearchPage">
+        <v-select
+          v-model="seletectedIsUsed"
+          hide-details
+          class="font-size-14 w-filter"
+          :style="
+            seletectedIsUsed && seletectedIsUsed.length == 0
+              ? 'border: #6e6e6e 0.5px solid; box-shadow: none !important'
+              : 'border: #1859db 1px solid'
+          "
+          :items="selectedIsUsedItems"
+          label=""
+          solo
+          flat
+          :placeholder="'Loại sản phẩm'"
+          multiple
+          item-text="name"
+          return-object
+          @change="$emit('change-selected-is-used', seletectedIsUsed)"
+        >
+        </v-select>
+      </div>
       <div class="mr-4" :class="isSticky ? 'ml-4' : ''" v-if="isSearchPage">
         <v-select
           v-model="selectedCategory"
@@ -86,12 +142,11 @@
           </template> -->
         </v-select>
       </div>
-      <div class="mr-4" :class="isSticky ? 'ml-4' : ''">
+      <div class="py-2 mr-4">
         <v-select
           v-model="selectedAgencies"
           hide-details
-          class="font-size-14"
-          style="width: 100px"
+          class="font-size-14 w-filter"
           :style="
             selectedAgencies && selectedAgencies.length == 0
               ? 'border: #6e6e6e 0.5px solid; box-shadow: none !important'
@@ -112,11 +167,11 @@
           </template>
         </v-select>
       </div>
-      <div class="mr-4">
+      <div class="py-2 mr-4">
         <v-select
           v-model="selectedPrices"
+          class="font-size-14 w-filter"
           hide-details
-          style="width: 150px"
           :style="
             selectedPrices && selectedPrices.length == 0
               ? 'border: #6e6e6e 0.5px solid; box-shadow: none !important'
@@ -208,11 +263,13 @@ import { ProductSearchItem } from '@/api/product.service';
 import Vue from 'vue';
 
 export default Vue.extend({
-  props: ['agencyItems', 'priceItems', 'isSearchPage'],
+  props: ['agencyItems', 'priceItems', 'isSearchPage', 'selectedIsUsedItems', 'filterSearchItems'],
   data: () => ({
     selectedCategory: null as any,
     selectedAgencies: [] as any[],
     selectedPrices: [] as any[],
+    seletectedIsUsed: [] as any[],
+    selectedFilters: {} as any,
 
     isLoading: false,
     value: null,
@@ -224,6 +281,9 @@ export default Vue.extend({
     debouncedQuery: Function,
   }),
   computed: {
+    keyFilterSearchItems() {
+      return Array.from(new Set(this.filterSearchItems.map((i: any) => Object.keys(i)).flat(1)));
+    },
     innerWidth(): number {
       return this.$store.getters.innerWidth;
     },
@@ -232,30 +292,6 @@ export default Vue.extend({
     },
     isMobile(): boolean {
       return this.$store.getters.isMobile;
-    },
-    productSearchItems(): ProductSearchItem[] {
-      return [
-        {
-          PK: 'a',
-          SK: 'b',
-          name: 'some thing 1',
-        },
-        {
-          PK: 'a',
-          SK: 'b',
-          name: 'who is 3',
-        },
-        {
-          PK: 'a',
-          SK: 'b',
-          name: 'this si',
-        },
-        {
-          PK: 'a',
-          SK: 'b',
-          name: 'where are',
-        },
-      ];
     },
     isSticky(): boolean {
       return this.offsetHeight > 260;
@@ -279,7 +315,13 @@ export default Vue.extend({
         : [];
     },
     isDisabledRefreshButton(): boolean {
-      return !(this.selectedPrices.length != 0 || this.selectedAgencies.length != 0);
+      const hasFiltered = Object.keys(this.selectedFilters).reduce((sum: any, a: any) => a && a.length != 0, false);
+      return !(
+        this.selectedPrices.length != 0 ||
+        this.selectedAgencies.length != 0 ||
+        this.seletectedIsUsed.length != 0 ||
+        hasFiltered
+      );
     },
   },
   created() {},
@@ -297,7 +339,34 @@ export default Vue.extend({
     },
   },
   methods: {
+    translateName(type: string) {
+      switch (type) {
+        case 'Type':
+          return 'Loại';
+        case 'Gen':
+          return 'Thế hệ';
+        case 'Year':
+          return 'Năm sản xuất';
+        case 'Screen':
+          return 'Màn hình';
+        case 'Storage':
+          return 'Dung lượng';
+        case 'Core':
+          return 'Core';
+        case 'Ram':
+          return 'Ram';
+        case 'Network Support':
+          return 'Mạng hỗ trợ';
+        case 'Border Size':
+          return 'Kích thước viền';
+      }
+      return '';
+    },
     refreshFilter() {
+      this.selectedAgencies = [] as any[];
+      this.selectedPrices = [] as any[];
+      this.seletectedIsUsed = [] as any[];
+      this.selectedFilters = {};
       this.selectedPrices = [] as any[];
       this.$emit('refresh-filter');
     },
@@ -351,6 +420,9 @@ export default Vue.extend({
 </script>
 
 <style lang="scss">
+.w-filter {
+  width: 151px !important;
+}
 .enhanced-filter.n-sticky {
   background: transparent;
 }

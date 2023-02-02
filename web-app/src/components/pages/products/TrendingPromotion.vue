@@ -1,12 +1,13 @@
 <template>
-  <v-col sm="12" md="12" cols="12" :class="isMobile ? 'py-0' : 'py-3'" class="trending-promotion px-0">
-    <div class="mt-2 pa-0">
-      <v-card-title class="trending-page-name font-size-32 font-weight-3 px-0 mt-2 mx-0">
-        {{ $t('trendingPromotion') }}
+  <v-col sm="12" md="12" cols="12" :class="isMobile ? 'py-0' : 'py-1'" class="trending-promotion px-0">
+    <div class="my-0 pa-0">
+      <v-card-title class="trending-page-name font-size-32 font-weight-3 px-0 ma-0">
+        {{ $t('trendingPromotion') }} - {{ category.name }}
         <v-spacer></v-spacer>
         <div
           v-if="!isMobile"
           class="font-weight-2 font-size-14 py-3 primary-color-1 float-right custom-link hover-custom-link"
+          @click="handleChangeToCategory"
         >
           <span class="py-1">{{ $t('seeMore') }}</span>
           <v-icon class="primary-color-1 pb-1" size="20px">mdi-chevron-right</v-icon>
@@ -57,6 +58,34 @@
                                 >
                                   {{ filterPromotionItems[+index + i].name }}
                                 </div>
+                                <v-col
+                                  cols="12"
+                                  class="d-flex flex-wrap align-center justify-start pa-0 ma-0"
+                                  v-if="
+                                    filterPromotionItems[+index + i].initTags &&
+                                    filterPromotionItems[+index + i].initTags.length != 0
+                                  "
+                                >
+                                  <span
+                                    class="
+                                      sub-info
+                                      flex-grow-0
+                                      pa-1
+                                      flex-shink-1
+                                      mr-1
+                                      mb-1
+                                      font-size-10 font-weight-2
+                                      text-left
+                                    "
+                                    v-for="tag in filterPromotionItems[+index + i].initTags.slice(
+                                      0,
+                                      filterPromotionItems[+index + i].initTags.length
+                                    )"
+                                    :key="tag"
+                                  >
+                                    {{ tag }}
+                                  </span>
+                                </v-col>
                                 <span
                                   class="mr-3 line-height-22 font-size-10 font-weight-1 old-price"
                                   v-if="
@@ -101,7 +130,7 @@ import ProductService, { ProductItem } from '@/api/product.service';
 import Vue from 'vue';
 
 export default Vue.extend({
-  props: ['promotionItems'],
+  props: ['promotionItems', 'category'],
   data() {
     return {
       promotions: [
@@ -149,6 +178,10 @@ export default Vue.extend({
     getSlugId(item: ProductItem): string {
       return ProductService.getSlugId(item);
     },
+
+    handleChangeToCategory() {
+      this.$router.push(`/category/${this.category.id}`);
+    },
   },
 });
 </script>
@@ -175,6 +208,16 @@ export default Vue.extend({
     padding-bottom: 4px;
     text-align: center !important;
     border-radius: 0px 0px 0px 2px !important;
+  }
+
+  .sub-info {
+    color: #777473;
+    z-index: 2;
+    border: 1px solid#c0bfbe;
+    display: block;
+    white-space: nowrap;
+    border-radius: 1px !important;
+    line-height: 14px !important;
   }
 }
 </style>

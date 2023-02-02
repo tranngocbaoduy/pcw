@@ -3,7 +3,8 @@ from django.contrib import admin, messages
 from modules.crawler.models.sitemap import Sitemap, PageInfo
 from modules.crawler.tabular_in_lines.sitemap import PageInfoTabularInline
 from modules.crawler.filters.sitemap import FilterBySitemap
-from modules.crawler.models.utils import ExtractInfoIphone
+from modules.crawler.models.utils import ExtractInfoIphone, ExtractInfoMacbook, ExtractInfoAppleWatch
+from modules.crawler.filters.sitemap import FilterByCategory
 
 from urllib.parse import urljoin, urlparse 
 from gettext import ngettext
@@ -23,9 +24,10 @@ duplicate.short_description = "Duplicate"
 
 @admin.register(PageInfo)
 class PageInfoAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ["_id",  "title", "count_update", "sitemap"]
+    search_fields = ["title"]
+    list_display = ["id",  "sub_url", "title", "count_update", "sitemap"]
     list_filter = [FilterBySitemap]
-    def _id(self, obj):
+    def sub_url(self, obj):
         return get_sub_path(obj.url)
 
 
@@ -34,7 +36,9 @@ class PageInfoAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
 @admin.register(Sitemap)
 class SitemapAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ["_id", "name", "base_url", "is_crawl_detail_running", "is_sitemap_running", "subscribe"]
+    search_fields = ["name"]
+    list_display = ["_id", "name", "category_name", "base_url", "is_crawl_detail_running", "is_sitemap_running", "subscribe"]
+    list_filter = [FilterByCategory]
     
     def _id(self, obj):
         return '#{}'.format(obj.id)
@@ -43,7 +47,14 @@ class SitemapAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         items = PageInfo.objects.filter(sitemap=obj.id)
         total = len(items)
         total_subscribed = len(PageInfo.objects.filter(sitemap=obj.id, is_subscribe=True))
-        total_candidates = len([ s for s in items if ExtractInfoIphone.is_candidate_url(s.url, s.title)])
+        total_candidates = 0
+        if obj.category_name == 'iPhone':
+            total_candidates = len(list(filter(lambda x: ExtractInfoIphone.is_candidate_url(x.url, x.title), items)))
+        elif obj.category_name == 'Macbook':
+            total_candidates = len(list(filter(lambda x: ExtractInfoMacbook.is_candidate_url(x.url, x.title), items)))
+        elif obj.category_name == 'Apple Watch':
+            total_candidates = len(list(filter(lambda x: ExtractInfoAppleWatch.is_candidate_url(x.url, x.title), items)))
+        
         return '{}/{}/{}'.format(total_subscribed, total_candidates, total)
     
     @admin.action(description="Scan data")
@@ -76,5 +87,5 @@ class SitemapAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         for query in queryset:
             query.unsubscribe_all(request, query)
 
-    inlines = (PageInfoTabularInline,)
+    # inlines = (PageInfoTabularInline,)
     actions = [scan_data, unsubscribe_all, duplicate,]

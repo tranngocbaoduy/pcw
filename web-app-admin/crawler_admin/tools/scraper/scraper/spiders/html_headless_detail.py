@@ -86,7 +86,8 @@ class HtmlHeadlessDetail(scrapy.Spider):
             yield SeleniumRequest(
                 url=sub_page.url, 
                 callback=self.parse_product_item,
-                errback=self.err_callback
+                errback=self.err_callback,
+                wait_loaded=10
             )
 
     def parse_product_item(self, response):
@@ -172,8 +173,8 @@ class HtmlHeadlessDetail(scrapy.Spider):
             except:
                 print("not image")
         image_urls = list(set(image_urls))
-        image_urls = CrawlingHelper.get_random_from_list(4, image_urls)
-        return image_urls
+        # image_urls = CrawlingHelper.get_random_from_list(4, image_urls)
+        return image_urls[:4]
 
     def _parse_attribute(self, dom, selector_type, selector):
         attribute = ""

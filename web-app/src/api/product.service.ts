@@ -15,6 +15,7 @@ export interface ProductItem {
   encodedBaseUrl: string;
   categoryId: string;
   groupProductId: string;
+  metadata: {};
   price: string;
   listPrice: string;
   updatedAt: string;
@@ -22,6 +23,12 @@ export interface ProductItem {
   listImage: string[];
   slugId: string;
   representDomainName: string;
+  tags: any;
+  stores: string[];
+  initTags: string[];
+  isUsed: boolean;
+  largestPrice: string;
+  smallestPrice: string;
   // PK: string;
   // SK: string;
   // id: string;
@@ -72,6 +79,26 @@ export default class ProductService {
           infoGroup: ProductService.parseInfoGroupItem(res.data.group),
           items: ProductService.parseListProductItem(res.data.list_product),
         };
+      });
+      return data;
+    } catch (err) {
+      console.log(err);
+      return null;
+    }
+  }
+
+  static capitalizeFirstLetter(txt: string): string {
+    return txt.charAt(0).toUpperCase() + txt.slice(1);
+  }
+
+  static async getFilterWareByKey({ categoryId }: { categoryId: string }) {
+    const url = process.env.VUE_APP_API_BASE_URL + `groups?category_id=${categoryId}`;
+    try {
+      const data = await AuthService.api.get(url).then((res) => {
+        return res.data.data.map((k: any) => {
+          const obj = ProductService.handleTags(Object.values(k)) as any;
+          return obj;
+        });
       });
       return data;
     } catch (err) {
@@ -153,6 +180,17 @@ export default class ProductService {
     maxPrice,
     minPrice,
     discountRate,
+    type,
+    year,
+    screen,
+    storageSize,
+    gen,
+    ram,
+    coreNum,
+    networkSupport,
+    borderSize,
+    isUsed,
+    isUnique = false,
   }: {
     categoryId: string;
     limit: int;
@@ -162,6 +200,17 @@ export default class ProductService {
     maxPrice?: int;
     minPrice?: int;
     discountRate?: int;
+    type?: string;
+    year?: string;
+    screen?: string;
+    gen?: string;
+    ram?: string;
+    storageSize?: string;
+    coreNum?: string;
+    networkSupport?: string;
+    borderSize?: string;
+    isUsed: string;
+    isUnique?: boolean;
   }): Promise<ProductItem[]> {
     if (!categoryId) return [];
     const url =
@@ -173,7 +222,44 @@ export default class ProductService {
       `${agencyItems ? `&agency=${agencyItems}` : ''}` +
       `${minPrice ? `&min=${minPrice}` : ''}` +
       `${maxPrice ? `&max=${maxPrice}` : ''}` +
+      `${type ? `&type=${type}` : ''}` +
+      `${year ? `&year=${year}` : ''}` +
+      `${screen ? `&screen=${screen}` : ''}` +
+      `${storageSize ? `&storageSize=${storageSize}` : ''}` +
+      `${gen ? `&gen=${gen}` : ''}` +
+      `${ram ? `&ram=${ram}` : ''}` +
+      `${coreNum ? `&coreNum=${coreNum}` : ''}` +
+      `${networkSupport ? `&networkSupport=${networkSupport}` : ''}` +
+      `${borderSize ? `&borderSize=${borderSize}` : ''}` +
+      `${isUsed ? `&isUsed=${isUsed}` : ''}` +
+      `${isUnique ? `&isUnique=${isUnique}` : ''}` +
       `${discountRate && discountRate != 0 ? `&discount=${discountRate}` : ''}`;
+    console.log('url', url);
+    const data = await AuthService.api
+      .get(url)
+      .then((response: any) => response.data.products)
+      .then((data: any) => ProductService.parseListProductItem(data));
+    return data;
+  }
+
+  static async queryItemByGroupName({
+    categoryId,
+    groupName,
+    limit = 20,
+    page = 1,
+  }: {
+    categoryId: string;
+    limit: int;
+    page: int;
+    groupName?: string;
+  }): Promise<ProductItem[]> {
+    if (!categoryId) return [];
+    const url =
+      process.env.VUE_APP_API_BASE_URL +
+      `products/${categoryId}?` +
+      `page=${page}` +
+      `${limit ? `&limit=${limit}` : ''}` +
+      `${groupName ? `&groupName=${groupName}` : ''}`;
 
     const data = await AuthService.api
       .get(url)
@@ -206,7 +292,7 @@ export default class ProductService {
 
   public static nameDomainShop = {
     tiki: 'Tiki',
-    'dienmayxanh.com': 'Điện Máy Xanh',
+    dienmayxanh: 'Điện Máy Xanh',
     shopee: 'Shopee',
     mall: 'Mall',
     lazmall: 'LazMall',
@@ -222,7 +308,11 @@ export default class ProductService {
 
   static parseListImage(list_image: string) {
     try {
-      return JSON.parse(list_image);
+      if (list_image) {
+        const listImage = JSON.parse(list_image);
+        return listImage ? listImage.reverse() : [];
+      }
+      return [];
     } catch {
       return [];
     }
@@ -277,9 +367,10 @@ export default class ProductService {
       encodedBaseUrl: item.encoded_base_url, // 'aHR0cHM6Ly9jZWxscGhvbmVzLmNvbS52bi9pcGhvbmUtMTEtMTI4Z2ItZGEta2ljaC1ob2F0Lmh0bWw',
       categoryId: item.category, // '3111010055',
       groupProductId: item.group_product, // 'si0abb2e7gbo',
+      metadata: item.meta ? JSON.parse(item.meta) : {}, // meta data
       price: item.price, // '11190000.0',
       listPrice: item.list_price, // '16990000.0',
-      updatedAt: item.updated_at, // '2023-01-08T15:04:37.862989Z',
+      updatedAt: item.last_updated_price, // '2023-01-08T15:04:37.862989Z',
       discountRate: item.discount_rate,
       listImage: ProductService.parseListImage(item.list_image),
       domain: domain,
@@ -287,7 +378,60 @@ export default class ProductService {
       representDomainName: Object.keys(ProductService.nameDomainShop).includes(domain)
         ? ProductService.nameDomainShop[domain]
         : domain,
+      tags: item.tags ? ProductService.handleTags(item.tags) : {},
+      initTags: item.tags ? Object.values(ProductService.handleTags(item.tags)) : '',
+      isUsed: item.is_used,
+      stores: item.store_name ? item.store_name.split(',') : [],
+      largestPrice: item.largest_price ? item.largest_price : '',
+      smallestPrice: item.smallest_price ? item.smallest_price : '',
     } as ProductItem;
+  }
+
+  static handleTags(tags: string[]) {
+    const res = {} as any;
+    if (tags.length > 0) {
+      if (tags[0].includes('MAC')) {
+        // handle for mac product
+        const keys = ['Type', 'Gen', 'Year', 'Screen', 'Storage', 'Ram', 'Core'];
+        for (const i in keys) {
+          if (tags[i] == 'UNKNOW') continue;
+          const key = keys[i];
+          if (key == 'Type') {
+            res[key] = tags[i].split('_').join(' ').toLocaleLowerCase();
+            res[key] = res[key].replace('macbook', 'Macbook');
+          } else {
+            res[key] = tags[i];
+          }
+        }
+      } else if (tags[0].includes('APPLE_WATCH')) {
+        // handle for mac product
+        const keys = ['Gen', 'Screen', 'Network Support', 'Border Size'];
+        for (const i in keys) {
+          if (tags[i] == 'UNKNOW') continue;
+          const key = keys[i];
+          if (key == 'Gen') {
+            res[key] = tags[i].split('_').join(' ').toLocaleLowerCase();
+            res[key] = res[key].replace('apple watch', 'Apple Watch');
+          } else {
+            res[key] = tags[i];
+          }
+        }
+      } else if (tags[0].includes('IPHONE')) {
+        // handle for iphone product
+        const keys = ['Type', 'Storage'];
+        for (const i in keys) {
+          if (tags[i] == 'UNKNOW') continue;
+          const key = keys[i];
+          if (key == 'Type') {
+            res[key] = tags[i].split('_').join(' ').toLocaleLowerCase();
+            res[key] = res[key].replace('iphone', 'iPhone');
+          } else {
+            res[key] = tags[i];
+          }
+        }
+      }
+    }
+    return res;
   }
 
   static handleDescription(description: string[]): string {

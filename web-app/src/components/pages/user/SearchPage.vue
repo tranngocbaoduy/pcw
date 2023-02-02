@@ -26,7 +26,10 @@
           v-if="!isMobile"
           :priceItems="priceItems"
           :agencyItems="agencyItems"
+          :filterSearchItems="filterSearchItems"
           :isSearchPage="true"
+          :selectedIsUsedItems="isUsedItems"
+          @change-selected-is-used="changeSelecetedIsUsed"
           @change-agency="changeAgency"
           @change-category="changeCategory"
           @change-price="changePrice"
@@ -80,7 +83,7 @@ import ProductService, { ProductItem } from '@/api/product.service';
 import EnhancedFilter from '@/components/search-filter/EnhancedFilter.vue';
 
 export default Vue.extend({
-  name: 'CategoryPage',
+  name: 'SearchPage',
   props: [],
   components: {
     BreadCrumbs,
@@ -108,6 +111,8 @@ export default Vue.extend({
       { name: 'Quốc tế: Giao hàng thường', selected: false },
       { name: 'Miễn phí giao hàng', selected: false },
     ],
+    isUsedItems: ['Sp Cũ', 'Tất cả'],
+    selectedIsUsed: 'False',
     noItemImage: require('@/assets/banner/no-product.png'),
     limit: 18,
     quantity: 18,
@@ -155,6 +160,20 @@ export default Vue.extend({
           exact: true,
         },
       ];
+    },
+    filterSearchItems() {
+      const uniqueArray = this.productItems.filter((value, index) => {
+        const _value = JSON.stringify(value.tags);
+        return (
+          index ===
+          this.productItems.findIndex((obj) => {
+            return JSON.stringify(obj.tags) === _value;
+          })
+        );
+      });
+      return uniqueArray.map((item) => ({
+        ...item.tags,
+      }));
     },
 
     filterProductItems() {
@@ -213,6 +232,7 @@ export default Vue.extend({
           agencyItems: agencyItems.join(','),
           minPrice: this.minMaxTuple[0] * 1000000,
           maxPrice: this.minMaxTuple[1] * 1000000,
+          isUsed: this.selectedIsUsed,
         });
       } else {
         newItems = await ProductService.querySearchItems({
@@ -284,6 +304,17 @@ export default Vue.extend({
 
       this.isLoading = false;
     },
+    async changeSelecetedIsUsed(selectedIsUsedItems: any) {
+      console.log('selectedIsUsedItems', selectedIsUsedItems);
+      if (selectedIsUsedItems.includes('Tất cả')) {
+        this.selectedIsUsed = 'All';
+      } else if (selectedIsUsedItems.includes('Sp Cũ')) {
+        this.selectedIsUsed = 'True';
+      } else {
+        this.selectedIsUsed = 'False';
+      }
+      await this.loadProductItemByTarget();
+    },
 
     async loadProductItemByTarget() {
       const agencyItems = this.agencyItems.filter((item: any) => item.selected).map((item: any) => item.code);
@@ -296,6 +327,7 @@ export default Vue.extend({
           agencyItems: agencyItems.join(','),
           minPrice: this.minMaxTuple[0] * 1000000,
           maxPrice: this.minMaxTuple[1] * 1000000,
+          isUsed: this.selectedIsUsed,
         });
       } else {
         this.productItems = await ProductService.querySearchItems({

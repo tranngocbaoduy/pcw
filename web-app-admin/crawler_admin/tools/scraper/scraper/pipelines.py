@@ -8,13 +8,14 @@
 import scrapy
 import requests
 import json
+import datetime
 import logging
 
 from decimal import *
 from bs4 import BeautifulSoup
 from validators.url import url
 from modules.crawler.models.sitemap import PageInfo, Sitemap 
-from modules.crawler.models.product import Category, GroupProduct, Product 
+from modules.crawler.models.product import Category, GroupProduct, Product, HistoryPricing
 from tools.scraper.scraper.utils import CrawlingHelper
 
 class ScraperPipeline: 
@@ -51,10 +52,19 @@ class ScraperPipeline:
                 list_meta['name'] = meta_attrs.get('content')
 
         discount_rate = 0 
-        p1 = Decimal(item.get('price', 0))
-        p2 = Decimal(item.get('list_price', 1))
+        
+        p1 = Decimal(item.get('price')) if item.get('price') != '' else 0
+        p2 = Decimal(item.get('list_price')) if item.get('list_price') != '' else 0
+        if not p2: p2 = p1
         if p1 and p1 > 0 and p2 and p2  > 0:
-            discount_rate = 100 - int(Decimal(p1) / Decimal(p2) * 100)
+            if p1 > p2:
+                p1, p2 = p2, p1
+                discount_rate = 100 - int(Decimal(p1) / Decimal(p2) * 100)
+            elif p1 * 2 < p2:
+                p2 = p1
+                discount_rate = 0 
+            else:
+                discount_rate = 100 - int(Decimal(p1) / Decimal(p2) * 100)
 
         params = { 
             "name": item.get('name').strip(),
@@ -63,13 +73,14 @@ class ScraperPipeline:
             "encoded_base_url": item.get('encoded_base_url'),
             "meta": json.dumps(list_meta),
             "description": "",
-            "price": item.get('price'), 
-            "list_price": item.get('list_price'),
+            "price": p1, 
+            "list_price":p2,
             "list_image": json.dumps(item.get('list_image')),
             "category": item.get('category'),
             "discount_rate": discount_rate
         } 
-
+        if params['name'] == '': params['name'] = params['title']
+ 
         return params
 
     def create_or_update_item(self, params):
@@ -99,10 +110,22 @@ class ScraperPipeline:
                 setattr(obj, 'count_update', obj.count_update + 1)  
                 obj.save()
                 print({"message": "[UPDATE PRODUCT]", "obj": obj})
-            return params
+            return obj
         except Exception as e:
             print(e)
             return None
+
+    def create_or_update_history_pricing(self, product_info, params):
+        if product_info.price != params.get('price') or product_info.list_price != params.get('list_price'):
+            product_info.last_updated_price = (datetime.datetime.utcnow().replace(microsecond=0).isoformat() + 'Z')
+            params = {
+                "price": product_info.price,
+                "list_price": product_info.list_price,
+                "product": product_info,
+            } 
+            history_obj = HistoryPricing.objects.create(**params)
+            print({"message": "[CREATE HISTORY]", "obj": history_obj})
+            product_info.save()
 
     def process_item(self, item, spider):
         sitemap = spider.sitemap
@@ -121,23 +144,28 @@ class ScraperPipeline:
             if params['name'] and params['price'] and params['list_price']:
                 params['category'], is_created = Category.objects.get_or_create(name=item['category'])
                 product_info = self.create_or_update_item_detail(params) 
+                self.create_or_update_history_pricing(product_info, params)
                 
                 # Continue subscribe to product
                 page_info.is_subscribe = True
                 page_info.save()
 
                 return product_info
-            
-            # Cancle subscribe to product
-            page_info.is_subscribe = False
-            page_info.save()
-            
+            else:
+                # Cancle subscribe to product
+                page_info.is_subscribe = False
+                page_info.save()
         return None
 
     def close_spider(self, spider):
         sitemap = spider.sitemap  
         print('[CLOSE SPIDER]', spider, sitemap, spider.action)
         if spider.action == 'SITEMAP': sitemap.is_sitemap_running = False
-        if spider.action == 'UPDATE_DETAIL': sitemap.is_crawl_detail_running = False
+        if spider.action == 'UPDATE_DETAIL': 
+            sitemap.is_crawl_detail_running = False
+            print("[UPDATE GROUP AND CATEGORIZE] ...")
+            GroupProduct.update_all_info()
+            Product.categorize_all()
+            print("FINISHED UPDATING CATEGORIZATION !!")
         sitemap.save() 
         pass

@@ -320,6 +320,17 @@ export default Vue.extend({
       return this.$store.getters.domainItems;
     },
     breadcrumbs(): any[] {
+      const subBreadcrumbs = [] as any[];
+      if (this.selectedCategory && this.selectedCategory.parents) {
+        for (const category of this.selectedCategory.parents) {
+          subBreadcrumbs.push({
+            text: category ? category.name : '',
+            to: `/category/${category.id}`,
+            disabled: false,
+            exact: true,
+          });
+        }
+      }
       return [
         {
           text: this.$t('home'),
@@ -327,6 +338,7 @@ export default Vue.extend({
           to: '/',
           exact: true,
         },
+        ...subBreadcrumbs,
         {
           text: this.categoryId && this.selectedCategory ? `${this.selectedCategory.name}` : '',
           to: `/category/${this.categoryId ? this.categoryId.toLowerCase() : ''}`,
@@ -359,7 +371,6 @@ export default Vue.extend({
     window.scrollTo({ top: 0, left: 0 });
     await this.initialize();
     this.handleChangeSorter(this.sortByProductAnotherAgency.find((i) => i.isSelected));
-    this.cheapestItem = JSON.parse(JSON.stringify(this.allProduct[0]));
   },
   watch: {
     async slugId() {
@@ -471,6 +482,7 @@ export default Vue.extend({
             }
           );
           this.largestSaleOffItem = saleOffSortedItems[0] as ProductItem;
+          this.cheapestItem = this.allProduct[0];
         }
       } catch (err) {
         console.log(err);

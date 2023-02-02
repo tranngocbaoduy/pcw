@@ -19,16 +19,17 @@ class ExtractInfoIphone(object):
             'iphone-(\d+)-mini',
             'iphone-se',
             'iphone-se(-\d+)',
+            'iphone-(\d+)-plus',
             'iphone-(\d+)'
         ] 
         for regex in regexs:
             match = re.search(regex, url)
             if match:
-                return match.group()
+                return '_'.join(match.group().split('-')).upper()
         return ''
 
     @staticmethod
-    def extract_ram_size(url):
+    def extract_storage_size(url):
         regexs = [
             '(\d+)tb', 
             '(\d+)gb', 
@@ -36,7 +37,7 @@ class ExtractInfoIphone(object):
         for regex in regexs:
             match = re.search(regex, url)
             if match:
-                return match.group()
+                return match.group().upper()
         return ''
 
 
@@ -44,34 +45,52 @@ class ExtractInfoIphone(object):
     def extract_is_used(url):
         regexs = [
             '-cu',  
+            ' cũ ',
         ] 
         for regex in regexs:
             match = re.search(regex, url)
             if match:
                 return True
         return False
+    
+    @staticmethod
+    def pre_extract(text):
+        text = text.lower()   
+        gen_number = ExtractInfoIphone().extract_gen_number(text)
+        storage_size = ExtractInfoIphone().extract_storage_size(text) 
+        is_used = ExtractInfoIphone().extract_is_used(text)
+        return { 
+            'gen_number': gen_number,  
+            'storage_size': storage_size, 
+            'is_used': is_used
+        }
 
     @staticmethod
     def extract_info(base_url, name_sp=""):
-        base_url = base_url.lower()
-        name_sp = name_sp.lower()
-        gen_number = ExtractInfoIphone().extract_gen_number(base_url)
-        ram_size = ExtractInfoIphone().extract_ram_size(base_url) 
-        is_used = ExtractInfoIphone().extract_is_used(base_url)
-        if ram_size and gen_number and not is_used:
-            return gen_number, ram_size, is_used
-        if gen_number and not is_used and ram_size == '' and name_sp != '':
-            ram_size = ExtractInfoIphone().extract_ram_size(name_sp) 
-            if ram_size and gen_number and not is_used:
-                return gen_number, ram_size, is_used
-        return None, None, None
+        info_from_base_url = dict(ExtractInfoIphone.pre_extract(base_url))
+        info_from_name = dict(ExtractInfoIphone.pre_extract(name_sp)) 
+         
+        for k, v in info_from_name.items(): 
+            if v and info_from_base_url[k] == None and info_from_base_url[k] != v:
+                info_from_base_url[k] = v
+            if k == 'is_used':
+                if v == True or info_from_base_url[k] == True:
+                    info_from_base_url[k] = True
+ 
+        return info_from_base_url
 
     @staticmethod
     def is_candidate_url(base_url, name_sp=""): 
-        gen_number, ram_size, _ = ExtractInfoIphone().extract_info(base_url, name_sp)
-        if gen_number and ram_size:
+        extracted_info = ExtractInfoIphone.extract_info(base_url, name_sp)
+        if ExtractInfoIphone.is_candidate_item(extracted_info):
             return True
         return False
+    
+    @staticmethod
+    def is_candidate_item(extracted_info):  
+        if extracted_info['storage_size'] and extracted_info['gen_number'] and not extracted_info['is_used']:
+            return True
+        return False 
 
 with open('./notes/data.txt', 'r') as f:
     data = f.read()

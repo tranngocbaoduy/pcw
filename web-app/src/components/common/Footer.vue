@@ -1,5 +1,5 @@
 <template>
-  <div class="footer py-9">
+  <div class="footer pt-9 pb-3">
     <v-container>
       <v-row no-gutters>
         <v-col cols="6" md="3" sm="4" class="pa-2">
@@ -10,7 +10,7 @@
           <v-card-title class="font-size-18 primary-color-1 font-weight-4 pa-0 mb-4">{{ $t('catalog') }}</v-card-title>
           <router-link
             class="custom-link"
-            :to="`category/${category.id}`"
+            :to="`/category/${category.id}`"
             v-for="category in listCategoryName"
             :key="category.id"
           >
@@ -45,11 +45,17 @@
             </div>
           </v-card-text>
         </v-col>
+        <v-col cols="12" class="font-size-12 text-center pt-4">
+          Giá cả hiển thị có thể cao hơn so với lần cập nhật gần nhất. Chúng tôi luôn cố gắng cập nhật giá mới nhất
+          trong thời gian ngắn nhất.<br />
+          © {{ new Date().getFullYear() }} PCW - Price Comparasion Website. <br />All rights reserved. <br />
+        </v-col>
       </v-row>
     </v-container>
   </div>
 </template>
 <script lang="ts">
+import { CategoryItem } from '@/api/category.service';
 import Vue from 'vue';
 
 export default Vue.extend({
@@ -63,7 +69,7 @@ export default Vue.extend({
       return this.$store.getters.isMobile;
     },
     listCategoryName(): any[] {
-      return this.$store.getters.categoryItems.slice(0, 4);
+      return this.$store.getters.categoryItems.filter((i: CategoryItem) => i.isLeaf).slice(0, 4);
     },
   },
   methods: {

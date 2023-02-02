@@ -3,7 +3,7 @@ from django.db.models import JSONField
 from django.db import models
 from django.contrib import admin, messages
 from django.utils.translation import gettext_lazy as _
-from modules.crawler.models.utils import id_generator, id_gen, ExtractInfoIphone, ExtractInfoMacbook
+from modules.crawler.models.utils import id_generator, id_gen, ExtractInfoIphone, ExtractInfoMacbook, ExtractInfoAppleWatch
 from modules.crawler.models.parser import WareParser
 
 from tools.scraper.scraper.spiders.html_headless import HtmlHeadless
@@ -25,7 +25,7 @@ class Sitemap(models.Model):
     ) 
 
     def __str__(self):
-        return '#SI{} - {}'.format(self.id, self.name)
+        return '#{} - {} - {}'.format(self.id, self.name, self.category_name)
 
     crawl_type = models.CharField(
         max_length=50, choices=CrawlType.choices, default=CrawlType.MPA
@@ -47,6 +47,8 @@ class Sitemap(models.Model):
         ordering = ['name']
 
     def scan_data(self, request, query):
+        self.is_crawl_detail_running = False
+        self.save()
         if self.is_crawl_detail_running: 
             self.save()
             messages.add_message(
@@ -59,14 +61,18 @@ class Sitemap(models.Model):
             crawl_settings = Settings()
             crawl_settings.setmodule("tools.scraper.scraper.settings")
 
-            if self.category_name == 'Điện thoại':
+            # page_info_items = PageInfo.objects.filter(id='qn3d84uah3qy')
+            if self.category_name == 'iPhone':
                 page_info_items = PageInfo.objects.filter(sitemap=self.id)#is_subscribe=True
                 page_info_items = list(filter(lambda x: ExtractInfoIphone.is_candidate_url(x.url, x.title), page_info_items))
             elif self.category_name == 'Macbook':
                 page_info_items = PageInfo.objects.filter(sitemap=self.id)#is_subscribe=True
                 page_info_items = list(filter(lambda x: ExtractInfoMacbook.is_candidate_url(x.url, x.title), page_info_items))
+            elif self.category_name == 'Apple Watch':
+                page_info_items = PageInfo.objects.filter(sitemap=self.id)#is_subscribe=True
+                page_info_items = list(filter(lambda x: ExtractInfoAppleWatch.is_candidate_url(x.url, x.title), page_info_items))
             else:
-                page_info_items = []
+                page_info_items = [] 
 
             if page_info_items and len(page_info_items) != 0:
                 self.is_crawl_detail_running = True

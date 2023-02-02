@@ -6,6 +6,16 @@
         :class="isMobile ? 'transition-span-mobile' : 'transition-span'"
       >
         <v-btn
+          @click="toggleDetailMode()"
+          class="elevation-1 my-1 rounded-circle my-0"
+          color="#1859db"
+          style="background-color: white !important"
+          icon
+        >
+          <v-icon v-if="isDetailMode" size="20">mdi-image-filter-center-focus-strong</v-icon>
+          <v-icon v-else size="20">mdi-image-filter-center-focus-weak</v-icon>
+        </v-btn>
+        <v-btn
           @click="transitionToTopPage()"
           class="elevation-1 my-1 rounded-circle my-0"
           color="#1859db"
@@ -19,17 +29,21 @@
         <div class="mt-2 pa-0" :class="isMobile ? 'px-2' : 'px-0'">
           <BreadCrumbs :breadcrumbs="breadcrumbs" />
           <v-card-title class="product-page-name font-size-32 font-weight-3 px-0 mt-0 mx-0">{{
-            selectedCategory.name
+            selectedCategory ? selectedCategory.name : ''
           }}</v-card-title>
         </div>
         <EnhancedFilter
           v-if="!isMobile"
           :priceItems="priceItems"
-          :agencyItems="agencyItems"
+          :agencyItems="agencyItemsByCategory"
+          :filterSearchItems="filterSearchItems"
+          :selectedIsUsedItems="isUsedItems"
           @change-agency="changeAgency"
           @change-price="changePrice"
-          class="ma-n2 pa-2 mx-0"
+          @change-filter="changeFilter"
+          @change-selected-is-used="changeSelecetedIsUsed"
           @refresh-filter="refreshFilter"
+          class="mx-0 py-2"
         />
         <!-- :style="$vuetify.breakpoint.mdAndUp ? ' flex: 1 0 18%;' : ''" -->
         <div
@@ -37,8 +51,43 @@
           class="mt-3"
           :class="isMobile ? 'px-2' : 'px-0'"
         >
-          <v-row no-gutters>
-            <v-col :key="item['SK']" v-for="item in filterProductItems" cols="6" md="2" xl="2" lg="2" sm="3">
+          <v-row no-gutters v-if="filterProductItemsByIsUsed(filterProductItems, false).length != 0">
+            <v-col cols="12">
+              <v-card-title
+                class="product-page-name font-size-28 font-weight-3 px-0 mt-0 mx-0"
+                v-if="selectedIsUsed == 'All'"
+                >Sản phẩm mới</v-card-title
+              ></v-col
+            >
+            <v-col
+              :key="item['SK']"
+              v-for="item in filterProductItemsByIsUsed(filterProductItems, false)"
+              cols="6"
+              md="2"
+              xl="2"
+              lg="2"
+              sm="3"
+            >
+              <router-link :to="`${getSlugId(item)}`">
+                <Product :item="item" />
+              </router-link>
+            </v-col>
+          </v-row>
+          <v-row no-gutters v-if="filterProductItemsByIsUsed(filterProductItems, true).length != 0">
+            <v-col cols="12">
+              <v-card-title class="product-page-name font-size-28 font-weight-3 px-0 mt-0 mx-0"
+                >Sản phẩm đã qua sử dụng</v-card-title
+              >
+            </v-col>
+            <v-col
+              :key="item['SK']"
+              v-for="item in filterProductItemsByIsUsed(filterProductItems, true)"
+              cols="6"
+              md="2"
+              xl="2"
+              lg="2"
+              sm="3"
+            >
               <router-link :to="`${getSlugId(item)}`">
                 <Product :item="item" />
               </router-link>
@@ -74,7 +123,6 @@ import BreadCrumbs from '@/components/common/BreadCrumbs.vue';
 import Product from '@/components/product/Product.vue';
 import CategoryService, { CategoryItem } from '@/api/category.service';
 import ProductService, { ProductItem } from '@/api/product.service';
-
 import EnhancedFilter from '@/components/search-filter/EnhancedFilter.vue';
 import SeoService from '@/api/seo.service';
 import { MetaInfo } from 'vue-meta';
@@ -100,16 +148,10 @@ export default Vue.extend({
       { name: '2-stars', rate: 2 },
       { name: '1-stars', rate: 1 },
     ],
-    agencyItems: [
-      { name: 'TopZone', selected: false, code: 'topzone' },
-      { name: 'DiĐộngViệt', selected: false, code: 'didongviet' },
-      { name: 'ShopDunk', selected: false, code: 'shopdunk' },
-      { name: 'BạchLongMobile', selected: false, code: 'bachlong' },
-      { name: 'Cellphones', selected: false, code: 'cellphones' },
-      { name: '24h store', selected: false, code: '24hstore' },
-      { name: 'ViettelStore', selected: false, code: 'viettelstore' },
-      { name: 'Nguyễn Kim', selected: false, code: 'nguyenkim' },
-    ],
+    agencyItems: CategoryService.agencyItems,
+    isUsedItems: ['Sp Cũ', 'Tất cả'],
+    selectedIsUsed: 'False',
+    selectedAgency: '',
     shipItems: [
       { name: 'Nội địa: Giao hàng nhanh', selected: false },
       { name: 'Nội địa: Giao hàng thường', selected: false },
@@ -118,14 +160,26 @@ export default Vue.extend({
       { name: 'Miễn phí giao hàng', selected: false },
     ],
     noItemImage: require('@/assets/banner/no-product.png'),
-    limit: 18,
-    quantity: 18,
+    limit: 30,
+    quantity: 30,
     page: 1,
     discountRate: 0,
     minMaxTuple: [0, 10000000] as number[],
     minMaxTupleDefault: [0, 10000000] as number[],
     productItems: [] as ProductItem[],
+    filteredProductItems: [] as ProductItem[],
     priceItems: [] as any[],
+
+    typeProducts: [] as string[],
+    storageSizes: [] as string[],
+    genProducts: [] as string[],
+    screenSizes: [] as string[],
+    yearProducts: [] as string[],
+    ramProducts: [] as string[],
+    coreNumProducts: [] as string[],
+    networkSupportProducts: [] as string[],
+    borderSizeProducts: [] as string[],
+    filterSearchItems: [] as any[],
   }),
   async created() {
     this.priceItems = [
@@ -135,25 +189,20 @@ export default Vue.extend({
       { id: 4, name: `${this.$t('Range')} 31 - 40 MIL VND`, selected: false, min: 31, max: 40 },
       { id: 5, name: `${this.$t('Above')} 40 MIL VND`, selected: false, min: 41, max: 999 },
     ];
-    this.page = 1;
-    this.limit = this.isMobile ? 6 : 18;
-    this.quantity = this.isMobile ? 6 : 18;
+    this.refreshPageNumber();
     await this.initialize();
     this.$store.commit('setState', { searchString: '' });
-    this.$store.commit('setState', {
-      searchFilter: {
-        catalogItems: this.catalogItems,
-        voteItems: this.voteItems,
-        priceItems: this.priceItems,
-        agencyItems: this.agencyItems,
-        shipItems: this.shipItems,
-      },
-    });
   },
   mounted() {},
   computed: {
     isMobile(): boolean {
       return this.$store.getters.isMobile;
+    },
+    isShowImageDetail(): boolean {
+      return this.$store.getters.isShowImageDetail;
+    },
+    isDetailMode(): boolean {
+      return this.$store.getters.isDetailMode;
     },
     selectedCategory(): CategoryItem {
       return this.$store.getters.selectedCategory;
@@ -161,16 +210,18 @@ export default Vue.extend({
     categoryId(): string {
       return this.$route.params['idCate'] || '';
     },
-    categoryItem(): any {
-      return this.$store.getters.categoryItems.find((item: any) => item.SK == this.categoryId) || {};
-    },
-    catalogItems(): [] {
-      return this.$store.getters.categoryItems.map((item: any) => ({
-        name: CategoryService.code2category(item.SK),
-        urlRoute: CategoryService.code2category(item.SK).split(' ').join('').toLowerCase(),
-      }));
-    },
     breadcrumbs(): any[] {
+      const subBreadcrumbs = [] as any[];
+      if (this.selectedCategory && this.selectedCategory.parents) {
+        for (const category of this.selectedCategory.parents) {
+          subBreadcrumbs.push({
+            text: category ? category.name : '',
+            to: `/category/${category.id}`,
+            disabled: false,
+            exact: true,
+          });
+        }
+      }
       return [
         {
           text: this.$t('home'),
@@ -178,6 +229,7 @@ export default Vue.extend({
           to: '/',
           exact: true,
         },
+        ...subBreadcrumbs,
         {
           text: this.selectedCategory ? this.selectedCategory.name : '',
           to: `/category/${this.$route.params['idCate']}`,
@@ -186,21 +238,14 @@ export default Vue.extend({
         },
       ];
     },
+    agencyItemsByCategory(): any[] {
+      return this.selectedCategory ? CategoryService.agencyItemsByCategory(this.selectedCategory) : [];
+    },
 
     filterProductItems() {
-      // const agencySelecting = this.agencyItems.filter((item: any) => item.selected).map((item: any) => item.code);
-      // const brandSelecting = this.brandItems
-      //   .filter((item: any) => item.selected)
-      //   .map((item: any) => CategoryService.upperCaseFirstLetter(item.name));
-      // return this.productItems.filter(
-      //   (item: ProductItem) =>
-      //     (agencySelecting.length == 0 || (agencySelecting && agencySelecting.includes(item.agency))) &&
-      //     (brandSelecting.length == 0 ||
-      //       (brandSelecting && brandSelecting.includes(CategoryService.upperCaseFirstLetter(item.brand)))) &&
-      //     item.price > this.minMaxTuple[0] * 1000000 &&
-      //     item.price < this.minMaxTuple[1] * 100000000
-      // );
-      return this.productItems;
+      return this.filteredProductItems && this.filteredProductItems.length > 0
+        ? this.filteredProductItems
+        : this.productItems;
     },
   },
 
@@ -218,50 +263,142 @@ export default Vue.extend({
     },
   },
   methods: {
+    filterProductItemsByIsUsed(filteredProductItems: ProductItem[], isUsed = false) {
+      return filteredProductItems.filter((i) => i.isUsed == isUsed);
+    },
+    toggleImage() {
+      this.$store.commit('setState', { isShowImageDetail: !this.isShowImageDetail });
+    },
+
+    async toggleDetailMode() {
+      console.log('set this.isDetailMode', !this.isDetailMode);
+      this.$store.commit('setState', { isDetailMode: !this.isDetailMode });
+      await this.loadProductItemByTarget();
+    },
     async initialize() {
       window.scrollTo({ top: 0, left: 0 });
       this.isLoading = true;
-
       console.log('Load item ...', this.categoryId);
       this.page = parseInt((this as any).$route.query.page || 1);
       this.$store.commit('setState', { searchString: this.$route.query.name });
       await this.updateUrlQueryToData();
       this.isLoading = false;
+      this.filterSearchItems = await ProductService.getFilterWareByKey({ categoryId: this.categoryId });
     },
     async handleGetMoreProduct() {
       this.isLoading = true;
       this.isNextProduct = true;
       this.page += 1;
-      const agencyItems = this.agencyItems.filter((item: any) => item.selected).map((item: any) => item.code);
 
       const newItems = await ProductService.queryItemByTarget({
         categoryId: this.categoryId.toUpperCase(),
         limit: this.limit,
         page: this.page,
-        agencyItems: agencyItems.join(','),
+        agencyItems: this.selectedAgency,
         minPrice: this.minMaxTuple[0] * 1000000,
         maxPrice: this.minMaxTuple[1] * 1000000,
+        type: this.typeProducts && this.typeProducts.length > 0 ? this.typeProducts.join(',') : '',
+        storageSize: this.storageSizes && this.storageSizes.length > 0 ? this.storageSizes.join(',') : '',
+        screen: this.screenSizes && this.screenSizes.length > 0 ? this.screenSizes.join(',') : '',
+        gen: this.genProducts && this.genProducts.length > 0 ? this.genProducts.join(',') : '',
+        year: this.yearProducts && this.yearProducts.length > 0 ? this.yearProducts.join(',') : '',
+        ram: this.ramProducts && this.ramProducts.length > 0 ? this.ramProducts.join(',') : '',
+        coreNum: this.coreNumProducts && this.coreNumProducts.length > 0 ? this.coreNumProducts.join(',') : '',
+        networkSupport:
+          this.networkSupportProducts && this.networkSupportProducts.length > 0
+            ? this.networkSupportProducts.join(',')
+            : '',
+        borderSize:
+          this.borderSizeProducts && this.borderSizeProducts.length > 0 ? this.borderSizeProducts.join(',') : '',
+        isUsed: this.selectedIsUsed,
+        isUnique: !this.isDetailMode,
       });
       if (newItems && newItems.length == 0) this.isNextProduct = false;
       this.productItems = this.productItems.concat(newItems);
       this.isLoading = false;
     },
+    async changeFilter(selectedFilters: any) {
+      for (const key of Object.keys(selectedFilters)) {
+        if (key == 'Type')
+          this.typeProducts = selectedFilters[key].map((i: any) => i.toLocaleUpperCase().split(' ').join('_')).sort();
+        if (key == 'Storage')
+          this.storageSizes = selectedFilters[key].map((i: any) => i.toLocaleUpperCase().split(' ').join('_')).sort();
+        if (key == 'Gen')
+          this.genProducts = selectedFilters[key].map((i: any) => i.toLocaleUpperCase().split(' ').join('_')).sort();
+        if (key == 'Year')
+          this.yearProducts = selectedFilters[key].map((i: any) => i.toLocaleUpperCase().split(' ').join('_')).sort();
+        if (key == 'Screen')
+          this.screenSizes = selectedFilters[key].map((i: any) => i.toLocaleUpperCase().split(' ').join('_')).sort();
+        if (key == 'Ram')
+          this.ramProducts = selectedFilters[key].map((i: any) => i.toLocaleUpperCase().split(' ').join('_')).sort();
+        if (key == 'Core')
+          this.ramProducts = selectedFilters[key].map((i: any) => i.toLocaleUpperCase().split(' ').join('_')).sort();
+        if (key == 'Network Support')
+          this.networkSupportProducts = selectedFilters[key]
+            .map((i: any) => i.toLocaleUpperCase().split(' ').join('_'))
+            .sort();
+        if (key == 'Border Size')
+          this.borderSizeProducts = selectedFilters[key]
+            .map((i: any) => i.toLocaleUpperCase().split(' ').join('_'))
+            .sort();
+      }
 
+      this.refreshPageNumber();
+      this.productItems = await ProductService.queryItemByTarget({
+        categoryId: this.categoryId.toUpperCase(),
+        limit: this.limit,
+        page: this.page,
+        agencyItems: this.selectedAgency,
+        minPrice: this.minMaxTuple[0] * 1000000,
+        maxPrice: this.minMaxTuple[1] * 1000000,
+        type: this.typeProducts && this.typeProducts.length > 0 ? this.typeProducts.join(',') : '',
+        storageSize: this.storageSizes && this.storageSizes.length > 0 ? this.storageSizes.join(',') : '',
+        screen: this.screenSizes && this.screenSizes.length > 0 ? this.screenSizes.join(',') : '',
+        gen: this.genProducts && this.genProducts.length > 0 ? this.genProducts.join(',') : '',
+        year: this.yearProducts && this.yearProducts.length > 0 ? this.yearProducts.join(',') : '',
+        ram: this.ramProducts && this.ramProducts.length > 0 ? this.ramProducts.join(',') : '',
+        coreNum: this.coreNumProducts && this.coreNumProducts.length > 0 ? this.coreNumProducts.join(',') : '',
+        networkSupport:
+          this.networkSupportProducts && this.networkSupportProducts.length > 0
+            ? this.networkSupportProducts.join(',')
+            : '',
+        borderSize:
+          this.borderSizeProducts && this.borderSizeProducts.length > 0 ? this.borderSizeProducts.join(',') : '',
+        isUsed: this.selectedIsUsed,
+        isUnique: !this.isDetailMode,
+      });
+    },
+    refreshPageNumber() {
+      this.limit = this.isMobile ? 6 : 30;
+      this.quantity = this.isMobile ? 6 : 30;
+      this.page = 1;
+    },
     async refreshFilter() {
-      this.agencyItems = this.agencyItems.map((i) => ({
-        ...i,
-        selected: false,
-      }));
       this.minMaxTuple = this.minMaxTupleDefault;
+      this.selectedAgency = '';
+      this.typeProducts = [];
+      this.screenSizes = [];
+      this.storageSizes = [];
+      this.yearProducts = [];
+      this.genProducts = [];
+      this.screenSizes = [];
+      this.ramProducts = [];
+      this.coreNumProducts = [];
+      this.selectedIsUsed = 'False';
+      await this.loadProductItemByTarget();
+    },
+    async changeSelecetedIsUsed(selectedIsUsedItems: any) {
+      if (selectedIsUsedItems.includes('Tất cả')) {
+        this.selectedIsUsed = 'All';
+      } else if (selectedIsUsedItems.includes('Sp Cũ')) {
+        this.selectedIsUsed = 'True';
+      } else {
+        this.selectedIsUsed = 'False';
+      }
       await this.loadProductItemByTarget();
     },
     async changeAgency(agencyItems: any[]) {
-      agencyItems.map((i) => {
-        const agency = this.agencyItems.find((a) => i.code == a.code);
-        if (agency && agency.selected.toString().length != 0) {
-          agency.selected = !agency.selected;
-        }
-      });
+      this.selectedAgency = agencyItems.map((i) => i.code).join(',');
       await this.loadProductItemByTarget();
     },
     async changePrice({ min, max }: { min: number; max: number }) {
@@ -278,7 +415,6 @@ export default Vue.extend({
     async updateUrlQueryToData(isRefresh?: false) {
       this.isLoading = true;
       const query = { ...this.$route.query };
-      console.log('updateUrlQueryToData', query);
       const agencySelecting =
         !isRefresh && query && query.agencyItems && typeof query.agencyItems == 'string'
           ? query.agencyItems.split(',')
@@ -295,18 +431,31 @@ export default Vue.extend({
     },
 
     async loadProductItemByTarget() {
-      const agencyItems = this.agencyItems.filter((item: any) => item.selected).map((item: any) => item.code);
-
       this.productItems = await ProductService.queryItemByTarget({
         categoryId: this.categoryId.toUpperCase(),
         limit: this.limit,
         page: this.page,
-        agencyItems: agencyItems.join(','),
+        agencyItems: this.selectedAgency,
         minPrice: this.minMaxTuple[0] * 1000000,
         maxPrice: this.minMaxTuple[1] * 1000000,
-        discountRate: agencyItems.length != 0 ? 0 : this.discountRate,
+        type: this.typeProducts && this.typeProducts.length > 0 ? this.typeProducts.join(',') : '',
+        storageSize: this.storageSizes && this.storageSizes.length > 0 ? this.storageSizes.join(',') : '',
+        screen: this.screenSizes && this.screenSizes.length > 0 ? this.screenSizes.join(',') : '',
+        gen: this.genProducts && this.genProducts.length > 0 ? this.genProducts.join(',') : '',
+        year: this.yearProducts && this.yearProducts.length > 0 ? this.yearProducts.join(',') : '',
+        ram: this.ramProducts && this.ramProducts.length > 0 ? this.ramProducts.join(',') : '',
+        coreNum: this.coreNumProducts && this.coreNumProducts.length > 0 ? this.coreNumProducts.join(',') : '',
+        networkSupport:
+          this.networkSupportProducts && this.networkSupportProducts.length > 0
+            ? this.networkSupportProducts.join(',')
+            : '',
+        borderSize:
+          this.borderSizeProducts && this.borderSizeProducts.length > 0 ? this.borderSizeProducts.join(',') : '',
+        discountRate: this.selectedAgency.split(',').length != 0 ? 0 : this.discountRate,
+        isUsed: this.selectedIsUsed,
+        isUnique: !this.isDetailMode,
       });
-      console.log('this.productItems', this.productItems);
+      // console.log('this.productItems', this.productItems);
     },
     getSlugId(item: ProductItem): string {
       return ProductService.getSlugId(item);

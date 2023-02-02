@@ -93,7 +93,8 @@ class HtmlHeadless(scrapy.Spider):
             yield SeleniumRequest(
                 url=self.base_url, 
                 callback=self.parse_pageinfo,
-                errback=self.err_callback,)
+                errback=self.err_callback,
+                wait_loaded=4)
             
     def is_candidate(self, url):
         for i in self.list_exclude_search_terms:
@@ -121,11 +122,14 @@ class HtmlHeadless(scrapy.Spider):
         item['URL'] = clean_url
         item['encoded_base_url'] = encoded_base_url
         item['title'] = sel.xpath('/html/head/title/text()').extract()
-        item['meta'] = sel.xpath('/html/head/meta').getall() 
+        item['meta'] = sel.xpath('/html/head/meta').getall()  
+
+        self.save_html(response, item['title'])
 
         new_links = LinkExtractor(allow=('^' + re.escape(self.base_url)), allow_domains=self.allowed_domains).extract_links(response)
         for link in new_links:
             new_url = CrawlingHelper.get_clean_url(link.url)
+            # print('new_url',self.is_candidate(new_url),new_url)
             if self.is_candidate(new_url):
                 encoded_new_url = CrawlingHelper.urlsafe_encode(new_url)
                 if self.count_pages < self.limit_page and encoded_new_url not in self.encoded_urls:

@@ -21,3 +21,18 @@ def get_currency_from_text(text):
     return None
 
 print(get_currency_from_text('34.820.000₫ *'))
+
+
+from decimal import *
+
+p1 = Decimal(45990000)
+p2 = Decimal(49990000)
+if p1 and p1 > 0 and p2 and p2  > 0:
+    if p1 * 2 < p2:
+        p2 = p1
+        discount_rate = 0
+    else:
+        discount_rate = 100 - int(Decimal(p1) / Decimal(p2) * 100)
+
+print(discount_rate)
+print(45990000 / 49990000 * 100)

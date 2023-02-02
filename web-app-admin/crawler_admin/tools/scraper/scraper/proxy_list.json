@@ -11,7 +11,7 @@
     },
     {
         "supportsHttps": true,
-        "protocol": "http",a{'name': 'iPhone SE (2022)', 'url': 'https://www.topzone.vn/iphone/iphone-se-2022', 'domain': 'topzone.vn', 'agency': 'topzone.vn', 'clean_name': 'iphone se', 'category': '', 'category_code': 'Điện thoại', 'brand': 'apple', 'product_code': 'apple iphone', 'image': '[]', 'slug_id': '/iPhone-SE-(2022)', 'price': 10490000.0, 'list_price': 13490000.0, 'scraper_type': 'html', 'base_encoded_url': 'aHR0cHM6Ly93d3cudG9wem9uZS52bi9pcGhvbmUvaXBob25lLXNlLTIwMjI'}
+        "protocol": "http",a{'name': 'iPhone SE (2022)', 'url': 'https://www.topzone.vn/iphone/iphone-se-2022', 'domain': 'topzone.vn', 'agency': 'topzone.vn', 'clean_name': 'iphone se', 'category': '', 'category_code': 'iPhone', 'brand': 'apple', 'product_code': 'apple iphone', 'image': '[]', 'slug_id': '/iPhone-SE-(2022)', 'price': 10490000.0, 'list_price': 13490000.0, 'scraper_type': 'html', 'base_encoded_url': 'aHR0cHM6Ly93d3cudG9wem9uZS52bi9pcGhvbmUvaXBob25lLXNlLTIwMjI'}
         "ip": "118.38.92.249",
         "port": "8080",
         "type": "http",

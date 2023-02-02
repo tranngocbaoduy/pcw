@@ -211,7 +211,7 @@
           </template>
         </v-autocomplete>
         <div class="some-category-hot font-size-12 pb-1 my-1" style="height: 35px">
-          <div class="d-inline" v-for="i in listCategoryName.slice(0, 4)" :key="`${i.id}-some-category-hot`">
+          <div class="d-inline" v-for="i in listCategoryName" :key="`${i.id}-some-category-hot`">
             <v-hover v-slot="{ hover }">
               <router-link
                 :to="`/category/${i.id}`"
@@ -234,7 +234,7 @@
           <v-icon size="20">mdi-bell-outline</v-icon>
         </v-btn>
 
-        <!-- <v-menu :close-on-click="true" bottom right nudge-bottom="50" z-index="2000">
+        <v-menu :close-on-click="true" bottom right nudge-bottom="50" z-index="2000">
           <template v-slot:activator="{ on, attrs }">
             <v-btn
               v-if="isAuthenticated && userGoogleInfo"
@@ -250,8 +250,6 @@
               <v-avatar size="28">
                 <img :src="userGoogleInfo.picture" :alt="userGoogleInfo.name" />
               </v-avatar>
-
-
             </v-btn>
             <v-btn icon v-else @click="login">
               <v-icon size="22">mdi-account</v-icon>
@@ -264,7 +262,11 @@
               <v-list-item-title class="px-3">Sign out</v-list-item-title>
             </v-list-item>
           </v-list>
-        </v-menu> -->
+        </v-menu>
+
+        <v-btn icon>
+          <v-icon size="20">mdi-dots-grid</v-icon>
+        </v-btn>
       </div>
     </v-toolbar>
   </div>
@@ -279,6 +281,7 @@ import i18n from '@/i18n';
 import ProductService, { ProductItem } from '@/api/product.service';
 import GoogleAuthService, { UserGoogleInfo } from '@/api/google-auth.service';
 import AuthService from '@/api/auth.service';
+import { CategoryItem } from '@/api/category.service';
 
 export default Vue.extend({
   name: 'Header',
@@ -333,7 +336,8 @@ export default Vue.extend({
       ];
     },
     listCategoryName(): string[] {
-      return this.isMobile ? this.$store.getters.categoryItems.slice(0, 7) : this.$store.getters.categoryItems;
+      const categoryItems = this.$store.getters.categoryItems.filter((i: CategoryItem) => i.isLeaf);
+      return this.isMobile ? categoryItems.slice(0, 4) : categoryItems.slice(0, 7);
     },
     categoryId(): string {
       return this.$route.params['idCate'] || '';

@@ -22,7 +22,7 @@
           <v-row no-gutters>
             <v-col :key="item['SK']" v-for="item in filterProductItems" cols="6" md="2" xl="2" lg="2" sm="3">
               <router-link class="custom-link" :to="`${getSlugId(item)}`">
-                <Product :item="item" />
+                <Product :item="item" :isDisplayGeneral="true" />
               </router-link>
             </v-col>
           </v-row>
@@ -65,7 +65,7 @@ export default Vue.extend({
   },
   computed: {
     categoryItems(): CategoryItem[] {
-      return this.$store.getters.categoryItems || [];
+      return this.$store.getters.categoryItems.filter((i: CategoryItem) => i.isLeaf) || [];
     },
     isMobile(): boolean {
       return this.$store.getters.isMobile;
@@ -103,6 +103,7 @@ export default Vue.extend({
       }
     },
     handleChangeToCategory() {
+      console.log('this.randomPathChangeTo', this.randomPathChangeTo);
       if (this.randomPathChangeTo) this.$router.push(this.randomPathChangeTo);
     },
     async loadProductItemByTarget() {
@@ -114,6 +115,8 @@ export default Vue.extend({
           agencyItems: 'bachlong,topzone,didongviet,24hstore,nguyenkim,viettel',
           minPrice: 0,
           maxPrice: 1000000000,
+          isUsed: 'False',
+          isUnique: true,
         });
         console.log('this.productItems', this.productItems);
       }

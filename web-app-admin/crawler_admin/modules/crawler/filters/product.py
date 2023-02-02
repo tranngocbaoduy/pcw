@@ -5,8 +5,7 @@ from urllib.parse import urlparse
 def get_domain(url): 
     # print('url:', url.base_url)
     o = urlparse(url)
-    return str(o.netloc)
-    # return '123213213'
+    return str(o.netloc) 
 
 class FilterByDomain(admin.SimpleListFilter):
     title = _("Domain filter")

@@ -24,6 +24,8 @@ interface RootState {
   searchStringList: string[];
   userGoogleInfo: UserGoogleInfo;
   isAuthenticated: boolean;
+  isShowImageDetail: boolean;
+  isDetailMode: boolean;
 }
 
 interface ProductItemByCategory {
@@ -218,6 +220,8 @@ const state: RootState = {
   searchStringList: [],
   userGoogleInfo: {} as UserGoogleInfo,
   isAuthenticated: false,
+  isShowImageDetail: true,
+  isDetailMode: false,
 };
 
 export default new Vuex.Store({
@@ -239,6 +243,8 @@ export default new Vuex.Store({
     searchStringList: (state) => state.searchStringList,
     userGoogleInfo: (state) => state.userGoogleInfo,
     isAuthenticated: (state) => state.isAuthenticated,
+    isShowImageDetail: (state) => state.isShowImageDetail,
+    isDetailMode: (state) => state.isDetailMode,
   },
   mutations: {
     setState(state, nextState) {
