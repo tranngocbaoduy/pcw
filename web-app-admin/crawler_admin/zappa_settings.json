@@ -1,0 +1,31 @@
+{
+  "dev": {
+    "django_settings": "crawler_admin.settings",
+    "aws_region": "ap-southeast-1",
+    "profile_name": "pcw-admin",
+    "project_name": "pcw-admin",
+    "runtime": "python3.9",
+    "slim_handler": true,
+    "timeout_seconds": 300,
+    "ephemeral_storage": 3072,
+    "keep_warm": true,
+    "layers": [
+      "arn:aws:lambda:ap-southeast-1:770693421928:layer:Klayers-p39-pillow:1"
+    ],
+    "memory_size": 1024,
+    "s3_bucket": "pcw-dev-admin",
+    "exclude": [
+      ".env.host",
+      ".env.local",
+      "./raw_tml",
+      "./dev",
+      "./tools/scraper/scraper/log",
+      ".git/*",
+      ".gitignore",
+      "boto3*",
+      "*botocore*",
+      "zappa_settings.json",
+      "README.md"
+    ]
+  }
+}

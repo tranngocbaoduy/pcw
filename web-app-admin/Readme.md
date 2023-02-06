@@ -1,0 +1,1 @@
+zappa package dev -o pcw_dev_package.zip

@@ -91,7 +91,7 @@ class Sitemap(models.Model):
         page_info_items = PageInfo.objects.filter(sitemap=self.id)#is_subscribe=True
         for page_info in page_info_items:
             page_info.is_subscribe = False
-            page_info.save()
+            page_info.save() 
 
 class PageInfo(models.Model): 
 

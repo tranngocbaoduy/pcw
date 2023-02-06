@@ -11,7 +11,7 @@ from modules.crawler.tabular_in_lines.sitemap import (
 
 
 @admin.register(Scraper)
-class ScraperAdmin(admin.ModelAdmin, CSSAdminMixin):
+class ScraperAdmin(ImportExportModelAdmin, admin.ModelAdmin, CSSAdminMixin):
     inlines = (ScraperSitemapTabularInline,)
     actions = ["setup_crawler", "stop_crawler"]
     list_display = [

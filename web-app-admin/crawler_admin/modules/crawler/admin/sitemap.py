@@ -5,6 +5,7 @@ from modules.crawler.tabular_in_lines.sitemap import PageInfoTabularInline
 from modules.crawler.filters.sitemap import FilterBySitemap
 from modules.crawler.models.utils import ExtractInfoIphone, ExtractInfoMacbook, ExtractInfoAppleWatch
 from modules.crawler.filters.sitemap import FilterByCategory
+from modules.crawler.admin.parser import WareParserResource
 
 from urllib.parse import urljoin, urlparse 
 from gettext import ngettext
@@ -22,11 +23,24 @@ def duplicate(modeladmin, request, queryset):
 
 duplicate.short_description = "Duplicate"
 
+
+from import_export import resources, widgets, fields
+
+class SitemapResource(resources.ModelResource):
+    sitemap = fields.Field(
+        column_name='sitemap_id',
+        attribute='sitemap',
+        widget=widgets.ForeignKeyWidget(Sitemap, 'id'))
+     
+    class Meta:
+        model = Sitemap  
+
 @admin.register(PageInfo)
 class PageInfoAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     search_fields = ["title"]
     list_display = ["id",  "sub_url", "title", "count_update", "sitemap"]
     list_filter = [FilterBySitemap]
+    resources_class = SitemapResource
     def sub_url(self, obj):
         return get_sub_path(obj.url)
 
@@ -39,6 +53,7 @@ class SitemapAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     search_fields = ["name"]
     list_display = ["_id", "name", "category_name", "base_url", "is_crawl_detail_running", "is_sitemap_running", "subscribe"]
     list_filter = [FilterByCategory]
+    resources_class = WareParserResource
     
     def _id(self, obj):
         return '#{}'.format(obj.id)
