@@ -95,6 +95,19 @@
           </v-row>
         </div>
         <v-row v-else>
+          <v-col
+            class="pa-0 ma-0 pa-1"
+            :key="s"
+            v-for="s in Array.from(Array(limit).keys())"
+            cols="6"
+            md="2"
+            xl="2"
+            lg="2"
+            sm="3"
+          >
+            <v-skeleton-loader v-bind="attrs" type=" image,list-item-two-line, table-tfoot"></v-skeleton-loader>
+          </v-col>
+
           <v-img :src="noItemImage" max-height="800" max-width="90%" height="400" class="ma-auto" />
         </v-row>
 
@@ -277,12 +290,13 @@ export default Vue.extend({
     },
     async initialize() {
       window.scrollTo({ top: 0, left: 0 });
-      this.isLoading = true;
+
       console.log('Load item ...', this.categoryId);
       this.page = parseInt((this as any).$route.query.page || 1);
       this.$store.commit('setState', { searchString: this.$route.query.name });
+
       await this.updateUrlQueryToData();
-      this.isLoading = false;
+
       this.filterSearchItems = await ProductService.getFilterWareByKey({ categoryId: this.categoryId });
     },
     async handleGetMoreProduct() {
@@ -344,6 +358,8 @@ export default Vue.extend({
       }
 
       this.refreshPageNumber();
+      this.productItems = [];
+      this.isLoading = true;
       this.productItems = await ProductService.queryItemByTarget({
         categoryId: this.categoryId.toUpperCase(),
         limit: this.limit,
@@ -367,6 +383,7 @@ export default Vue.extend({
         isUsed: this.selectedIsUsed,
         isUnique: !this.isDetailMode,
       });
+      this.isLoading = false;
     },
     refreshPageNumber() {
       this.limit = this.isMobile ? 6 : 30;
@@ -426,7 +443,6 @@ export default Vue.extend({
 
       this.page = 1;
       await this.loadProductItemByTarget();
-
       this.isLoading = false;
     },
 

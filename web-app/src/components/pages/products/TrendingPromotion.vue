@@ -1,128 +1,145 @@
 <template>
-  <v-col sm="12" md="12" cols="12" :class="isMobile ? 'py-0' : 'py-1'" class="trending-promotion px-0">
-    <div class="my-0 pa-0">
-      <v-card-title class="trending-page-name font-size-32 font-weight-3 px-0 ma-0">
-        {{ $t('trendingPromotion') }} - {{ category.name }}
-        <v-spacer></v-spacer>
-        <div
-          v-if="!isMobile"
-          class="font-weight-2 font-size-14 py-3 primary-color-1 float-right custom-link hover-custom-link"
-          @click="handleChangeToCategory"
-        >
-          <span class="py-1">{{ $t('seeMore') }}</span>
-          <v-icon class="primary-color-1 pb-1" size="20px">mdi-chevron-right</v-icon>
-        </div>
-      </v-card-title>
-      <v-carousel
-        :show-arrows="false"
-        light
-        touchless
-        :cycle="true"
-        hide-delimiter-background
-        class="px-0"
-        height="100%"
-      >
-        <template v-for="(item, index) in filterPromotionItems">
-          <v-carousel-item
-            v-if="(index + 1) % quantityItemsInCarousel === 1 || quantityItemsInCarousel === 1"
-            :key="`promotions-${index}`"
+  <div>
+    <v-col sm="12" md="12" cols="12" :class="isMobile ? 'py-0' : 'py-1'" class="trending-promotion px-0">
+      <div class="my-0 pa-0">
+        <v-card-title class="trending-page-name font-size-32 font-weight-3 px-0 ma-0">
+          {{ $t('trendingPromotion') }} - {{ category.name }}
+          <v-spacer></v-spacer>
+          <div
+            v-if="!isMobile"
+            class="font-weight-2 font-size-14 py-3 primary-color-1 float-right custom-link hover-custom-link"
+            @click="handleChangeToCategory"
           >
-            <v-row class="pt-0 mx-0" no-gutters>
-              <template v-for="(n, i) in quantityItemsInCarousel">
-                <template v-if="+index + i < filterPromotionItems.length">
-                  <v-col class="py-2 px-0" :key="i">
-                    <router-link :to="`${getSlugId(filterPromotionItems[+index + i])}`" :key="`${i}-${n}-s`">
-                      <v-hover v-slot="{ hover }">
-                        <v-card
-                          :elevation="hover ? 3 : 1"
-                          v-if="+index + i < filterPromotionItems.length"
-                          class="border-custom-4 pa-2 py-4 mx-auto"
-                        >
-                          <v-img
-                            contain
-                            width="120"
-                            height="120"
-                            class="ma-auto mb-2 rounded-0"
-                            :src="filterPromotionItems[+index + i].listImage[0]"
-                          ></v-img>
-                          <v-card-title class="font-size-16 font-weight-3 pa-0">
-                            <div>
-                              <!-- <div class="primary-color-2 mr-4">
+            <span class="py-1">{{ $t('seeMore') }}</span>
+            <v-icon class="primary-color-1 pb-1" size="20px">mdi-chevron-right</v-icon>
+          </div>
+        </v-card-title>
+        <v-carousel
+          v-if="promotionItems && promotionItems.length > 0"
+          :show-arrows="false"
+          light
+          touchless
+          :cycle="true"
+          hide-delimiter-background
+          class="px-0"
+          height="100%"
+        >
+          <template v-for="(item, index) in filterPromotionItems">
+            <v-carousel-item
+              v-if="(index + 1) % quantityItemsInCarousel === 1 || quantityItemsInCarousel === 1"
+              :key="`promotions-${index}`"
+            >
+              <v-row class="pt-0 mx-0" no-gutters>
+                <template v-for="(n, i) in quantityItemsInCarousel">
+                  <template v-if="+index + i < filterPromotionItems.length">
+                    <v-col class="py-2 px-0" :key="i">
+                      <router-link :to="`${getSlugId(filterPromotionItems[+index + i])}`" :key="`${i}-${n}-s`">
+                        <v-hover v-slot="{ hover }">
+                          <v-card
+                            :elevation="hover ? 3 : 1"
+                            v-if="+index + i < filterPromotionItems.length"
+                            class="border-custom-4 pa-2 py-4 mx-auto"
+                          >
+                            <v-img
+                              contain
+                              width="120"
+                              height="120"
+                              class="ma-auto mb-2 rounded-0"
+                              :src="filterPromotionItems[+index + i].listImage[0]"
+                            ></v-img>
+                            <v-card-title class="font-size-16 font-weight-3 pa-0">
+                              <div>
+                                <!-- <div class="primary-color-2 mr-4">
                                 {{ filterPromotionItems[+index + i].price | formatPrice }}đ
                               </div> -->
 
-                              <div class="d-flex-col align-center justify-start line-height-18">
-                                <div
-                                  style="height: 50px"
-                                  class="font-size-12 font-weight-2 line-height-22 title-product mb-2"
-                                >
-                                  {{ filterPromotionItems[+index + i].name }}
-                                </div>
-                                <v-col
-                                  cols="12"
-                                  class="d-flex flex-wrap align-center justify-start pa-0 ma-0"
-                                  v-if="
-                                    filterPromotionItems[+index + i].initTags &&
-                                    filterPromotionItems[+index + i].initTags.length != 0
-                                  "
-                                >
-                                  <span
-                                    class="
-                                      sub-info
-                                      flex-grow-0
-                                      pa-1
-                                      flex-shink-1
-                                      mr-1
-                                      mb-1
-                                      font-size-10 font-weight-2
-                                      text-left
-                                    "
-                                    v-for="tag in filterPromotionItems[+index + i].initTags.slice(
-                                      0,
-                                      filterPromotionItems[+index + i].initTags.length
-                                    )"
-                                    :key="tag"
+                                <div class="d-flex-col align-center justify-start line-height-18">
+                                  <div
+                                    style="height: 50px"
+                                    class="font-size-12 font-weight-2 line-height-22 title-product mb-2"
                                   >
-                                    {{ tag }}
-                                  </span>
-                                </v-col>
-                                <span
-                                  class="mr-3 line-height-22 font-size-10 font-weight-1 old-price"
-                                  v-if="
-                                    filterPromotionItems[+index + i].listPrice != filterPromotionItems[+index + i].price
-                                  "
-                                >
-                                  {{ filterPromotionItems[+index + i].listPrice | formatPrice }}đ
-                                </span>
-                                <div class="d-flex align-center justify-space-between">
-                                  <span class="mr-3 font-weight-bold font-size-12 primary-color-2"
-                                    >{{ filterPromotionItems[+index + i].price | formatPrice }}đ
-                                  </span>
+                                    {{ filterPromotionItems[+index + i].name }}
+                                  </div>
+                                  <v-col
+                                    cols="12"
+                                    class="d-flex flex-wrap align-center justify-start pa-0 ma-0"
+                                    v-if="
+                                      filterPromotionItems[+index + i].initTags &&
+                                      filterPromotionItems[+index + i].initTags.length != 0
+                                    "
+                                  >
+                                    <span
+                                      class="
+                                        sub-info
+                                        flex-grow-0
+                                        pa-1
+                                        flex-shink-1
+                                        mr-1
+                                        mb-1
+                                        font-size-10 font-weight-2
+                                        text-left
+                                      "
+                                      v-for="tag in filterPromotionItems[+index + i].initTags.slice(
+                                        0,
+                                        filterPromotionItems[+index + i].initTags.length
+                                      )"
+                                      :key="tag"
+                                    >
+                                      {{ tag }}
+                                    </span>
+                                  </v-col>
                                   <span
-                                    class="discount-rate font-size-14 font-weight-2 elevation-0 bg-primary-color-7"
+                                    class="mr-3 line-height-22 font-size-10 font-weight-1 old-price"
                                     v-if="
                                       filterPromotionItems[+index + i].listPrice !=
                                       filterPromotionItems[+index + i].price
                                     "
                                   >
-                                    {{ filterPromotionItems[+index + i].discountRate }}%
+                                    {{ filterPromotionItems[+index + i].listPrice | formatPrice }}đ
                                   </span>
+                                  <div class="d-flex align-center justify-space-between">
+                                    <span class="mr-3 font-weight-bold font-size-12 primary-color-2"
+                                      >{{ filterPromotionItems[+index + i].price | formatPrice }}đ
+                                    </span>
+                                    <span
+                                      class="discount-rate font-size-14 font-weight-2 elevation-0 bg-primary-color-7"
+                                      v-if="
+                                        filterPromotionItems[+index + i].listPrice !=
+                                        filterPromotionItems[+index + i].price
+                                      "
+                                    >
+                                      {{ filterPromotionItems[+index + i].discountRate }}%
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          </v-card-title>
-                        </v-card>
-                      </v-hover>
-                    </router-link>
-                  </v-col>
+                            </v-card-title>
+                          </v-card>
+                        </v-hover>
+                      </router-link>
+                    </v-col>
+                  </template>
                 </template>
-              </template>
-            </v-row>
-          </v-carousel-item>
-        </template>
-      </v-carousel>
-    </div>
-  </v-col>
+              </v-row>
+            </v-carousel-item>
+          </template>
+        </v-carousel>
+        <v-row v-else
+          ><v-col
+            class="pa-0 ma-0 pa-1"
+            :key="s"
+            v-for="s in Array.from(Array(6).keys())"
+            cols="6"
+            md="2"
+            xl="2"
+            lg="2"
+            sm="3"
+          >
+            <v-skeleton-loader v-bind="attrs" type=" image,list-item-two-line, table-tfoot"></v-skeleton-loader> </v-col
+        ></v-row>
+      </div>
+    </v-col>
+  </div>
 </template>
 
 <script lang="ts">

@@ -28,6 +28,18 @@
           </v-row>
         </div>
         <v-row v-else>
+          <v-col
+            class="pa-0 ma-0 pa-1"
+            :key="s"
+            v-for="s in Array.from(Array(limit).keys())"
+            cols="6"
+            md="2"
+            xl="2"
+            lg="2"
+            sm="3"
+          >
+            <v-skeleton-loader v-bind="attrs" type=" image,list-item-two-line, table-tfoot"></v-skeleton-loader>
+          </v-col>
           <v-img :src="noItemImage" max-height="800" max-width="90%" height="400" class="ma-auto" />
         </v-row>
       </v-col>

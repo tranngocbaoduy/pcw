@@ -27,7 +27,7 @@ class Category(MPTTModel):
     ) 
     name = models.CharField(max_length=256) 
     parent = TreeForeignKey(
-        "self", on_delete=models.CASCADE, null=True, blank=True, related_name="children"
+        "self", on_delete=models.CASCADE, db_index=True, null=True, blank=True, related_name="children"
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -48,15 +48,15 @@ class GroupProduct(models.Model):
     id = models.CharField(
         primary_key=True, default=id_generator, editable=False, unique=True, max_length=12
     )
-    name = models.CharField(max_length=256)
+    name = models.CharField(max_length=256,db_index=True,)
     description = models.TextField(default="", blank=True,)
     list_image = models.TextField(default="", blank=True,)
     meta = models.JSONField(default=dict) 
 
-    store_name = models.CharField(max_length=512, blank=True, default="")
-    largest_price = models.FloatField(default=0, blank=True, null=True)
-    smallest_price = models.FloatField(default=0, blank=True, null=True)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, blank=True, null=True)
+    store_name = models.CharField(max_length=512, db_index=True,blank=True, default="")
+    largest_price = models.FloatField(default=0, db_index=True,blank=True, null=True)
+    smallest_price = models.FloatField(default=0, db_index=True,blank=True, null=True)
+    category = models.ForeignKey(Category, db_index=True, on_delete=models.CASCADE, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -121,15 +121,15 @@ class Product(models.Model):
     name = models.CharField(max_length=512)
     title = models.CharField(max_length=512)
     encoded_base_url = models.CharField(max_length=512) 
-    price = models.FloatField(default=0, blank=True, null=True)
-    list_price = models.FloatField(default=0, blank=True, null=True)
-    discount_rate = models.IntegerField(default=0, blank=True, null=True)
-    is_subscribe = models.BooleanField(default=True)
-    is_used = models.BooleanField(default=False)
-    last_updated_price = models.DateTimeField(auto_now_add=True)
+    price = models.FloatField(default=0,db_index=True, blank=True, null=True)
+    list_price = models.FloatField(default=0,db_index=True, blank=True, null=True)
+    discount_rate = models.IntegerField(default=0,db_index=True, blank=True, null=True)
+    is_subscribe = models.BooleanField(default=True,db_index=True,)
+    is_used = models.BooleanField(default=False,db_index=True,)
+    last_updated_price = models.DateTimeField(auto_now_add=True,db_index=True,)
 
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    group_product = models.ForeignKey(GroupProduct, on_delete=models.CASCADE, blank=True, null=True)
+    category = models.ForeignKey(Category, db_index=True, on_delete=models.CASCADE)
+    group_product = models.ForeignKey(GroupProduct, db_index=True, on_delete=models.CASCADE, blank=True, null=True)
 
     meta = models.JSONField(default=dict) 
     description = models.TextField(default="", blank=True,)

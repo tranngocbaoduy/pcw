@@ -453,7 +453,11 @@ export default class ProductService {
     for (const i of data) {
       items.push(ProductService.parseProductItem(i));
     }
-    return items;
+    console.log('Product', items.length);
+    return items.sort((a, b) => {
+      if (a.smallestPrice > b.smallestPrice) return 1;
+      return -1;
+    });
   }
 
   static getSlugId(item: ProductItem): string {

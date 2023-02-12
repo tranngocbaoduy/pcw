@@ -5,7 +5,7 @@
 <head>
     <title>{% block title %}{% endblock %}</title>
     {% include 'admin/includes/css-part.html' %}
-
+    <base href="{% static '/' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'admin/css/base.css' %}?_=2.7">
     <link rel="stylesheet" type="text/css" href="{% static 'admin/simpleui-x/css/base.css' %}?_=2.7">
     <link rel="stylesheet" type="text/css" href="{% static 'admin/simpleui-x/theme/simpleui.css' %}">

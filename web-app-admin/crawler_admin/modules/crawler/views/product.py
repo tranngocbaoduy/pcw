@@ -2,6 +2,8 @@ import base64
 import uuid
 import random 
 import json
+import time
+import os
 
 from django.db.models.functions import Length
 from pprint import pprint
@@ -54,6 +56,7 @@ class ProductView(APIView):
 
     def get(self, request, pk=None, category=None):
 
+        start_time = time.time()
         discount = request.query_params.get('discount', 0) 
         limit = request.query_params.get('limit', 20) 
         page = request.query_params.get('page', 1) 
@@ -102,7 +105,7 @@ class ProductView(APIView):
                             )
                             # .annotate(pos=Position('title', models.Value(key_word)))
                             .exclude(id__in=ids_map)
-                            .order_by('price').order_by(Length('group_product__store_name').desc())
+                            
                             # .order_by('-pos')
                         ) 
                         products.extend(items) 
@@ -110,6 +113,7 @@ class ProductView(APIView):
                 random.shuffle(products)
                 products = list(sorted(products, key=lambda x: x.price, reverse= False))
                 serializer = ProductSerializer(products[from_quantity:quantity], many=True)
+                print("[INFO] Elapsed time: {} seconds -- {}".format((time.time() - start_time), os.path.realpath(__file__)))  # nopep8
                 return Response({"products": serializer.data})
                 
             
@@ -126,7 +130,7 @@ class ProductView(APIView):
                     )
                     # .annotate(pos=Position('title', models.Value(key_word)))
                     .exclude(id__in=ids_map)
-                    .order_by('price').order_by(Length('group_product__store_name').desc())
+                    
                     # .order_by('-pos')
                 )
                 products.extend(items)  
@@ -135,6 +139,7 @@ class ProductView(APIView):
             products = self.get_unique_product_by_group_name(products) if is_unique_product else products
             products = list(sorted(products, key=lambda x: x.price, reverse= False))
             serializer = ProductSerializer(products[from_quantity:quantity], many=True)
+            print("[INFO] Elapsed time: {} seconds -- {}".format((time.time() - start_time), os.path.realpath(__file__)))  # nopep8
             return Response({"products": serializer.data})
         
         if discount:
@@ -153,14 +158,17 @@ class ProductView(APIView):
                     **is_used,).order_by('-discount_rate')
             products = self.get_unique_product_by_group_name(products) if is_unique_product else products
             serializer = ProductSerializer(products[from_quantity:quantity], many=True)
+            print("[INFO] Elapsed time: {} seconds -- {}".format((time.time() - start_time), os.path.realpath(__file__)))  # nopep8
             return Response({"products": serializer.data})
 
         if category == '':
+            print("[INFO] Elapsed time: {} seconds -- {}".format((time.time() - start_time), os.path.realpath(__file__)))  # nopep8
             return Response({"products": []}) 
 
         if pk: 
             product = get_object_or_404(Product.objects.filter(category__id=category), pk=pk)
             serializer = ProductSerializerDetail(product)
+            print("[INFO] Elapsed time: {} seconds -- {}".format((time.time() - start_time), os.path.realpath(__file__)))  # nopep8
             return Response({"product": serializer.data})
 
         if search_string_for_category:
@@ -182,7 +190,7 @@ class ProductView(APIView):
                             )
                             # .annotate(pos=Position('title', models.Value(key_word)))
                             .exclude(id__in=ids_map)
-                            .order_by('price').order_by(Length('group_product__store_name').desc())
+                            
                             # .order_by('-pos')
                         )
                         products.extend(items)
@@ -190,6 +198,7 @@ class ProductView(APIView):
                 random.shuffle(products)
                 products = list(sorted(products, key=lambda x: x.price, reverse= False))
                 serializer = ProductSerializer(products[from_quantity:quantity], many=True)
+                print("[INFO] Elapsed time: {} seconds -- {}".format((time.time() - start_time), os.path.realpath(__file__)))  # nopep8
                 return Response({"products": serializer.data})
             
             for key_word in get_combination_words(search_string_for_category):
@@ -206,7 +215,7 @@ class ProductView(APIView):
                     )
                     # .annotate(pos=Position('title', models.Value(key_word)))
                     .exclude(id__in=ids_map)
-                    .order_by('price').order_by(Length('group_product__store_name').desc())
+                    
                     # .order_by('-pos')
                 )
                 products.extend(items)  
@@ -214,6 +223,7 @@ class ProductView(APIView):
             products = list(sorted(products, key=lambda x: x.price, reverse= False))
             products = self.get_unique_product_by_group_name(products) if is_unique_product else products
             serializer = ProductSerializer(products[from_quantity:quantity], many=True)
+            print("[INFO] Elapsed time: {} seconds -- {}".format((time.time() - start_time), os.path.realpath(__file__)))  # nopep8
             return Response({"products": serializer.data})
 
         if agency or type_device or year or screen_size or storage_size or gen_name or ram_size or core_num or network_support or border_size:
@@ -251,7 +261,7 @@ class ProductView(APIView):
                                 is_subscribe=True,
                                 **is_used,
                                 **filter_regex
-                            ).order_by('price').order_by(Length('group_product__store_name').desc())
+                            )
                             products.extend(items)     
                         else:  
                             items = list(filter(lambda x: value_seacrh in x.group_product.name + '#', products))
@@ -265,6 +275,7 @@ class ProductView(APIView):
             products = list(sorted(products, key=lambda x: x.price, reverse= False))
             products = self.get_unique_product_by_group_name(products) if is_unique_product else products
             serializer = ProductSerializer(products[from_quantity:quantity], many=True)
+            print("[INFO] Elapsed time: {} seconds -- {}".format((time.time() - start_time), os.path.realpath(__file__)))  # nopep8
             return Response({"products": serializer.data})
          
         products = Product.objects.filter(
@@ -272,10 +283,11 @@ class ProductView(APIView):
             price__gte=min_price,
             price__lte=max_price,
             is_subscribe=True,
-            **is_used,).order_by('price').order_by(Length('group_product__store_name').desc())
+            **is_used,)
         
         products = self.get_unique_product_by_group_name(products) if is_unique_product else products
         serializer = ProductSerializer(products[from_quantity:quantity], many=True)
+        print("[INFO] Elapsed time: {} seconds -- {}".format((time.time() - start_time), os.path.realpath(__file__)))  # nopep8
         return Response({"products": serializer.data})
 
     # def post(self, request):

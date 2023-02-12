@@ -1,5 +1,7 @@
 import base64
 import uuid
+import time
+import os
 
 from datetime import datetime
 from modules.crawler.models.product import GroupProduct, Product
@@ -15,7 +17,7 @@ from modules.crawler.views.types import EN_2_VN_CATEGORY
 
 class GroupProductView(APIView):
     def get(self, request, pk=None, category=None):
-    
+        start_time = time.time()
         limit = request.query_params.get('limit', 20) 
         page = request.query_params.get('page', 1) 
         quantity = int(limit) * int(page) 
@@ -27,8 +29,7 @@ class GroupProductView(APIView):
             groups = GroupProduct.objects.filter(category=category_id)
             filterWares = []
             for group in groups:
-                if group.category.name == 'Macbook':
-                    print('group.name',group.name)
+                if group.category.name == 'Macbook': 
                     kind, year, gen_name, screen_size, storage_size, ram_size, core_number, _ = group.name.split('#') 
                     data = {
                         "kind": kind, 
@@ -58,6 +59,8 @@ class GroupProductView(APIView):
                     }
                     if data not in filterWares: filterWares.append(data)
 
+            print("[INFO] Elapsed time: {} seconds -- {}".format((time.time() - start_time), os.path.realpath(__file__)))  # nopep8
+
             if filterWares and len(filterWares) > 0:
                 return Response({"data": filterWares})
             return Response({"data": {}})
@@ -65,16 +68,19 @@ class GroupProductView(APIView):
         if pk:
             group = get_object_or_404(GroupProduct.objects.all(), pk=pk)
             serializer = GroupProductSerializerDetail(group)
-           
+
             if only_detail:
                 products = Product.objects.filter(group_product=group.id, is_subscribe=True).order_by('price')
                 product_serializer = ProductSerializer(products, many=True)
+                print("[INFO] Elapsed time: {} seconds -- {}".format((time.time() - start_time), os.path.realpath(__file__)))  # nopep8
                 return Response({"group": serializer.data, "list_product":product_serializer.data})
+            print("[INFO] Elapsed time: {} seconds -- {}".format((time.time() - start_time), os.path.realpath(__file__)))  # nopep8
             return Response({"group": serializer.data})
 
 
         groups = GroupProduct.objects.all()
         serializer = GroupProductSerializer(groups[from_quantity:quantity], many=True)
+        print("[INFO] Elapsed time: {} seconds -- {}".format((time.time() - start_time), os.path.realpath(__file__)))  # nopep8
         return Response({"groups": serializer.data})
 
     # def post(self, request):
