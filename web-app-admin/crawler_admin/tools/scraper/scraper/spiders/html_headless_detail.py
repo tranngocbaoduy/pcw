@@ -74,21 +74,24 @@ class HtmlHeadlessDetail(scrapy.Spider):
         self.parsers = Parser.objects.filter(ware_parser=self.sitemap.ware_parser.id)
         self.action = 'UPDATE_DETAIL'
           
-        pprint({
-            "custom_settings": self.custom_settings,
-            'base_url': self.base_url, 
-            "parsers": self.parsers,
-            "page_info_items": self.page_info_items
-        })
+        # pprint({
+        #     "custom_settings": self.custom_settings,
+        #     'base_url': self.base_url, 
+        #     "parsers": self.parsers,
+        #     "page_info_items": self.page_info_items
+        # })
 
     def start_requests(self):
-        for sub_page in self.page_info_items:
-            yield SeleniumRequest(
+        count = 0
+        for sub_page in self.page_info_items:  
+            yield scrapy.Request(
                 url=sub_page.url, 
                 callback=self.parse_product_item,
                 errback=self.err_callback,
-                wait_loaded=10
-            )
+                dont_filter=True,
+                # wait_loaded=3
+            ) 
+            
 
     def parse_product_item(self, response):
         clean_url = CrawlingHelper.get_clean_url(response.url)
@@ -102,7 +105,7 @@ class HtmlHeadlessDetail(scrapy.Spider):
         item['meta'] = sel.xpath('/html/head/meta').getall() 
         item['category'] = self.category_name 
 
-        self.save_html(response, item['title'])
+        # self.save_html(response, item['title'])
         info_from_parser = dict()
         for parser in self.parsers:
 

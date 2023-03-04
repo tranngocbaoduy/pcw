@@ -10,6 +10,7 @@ from tools.scraper.scraper.spiders.html_headless import HtmlHeadless
 from tools.scraper.scraper.spiders.html_headless_detail import HtmlHeadlessDetail
 from tools.scraper.scraper.spiders.html_non_headless import HtmlNonHeadless
 
+
 from scrapy.settings import Settings
 from scrapy.crawler import CrawlerRunner
 from scrapy.utils.log import configure_logging
@@ -78,8 +79,16 @@ class Sitemap(models.Model):
                 self.is_crawl_detail_running = True
                 self.save()
                 
+                def chunks(xs, n=10):
+                    n = max(1, n)
+                    return (xs[i:i+n] for i in range(0, len(xs), n))
+                
+                CHUNKS_ITEM = 10
+
                 runner = CrawlerRunner(crawl_settings)
-                runner.crawl(HtmlHeadlessDetail, sitemap=self, page_info_items=page_info_items)
+                for pages in chunks(page_info_items, CHUNKS_ITEM):
+                    print("Num page: %d" % len(pages))
+                    runner.crawl(HtmlHeadlessDetail, sitemap=self, page_info_items=pages)
             else:
                 messages.add_message(
                     request,

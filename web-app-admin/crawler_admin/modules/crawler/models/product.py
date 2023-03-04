@@ -117,10 +117,10 @@ class Product(models.Model):
     id = models.CharField(
         primary_key=True, default=id_generator, editable=False, unique=True, max_length=12
     )
-    base_url = models.CharField(max_length=512, default='')
-    name = models.CharField(max_length=512)
-    title = models.CharField(max_length=512)
-    encoded_base_url = models.CharField(max_length=512) 
+    base_url = models.CharField(max_length=1024, default='')
+    name = models.CharField(max_length=1024)
+    title = models.CharField(max_length=1024)
+    encoded_base_url = models.CharField(max_length=1024) 
     price = models.FloatField(default=0,db_index=True, blank=True, null=True)
     list_price = models.FloatField(default=0,db_index=True, blank=True, null=True)
     discount_rate = models.IntegerField(default=0,db_index=True, blank=True, null=True)
@@ -151,11 +151,11 @@ class Product(models.Model):
     class Meta:
         ordering = ['group_product__name']
 
-    def categorize(self,): 
+    def categorize(self,verbose=False): 
         base_url = self.base_url 
         if self.category.name == 'iPhone':
             extracted_info = ExtractInfoIphone.extract_info(base_url, self.title) 
-            pprint(extracted_info) 
+            if verbose: pprint(extracted_info) 
             if ExtractInfoIphone.is_candidate_item(extracted_info): 
                 obj, is_created = GroupProduct.objects.get_or_create(name='{}#{}#'.format(extracted_info['gen_number'],extracted_info['storage_size']))
                 obj.category = self.category
@@ -172,7 +172,7 @@ class Product(models.Model):
             self.save()
         elif self.category.name == 'Macbook':
             extracted_info = ExtractInfoMacbook.extract_info(base_url, self.title) 
-            pprint(extracted_info)
+            if verbose: pprint(extracted_info)
             if ExtractInfoMacbook.is_candidate_item(extracted_info):
                 obj, is_created = GroupProduct.objects.get_or_create(name='MACBOOK_{}#{}#{}#{}#{}#{}#{}#'.format(
                     extracted_info.get('mac_type').upper() if extracted_info.get('mac_type') else 'UNKNOW',
@@ -197,7 +197,7 @@ class Product(models.Model):
 
         elif self.category.name == 'Apple Watch':
             extracted_info = ExtractInfoAppleWatch.extract_info(base_url, self.title) 
-            pprint(extracted_info)
+            if verbose: pprint(extracted_info)
             if ExtractInfoAppleWatch.is_candidate_item(extracted_info):
                 obj, is_created = GroupProduct.objects.get_or_create(name='APPLE_WATCH_{}#{}#{}#{}#'.format(
                     extracted_info.get('gen_name').upper() if extracted_info.get('gen_name') else 'UNKNOW',

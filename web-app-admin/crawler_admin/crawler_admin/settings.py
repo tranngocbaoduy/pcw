@@ -62,7 +62,9 @@ INSTALLED_APPS = [
     "corsheaders",
     # add rest_framework support to the project
     "rest_framework",
-    "modules.simpleui.apps.SimpleApp",
+    # "modules.simpleui.apps.SimpleApp",
+    "fontawesomefree",
+    'modules.jazzmin.apps.JazzminConfig', 
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -197,14 +199,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
  
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-    # '/var/www/static/',
-]
+# STATICFILES_DIRS = [
+#     BASE_DIR / "static",
+#     # '/var/www/static/',
+# ]
 
 # All settings common to all environments
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
-STATIC_ROOT = os.path.join(PROJECT_ROOT, "static")
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
   
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field

@@ -31,6 +31,7 @@ BOT_NAME = "meteor"
 SPIDER_MODULES = ["tools.scraper.scraper.spiders"]
 SPIRDER_MODULE = "tools.scraper.scraper.spiders"
 
+LOG_LEVEL = 'DEBUG'
 LOG_FILE = os.path.join(
     "tools/scraper/scraper/log", "{}.log".format(CrawlingHelper.get_name_by_time())
 )
@@ -39,10 +40,11 @@ LOG_FILE = os.path.join(
 # USER_AGENT = 'scraper (+http://www.yourdomain.com)'
 
 # Obey robots.txt rules
-ROBOTSTXT_OBEY = True
+# ROBOTSTXT_OBEY = True
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-# CONCURRENT_REQUESTS = 32
+CONCURRENT_REQUESTS = 16 
+CONCURRENT_ITEMS = 20
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
@@ -50,7 +52,7 @@ ROBOTSTXT_OBEY = True
 # DOWNLOAD_DELAY = 5
 DOWNLOAD_TIMEOUT = 300
 DOWNLOAD_FAIL_ON_DATALOSS = False
-CONCURRENT_REQUESTS = 16 
+DEPTH_STATS_VERBOSE = True
 # DEPTH_LIMIT = 20
 CLOSESPIDER_TIMEOUT = 10*60
 RETRY_TIMES = 3 
@@ -59,7 +61,7 @@ RETRY_TIMES = 3
 # CONCURRENT_REQUESTS_PER_IP = 16
 
 # Disable cookies (enabled by default)
-# COOKIES_ENABLED = False
+COOKIES_ENABLED = False
 
 # Disable Telnet Console (enabled by default)
 # TELNETCONSOLE_ENABLED = False

@@ -72,7 +72,7 @@ class SitemapAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         
         return '{}/{}/{}'.format(total_subscribed, total_candidates, total)
     
-    @admin.action(description="Scan data")
+    @admin.action(description="Scan sub page data")
     def scan_data(self, request, queryset):
         self.message_user(
             request,

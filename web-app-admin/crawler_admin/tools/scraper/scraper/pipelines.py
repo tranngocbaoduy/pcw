@@ -79,43 +79,43 @@ class ScraperPipeline:
             "category": item.get('category'),
             "discount_rate": discount_rate
         } 
-        if params['name'] == '': params['name'] = params['title']
+        if params['name'] == '' or len(params['name']) > 512: params['name'] = params['title']
  
         return params
 
-    def create_or_update_item(self, params):
+    def create_or_update_item(self, params, verbose=False):
         try:
             obj, created = PageInfo.objects.update_or_create(encoded_base_url=params.get('encoded_base_url'), defaults=params)
             if created:
-                print({"message": "[CREATE PAGE INFO]", "obj": obj})
+                if verbose: print({"message": "[CREATE PAGE INFO]", "obj": obj})
             else:
                 for key, value in params.items():
                     setattr(obj, key, value) 
                 setattr(obj, 'count_update', obj.count_update + 1)  
+                if verbose: print({"message": "[UPDATE PAGE INFO]", "obj": obj})
                 obj.save()
-                print({"message": "[UPDATE PAGE INFO]", "obj": obj})
             return params
         except Exception as e:
             print(e)
             return None
     
-    def create_or_update_item_detail(self, params):
+    def create_or_update_item_detail(self, params, verbose=False):
         try:
             obj, created = Product.objects.update_or_create(encoded_base_url=params.get('encoded_base_url'), defaults=params)
             if created:
-                print({"message": "[CREATE PRODUCT]", "obj": obj})
+                if verbose: print({"message": "[CREATE PRODUCT]", "obj": obj})
             else:
                 for key, value in params.items():
                     setattr(obj, key, value) 
                 setattr(obj, 'count_update', obj.count_update + 1)  
+                if verbose: print({"message": "[UPDATE PRODUCT]", "obj": obj})
                 obj.save()
-                print({"message": "[UPDATE PRODUCT]", "obj": obj})
             return obj
         except Exception as e:
             print(e)
             return None
 
-    def create_or_update_history_pricing(self, product_info, params):
+    def create_or_update_history_pricing(self, product_info, params, verbose=False):
         if product_info.price != params.get('price') or product_info.list_price != params.get('list_price'):
             product_info.last_updated_price = (datetime.datetime.utcnow().replace(microsecond=0).isoformat() + 'Z')
             params = {
@@ -124,27 +124,27 @@ class ScraperPipeline:
                 "product": product_info,
             } 
             history_obj = HistoryPricing.objects.create(**params)
-            print({"message": "[CREATE HISTORY]", "obj": history_obj})
+            if verbose: print({"message": "[CREATE HISTORY]", "obj": history_obj})
             product_info.save()
 
-    def process_item(self, item, spider):
-        sitemap = spider.sitemap
-        print('[{}]'.format(spider.action),item)
+    def process_item(self, item, spider, verbose=True):
+        sitemap = spider.sitemap 
+        # print('[{}]'.format(spider.action),item)
         if spider.action == 'SITEMAP':
             params = self.get_params_from_raw(item, sitemap)
             retry_count = 0
             page_info = None
             while retry_count < 3 and page_info == None: 
                 retry_count = retry_count + 1
-                page_info = self.create_or_update_item(params)
+                page_info = self.create_or_update_item(params, verbose)
             return page_info
         elif spider.action == 'UPDATE_DETAIL':
             params = self.get_params_from_raw_detail(item, sitemap) 
             page_info = PageInfo.objects.get(encoded_base_url=params['encoded_base_url']) 
             if params['name'] and params['price'] and params['list_price']:
                 params['category'], is_created = Category.objects.get_or_create(name=item['category'])
-                product_info = self.create_or_update_item_detail(params) 
-                self.create_or_update_history_pricing(product_info, params)
+                product_info = self.create_or_update_item_detail(params, verbose) 
+                self.create_or_update_history_pricing(product_info, params, verbose)
                 
                 # Continue subscribe to product
                 page_info.is_subscribe = True
