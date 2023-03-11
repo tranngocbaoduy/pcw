@@ -33,16 +33,16 @@ class SeleniumMiddleware:
             A list of arguments to initialize the driver
         browser_executable_path: str
             The path of the executable binary of the browser
-        """
-
+        """  
         webdriver_base_path = f"selenium.webdriver.{driver_name}"
 
         driver_klass_module = import_module(f"{webdriver_base_path}.webdriver")
         driver_klass = getattr(driver_klass_module, "WebDriver")
         driver_options_module = import_module(f"{webdriver_base_path}.options")
         driver_options_klass = getattr(driver_options_module, "Options")
-
+ 
         driver_options = driver_options_klass()
+        print('browser_executable_path',browser_executable_path)
         if browser_executable_path:
             driver_options.binary_location = browser_executable_path
         for argument in driver_arguments:
@@ -51,6 +51,8 @@ class SeleniumMiddleware:
             "executable_path": driver_executable_path,
             "options": driver_options,
         }
+
+        print('driver_kwargs', driver_kwargs)
         self.driver = driver_klass(**driver_kwargs)
 
     @classmethod
@@ -83,16 +85,19 @@ class SeleniumMiddleware:
     def process_request(self, request, spider):
         """Process a request using the selenium driver if applicable"""
 
+        print("process_request", request)
         if not isinstance(request, SeleniumRequest):
             return None
-
+ 
         self.driver.get(request.url)
 
         for cookie_name, cookie_value in request.cookies.items():
             self.driver.add_cookie({"name": cookie_name, "value": cookie_value})
 
+        print(request.wait_loaded)
         if request.wait_loaded:
             time.sleep(request.wait_loaded)
+            
         if request.is_scroll_to_end_page:
             loaded = ""
             while loaded != "complete":
@@ -131,7 +136,7 @@ class SeleniumMiddleware:
 
         # Expose the driver via the "meta" attribute
         request.meta.update({"driver": self.driver})
-
+        
         return HtmlResponse(
             self.driver.current_url, body=body, encoding="utf-8", request=request
         )

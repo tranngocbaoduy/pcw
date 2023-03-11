@@ -38,20 +38,17 @@ class HtmlHeadlessDetail(scrapy.Spider):
 
     custom_settings = {
         "DOWNLOAD_DELAY": 10,
-        "SELENIUM_DRIVER_NAME": "firefox",
-        "SELENIUM_DRIVER_EXECUTABLE_PATH": which(
-            os.path.join(root_dir, "geckodriver.exe")
-        )
+        "SELENIUM_DRIVER_NAME": "chrome",
+        "SELENIUM_DRIVER_EXECUTABLE_PATH": which(os.path.join(root_dir, "geckodriver"))
         if platform == "win32"
-        else which(os.path.join(root_dir, "geckodriver")),
-        "SELENIUM_BROWSER_EXECUTABLE_PATH": which(
-            "C:\Program Files\Mozilla Firefox\firefox"
-        )
+        else which(os.path.join(root_dir, "geckodriver.exe")),
+        "SELENIUM_BROWSER_EXECUTABLE_PATH": which(os.path.join(root_dir, "chromedriver.exe"))
         if platform == "win32"
         else which("/Applications/Firefox.app/Contents/MacOS/firefox"),
         "SELENIUM_DRIVER_ARGUMENTS": [
             "--headless"
         ],  # '--headless' if using chrome instead of firefox
+        'DOWNLOADER_CLIENTCONTEXTFACTORY': 'crawler_admin.contextfactory.LegacyConnectContextFactory', 
     }
 
     def __init__(self, *a, **kwargs):
@@ -74,6 +71,19 @@ class HtmlHeadlessDetail(scrapy.Spider):
         self.parsers = Parser.objects.filter(ware_parser=self.sitemap.ware_parser.id)
         self.action = 'UPDATE_DETAIL'
           
+        self.headers = {
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9", 
+            "Accept-Encoding": "gzip, deflate, br", 
+            "Accept-Language": "vi-VN,vi;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5,ja;q=0.4", 
+            "Sec-Fetch-Dest": "document",
+            "Referer": "https://www.google.com/",
+            "Sec-Fetch-Site": "same-origin",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-User": "?1",
+            "Upgrade-Insecure-Requests": "1", 
+            "Connection": "keep-alive",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.5195.127 Safari/537.36",
+        }
         # pprint({
         #     "custom_settings": self.custom_settings,
         #     'base_url': self.base_url, 
@@ -89,6 +99,7 @@ class HtmlHeadlessDetail(scrapy.Spider):
                 callback=self.parse_product_item,
                 errback=self.err_callback,
                 dont_filter=True,
+                headers=self.headers
                 # wait_loaded=3
             ) 
             
@@ -105,7 +116,7 @@ class HtmlHeadlessDetail(scrapy.Spider):
         item['meta'] = sel.xpath('/html/head/meta').getall() 
         item['category'] = self.category_name 
 
-        # self.save_html(response, item['title'])
+        # self.save_html(response, item['encoded_base_url'])
         info_from_parser = dict()
         for parser in self.parsers:
 
@@ -122,16 +133,17 @@ class HtmlHeadlessDetail(scrapy.Spider):
                     response, parser.selector_type, parser.selector
                 ).getall()
                 str_tags = " ".join([self.strip_tags(html) for html in tags if html]) 
-                if str_tags:
+                if str_tags and not info_from_parser.get(parser.name, ''):
                     if "price" in parser.name:
                         # handle for currency
+                        print('str_tags', str_tags)
                         info_from_parser[
                             parser.name
                         ] = CrawlingHelper.get_currency_from_text(str_tags)
                     else:
                         # handle for value of parser
                         info_from_parser[parser.name] = str_tags
-                else:
+                elif parser.name not in info_from_parser.keys():
                     info_from_parser[parser.name] = ""     
         for key, value in info_from_parser.items():
             if key in item.fields.keys():
@@ -188,9 +200,9 @@ class HtmlHeadlessDetail(scrapy.Spider):
         return attribute
 
     def save_html(self, response, name):
-        data_crawler_file_dir = "raw_html/{}".format(name)
+        data_crawler_file_dir = "raw_html/{}".format(name.replace(' ','_'))
         if not os.path.exists(data_crawler_file_dir):
             os.makedirs(data_crawler_file_dir)
-        with open("{}/index.html".format(data_crawler_file_dir), "w") as f:
+        with open("{}/index.html".format(data_crawler_file_dir), "w",encoding='utf-8') as f:
             f.write(response.text)
             f.close() 

@@ -12,6 +12,7 @@ from tools.scraper.scraper.spiders.html_non_headless import HtmlNonHeadless
 from scrapy.settings import Settings
 from scrapy.crawler import CrawlerRunner
 from scrapy.utils.log import configure_logging
+from django.utils import timezone
 
 class Scraper(models.Model): 
 
@@ -31,8 +32,8 @@ class Scraper(models.Model):
     scheduler_type = models.CharField(
         max_length=50, choices=SchedulerType.choices, default=SchedulerType.ONCE
     )
-    start_time = models.TimeField()
-    start_date = models.DateField()
+    start_time = models.TimeField(default=timezone.now)
+    start_date = models.DateField(default=timezone.now)
     job_id = models.CharField(max_length=256)
     is_active = models.BooleanField("Active", default=False)
     sitemap_cells = models.ManyToManyField(Sitemap, through="ScraperSitemap")
@@ -66,8 +67,11 @@ class Scraper(models.Model):
             else:
                 runner.crawl(HtmlNonHeadless, url=_sitemap_db.base_url, sitemap=_sitemap_db)
 
-    def update_job(self):
-        print('self.job_id',self.job_id)
+    def update_job(self): 
+        from datetime import datetime, timedelta, date
+        delta = timedelta(hours = 7)
+        local_time = (datetime.combine(date(1,1,1), self.start_time) + delta).time()
+
         if self.job_id is not None:
             try:
                 scheduler.remove_job(job_id=self.job_id)
@@ -97,10 +101,11 @@ class Scraper(models.Model):
                 minute=self.start_time.minute,
                 hour=self.start_time.hour,
             ).id
-
+ 
         print('self.scheduler_type', {
             "scheduler_type":self.scheduler_type,
             "job_id":job_id,
+            "start_time": "{}:{}".format(str(self.start_time.hour),str(self.start_time.minute))
         })
         self.job_id = job_id
 

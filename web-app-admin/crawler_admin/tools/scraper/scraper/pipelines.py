@@ -17,6 +17,7 @@ from validators.url import url
 from modules.crawler.models.sitemap import PageInfo, Sitemap 
 from modules.crawler.models.product import Category, GroupProduct, Product, HistoryPricing
 from tools.scraper.scraper.utils import CrawlingHelper
+from pprint import pprint
 
 class ScraperPipeline: 
 
@@ -53,8 +54,8 @@ class ScraperPipeline:
 
         discount_rate = 0 
         
-        p1 = Decimal(item.get('price')) if item.get('price') != '' else 0
-        p2 = Decimal(item.get('list_price')) if item.get('list_price') != '' else 0
+        p1 = Decimal(item.get('price')) if item.get('price') and item.get('price') != '' else 0
+        p2 = Decimal(item.get('list_price')) if item.get('list_price') and item.get('list_price') != '' else 0
         if not p2: p2 = p1
         if p1 and p1 > 0 and p2 and p2  > 0:
             if p1 > p2:
@@ -67,8 +68,8 @@ class ScraperPipeline:
                 discount_rate = 100 - int(Decimal(p1) / Decimal(p2) * 100)
 
         params = { 
-            "name": item.get('name').strip(),
-            "title": '__'.join(item.get('title')),
+            "name": item.get('name','').strip(),
+            "title": '__'.join(item.get('title',[''])),
             "base_url": item.get('URL'),
             "encoded_base_url": item.get('encoded_base_url'),
             "meta": json.dumps(list_meta),
@@ -79,7 +80,7 @@ class ScraperPipeline:
             "category": item.get('category'),
             "discount_rate": discount_rate
         } 
-        if params['name'] == '' or len(params['name']) > 512: params['name'] = params['title']
+        if params['name'] == None or params['name'] == '' or len(params['name']) > 512: params['name'] = params['title']
  
         return params
 
@@ -129,7 +130,8 @@ class ScraperPipeline:
 
     def process_item(self, item, spider, verbose=True):
         sitemap = spider.sitemap 
-        # print('[{}]'.format(spider.action),item)
+        pprint(item)
+
         if spider.action == 'SITEMAP':
             params = self.get_params_from_raw(item, sitemap)
             retry_count = 0
@@ -155,6 +157,9 @@ class ScraperPipeline:
                 # Cancle subscribe to product
                 page_info.is_subscribe = False
                 page_info.save()
+                # print('[{}]'.format(spider.action))
+                # pprint(params)
+
         return None
 
     def close_spider(self, spider):

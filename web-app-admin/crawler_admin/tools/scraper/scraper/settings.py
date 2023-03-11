@@ -40,7 +40,7 @@ LOG_FILE = os.path.join(
 # USER_AGENT = 'scraper (+http://www.yourdomain.com)'
 
 # Obey robots.txt rules
-# ROBOTSTXT_OBEY = True
+ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 CONCURRENT_REQUESTS = 16 
@@ -57,11 +57,11 @@ DEPTH_STATS_VERBOSE = True
 CLOSESPIDER_TIMEOUT = 10*60
 RETRY_TIMES = 3 
 # The download delay setting will honor only one of:
-# CONCURRENT_REQUESTS_PER_DOMAIN = 16
+CONCURRENT_REQUESTS_PER_DOMAIN = 5
 # CONCURRENT_REQUESTS_PER_IP = 16
 
 # Disable cookies (enabled by default)
-COOKIES_ENABLED = False
+# COOKIES_ENABLED = False
 
 # Disable Telnet Console (enabled by default)
 # TELNETCONSOLE_ENABLED = False
@@ -80,21 +80,19 @@ DEFAULT_REQUEST_HEADERS = {
    "Connection": "keep-alive",
    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36",
 }
-
+ 
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-# SPIDER_MIDDLEWARES = {
+SPIDER_MIDDLEWARES = {
 #    'tools.scraper.scraper.middlewares.ScraperSpiderMiddleware': 543,
-# }
+    # "tools.scraper.scrapy_selenium.SeleniumMiddleware": 2000
+}
 
 # Enable or disable downloader middlewares
-# See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-# DOWNLOADER_MIDDLEWARES = {
-#    'scraper.middlewares.ScraperDownloaderMiddleware': 543,
-# }
+# See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html 
 DOWNLOADER_MIDDLEWARES = {
     # 'scraper.middlewares.ScraperDownloaderMiddleware': 543,
-    "tools.scraper.scrapy_selenium.SeleniumMiddleware": 1000
+    # "tools.scraper.scrapy_selenium.SeleniumMiddleware": 2000
 }
 
 
@@ -131,3 +129,6 @@ AUTOTHROTTLE_TARGET_CONCURRENCY = 16.0
 # HTTPCACHE_IGNORE_HTTP_CODES = []
 # HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
  
+
+DOWNLOADER_CLIENT_TLS_METHOD="TLS"
+FEED_EXPORT_ENCODING = 'utf-8'
