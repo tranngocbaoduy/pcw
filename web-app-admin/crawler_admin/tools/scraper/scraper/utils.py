@@ -211,6 +211,11 @@ class CrawlingHelper(object):
         o = urlparse(url)
         return o.netloc
 
+    @staticmethod
+    def get_main_url(url):
+        o = urlparse(url)
+        return o.scheme + "://" + o.netloc
+
     @staticmethod 
     def get_url_formatted(base_url):
         base_url_formatted = base_url

@@ -4,9 +4,12 @@ backend/tools/aws_service/training
 backend/tools/aws_service/model
 
 web-app/.env*
+web-app/node_modules
 web-app-admin/crawler_admin/data-*
 web-app-admin/.env
 
+web-app-admin
+web-app-admin/crawler_admin/tools/scraper/scraper/geckodriver.exe
 web-app-admin/crawler_admin/raw_html
 web-app-admin/dev
 web-app-admin/crawler_admin/static/admin

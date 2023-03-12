@@ -83,7 +83,7 @@ class Sitemap(models.Model):
                     n = max(1, n)
                     return (xs[i:i+n] for i in range(0, len(xs), n))
                 
-                CHUNKS_ITEM = 10
+                CHUNKS_ITEM = 20
 
                 runner = CrawlerRunner(crawl_settings)
                 for pages in chunks(page_info_items, CHUNKS_ITEM):

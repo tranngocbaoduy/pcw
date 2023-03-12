@@ -5,7 +5,7 @@ __pycache__/
 
 # C extensions
 *.so
-
+tools/scraper/scraper/geckodriver.exe
 # Distribution / packaging
 .Python
 build/

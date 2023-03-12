@@ -13,7 +13,7 @@ from modules.crawler.tabular_in_lines.sitemap import (
 @admin.register(Scraper)
 class ScraperAdmin(ImportExportModelAdmin, admin.ModelAdmin, CSSAdminMixin):
     inlines = (ScraperSitemapTabularInline,)
-    actions = ["setup_crawler", "stop_crawler"]
+    actions = ["setup_crawler", "enable_crawler", "disable_crawler", "stop_sitemap"]
     list_display = [
         "_id",
         "name", 
@@ -50,6 +50,14 @@ class ScraperAdmin(ImportExportModelAdmin, admin.ModelAdmin, CSSAdminMixin):
             % len(queryset),
             messages.SUCCESS,
         )
+
+        
+    @admin.action(description="Edit stop sitemap")
+    def stop_sitemap(self, request, queryset):
+        for query in queryset:  
+            for _sitemap in query.scrapersitemap_set.all(): 
+                _sitemap.sitemap.is_sitemap_running = False
+                _sitemap.sitemap.save()
 
     @admin.action(description="Disable crawler")
     def disable_crawler(self, request, queryset):
